@@ -1,0 +1,513 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@LeaRun.Util.Config.GetValue("SystemName").ToString()</title>
+    <script src="~/Content/scripts/jquery/jquery-1.10.2.min.js"></script>
+    <link href="~/Content/styles/learun-login2.css" rel="stylesheet" />
+    <link href="~/Content/styles/font-awesome.min.css" rel="stylesheet" />
+    <script src="~/Content/scripts/plugins/jquery.md5.js"></script>
+    <script src="~/Content/scripts/plugins/cookie/jquery.cookie.js"></script>
+    <script src="~/Content/scripts/plugins/dialog/dialog.js"></script>
+    <script src="~/Content/scripts/utils/learun-ui.js"></script>
+    <script src="~/Content/scripts/plugins/validator/validator.js"></script>
+    <script src="~/Content/scripts/plugins/tipso.min.js"></script>
+    <script>
+        var contentPath = '@Url.Content("~")'.substr(0, '@Url.Content("~")'.length - 1);
+        var isIE = !!window.ActiveXObject;
+        var isIE6 = isIE && !window.XMLHttpRequest;
+        if (isIE6) {
+            window.location.href = contentPath + "/Error/ErrorBrowser";
+        }
+        //回车键
+        document.onkeydown = function (e) {
+            if (!e) e = window.event;
+            if ((e.keyCode || e.which) == 13) {
+                var btlogin = document.getElementById("btnlogin");
+                btnlogin.click();
+            }
+        }
+        //初始化
+        $(function () {
+            $(".wrap").css("margin-top", ($(window).height() - $(".wrap").height()) / 2 - 35);
+            $(window).resize(function (e) {
+                $(".wrap").css("margin-top", ($(window).height() - $(".wrap").height()) / 2 - 35);
+                e.stopPropagation();
+            });
+            //错误提示
+            if (top.$.cookie('learun_login_error') != null) {
+                switch (top.$.cookie('learun_login_error')) {
+                    case "Overdue":
+                        formMessage('登录已超时,请重新登录');
+                        break;
+                    case "OnLine":
+                        formMessage('您的帐号已在其它地方登录,请重新登录');
+                        break;
+                    case "-1":
+                        formMessage('未知错误,请重新登录');
+                        break;
+                    default:
+                        break;
+                }
+                top.$.cookie('learun_login_error', '', { path: "/", expires: -1 });
+            }
+            //是否自动登录
+            if (top.$.cookie('learn_autologin') == 1) {
+                $("#autologin").attr("checked", 'true');
+                $("#username").val(top.$.cookie('learn_username'));
+                $("#password").val(top.$.cookie('learn_password'));
+                CheckLogin(1);
+            }
+            //设置下次自动登录
+            $("#autologin").click(function () {
+                if (!$(this).attr('checked')) {
+                    $(this).attr("checked", 'true');
+                    top.$.cookie('learn_autologin', 1, { path: "/", expires: 7 });
+                } else {
+                    $(this).removeAttr("checked");
+                    top.$.cookie('learn_autologin', '', { path: "/", expires: -1 });
+                    top.$.cookie('learn_username', '', { path: "/", expires: -1 });
+                    top.$.cookie('learn_password', '', { path: "/", expires: -1 });
+                }
+            });
+            //主题风格
+            var learn_UItheme = top.$.cookie('learn_UItheme')
+            if (learn_UItheme) {
+                $("#UItheme").val(learn_UItheme);
+            }
+            //登录按钮事件
+            $("#btnlogin").click(function () {
+                var $username = $("#username");
+                var $password = $("#password");
+                var $verifycode = $("#verifycode");
+                if ($username.val() == "") {
+                    $username.focus();
+                    formMessage('请输入账户或手机号或邮箱。');
+                    return false;
+                } else if ($password.val() == "") {
+                    $password.focus();
+                    formMessage('请输入密码。');
+                    return false;
+                } else if ($verifycode.val() == "") {
+                    $verifycode.focus();
+                    formMessage('请输入验证码。');
+                    return false;
+                } else {
+                    CheckLogin(0);
+                }
+            })
+            //点击切换验证码
+            $("#login_verifycode").click(function () {
+                $("#verifycode").val('');
+                $("#login_verifycode").attr("src", contentPath + "/Login/VerifyCode?time=" + Math.random());
+            });
+            //切换注册表单
+            $("#a_register").click(function () {
+                $("#loginform").hide();
+                $("#registerform").show();
+                $("#register_verifycode").attr("src", contentPath + "/Login/VerifyCode?time=" + Math.random());
+                $(".wrap").css("margin-top", ($(window).height() - $(".wrap").height()) / 2 - 35);
+            });
+            //切换登录表单
+            $("#a_login").click(function () {
+                $("#loginform").show();
+                $("#registerform").hide();
+                $("#login_verifycode").attr("src", contentPath + "/Login/VerifyCode?time=" + Math.random());
+                $(".wrap").css("margin-top", ($(window).height() - $(".wrap").height()) / 2 - 35);
+            });
+
+            //切换登录页
+            $("#login2").click(function () {
+                window.location.href = contentPath + '/Login/Index';
+            });
+        })
+        //登录验证
+        function CheckLogin(autologin) {
+            $("#btnlogin").addClass('active').attr('disabled', 'disabled');
+            $("#btnlogin").find('span').hide();
+
+            var username = $.trim($("#username").val());
+            var password = $.trim($("#password").val());
+            var verifycode = $.trim($("#verifycode").val());
+            if (top.$.cookie('learn_password') == "" || top.$.cookie('learn_password') == null || autologin == 0) {
+                password = $.md5(password);
+            }
+            $.ajax({
+                url: contentPath + "/Login/CheckLogin",
+                data: { username: $.trim(username), password: $.trim(password), verifycode: verifycode, autologin: autologin },
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    if (data.type == 1) {
+                        if (top.$.cookie('learn_autologin') == 1) {
+                            top.$.cookie('learn_username', $.trim(username), { path: "/", expires: 7 });
+                            top.$.cookie('learn_password', $.trim(password), { path: "/", expires: 7 });
+                        }
+                        top.$.cookie('learn_UItheme', $("#UItheme").val(), { path: "/", expires: 30 });
+                        var theme = $("#UItheme").val();
+                        if (theme == 1) {
+                            window.location.href = contentPath + '/Home/AdminDefault';
+                        }
+                        else if (theme == 2) {
+                            window.location.href = contentPath + '/Home/AdminLTE';
+                        }
+                        else if (theme == 3) {
+                            window.location.href = contentPath + '/Home/AdminWindos';
+                        }
+                        else if (theme == 4) {
+                            window.location.href = contentPath + '/Home/AdminPretty';
+                        }
+                    } else {
+                        if (data.message.length >= 30) {
+                            dialogAlert(data.message, 0);
+                        } else {
+                            formMessage(data.message);
+                        }
+                        $("#btnlogin").removeClass('active').removeAttr('disabled');
+                        $("#btnlogin").find('span').show();
+                        $("#login_verifycode").trigger("click");
+                    }
+                }
+            });
+        }
+        //提示信息
+        function formMessage(msg, type) {
+            $('.login_tips').parents('dt').remove();
+            var _class = "login_tips";
+            if (type == 1) {
+                _class = "login_tips-succeed";
+            }
+            $('.form').prepend('<dt><div class="' + _class + '"><i class="fa fa-question-circle"></i>' + msg + '</div></dt>');
+        }
+
+
+
+        /*=========注册账户（begin）================================================================*/
+        $(function () {
+            //手机号离开事件
+            $("#txt_register_account").blur(function () {
+                if ($(this).val() != "" && !isMobile($(this).val())) {
+                    $(this).focus();
+                    formMessage('手机格式不正确,请输入正确格式的手机号码。');
+                }
+                function isMobile(obj) {
+                    reg = /^(\+\d{2,3}\-)?\d{11}$/;
+                    if (!reg.test(obj)) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            });
+            //密码输入事件
+            $("#txt_register_password").keyup(function () {
+                $(".passlevel").find('em').removeClass('bar');
+                var length = $(this).val().length;
+                if (length <= 8) {
+                    $(".passlevel").find('em:eq(0)').addClass('bar');
+                } else if (length > 8 && length <= 12) {
+                    $(".passlevel").find('em:eq(0)').addClass('bar');
+                    $(".passlevel").find('em:eq(1)').addClass('bar');
+                } else if (length > 12) {
+                    $(".passlevel").find('em').addClass('bar');
+                }
+            })
+            //注册按钮事件
+            $("#btnregister").click(function () {
+                var $account = $("#txt_register_account");
+                var $code = $("#txt_register_code");
+                var $name = $("#txt_register_name");
+                var $password = $("#txt_register_password");
+                var $verifycode = $("#txt_register_verifycode");
+                if ($account.val() == "") {
+                    $account.focus();
+                    formMessage('请输入手机号。');
+                    return false;
+                } else if ($code.val() == "") {
+                    $code.focus();
+                    formMessage('请输入短信验证码。');
+                    return false;
+                } else if ($name.val() == "") {
+                    $name.focus();
+                    formMessage('请输入姓名。');
+                    return false;
+                } else if ($password.val() == "") {
+                    $password.focus();
+                    formMessage('请输入密码。');
+                    return false;
+                } else if ($verifycode.val() == "") {
+                    $verifycode.focus();
+                    formMessage('请输入图片验证码。');
+                    return false;
+                } else {
+                    $("#btnregister").addClass('active').attr('disabled', 'disabled');
+                    $("#btnregister").find('span').hide();
+                    $.ajax({
+                        url: contentPath + "/Login/Register",
+                        data: { mobileCode: $account.val(), securityCode: $code.val(), fullName: $name.val(), password: $.md5($password.val()), verifycode: $verifycode.val() },
+                        type: "post",
+                        dataType: "json",
+                        success: function (data) {
+                            if (data.type == 1) {
+                                alert('注册成功');
+                                window.location.href = contentPath + '/Login/Index';
+                            } else {
+                                formMessage(data.message);
+                                $("#btnregister").removeClass('active').removeAttr('disabled');
+                                $("#btnregister").find('span').show();
+                                $("#register_verifycode").trigger("click");
+                            }
+                        }
+                    });
+                }
+            })
+            //获取验证码
+            $("#register_getcode").click(function () {
+                var $this = $(this);
+                $this.attr('disabled', 'disabled');
+                $.ajax({
+                    url: contentPath + "/Login/GetSecurityCode",
+                    data: { mobileCode: $("#txt_register_account").val() },
+                    type: "get",
+                    dataType: "json",
+                    async: false,
+                    success: function (data) {
+                        if (data.type == 1) {
+                            formMessage('已向您的手机' + $("#txt_register_account").val() + '发送了一条验证短信。', 1);
+                        } else {
+                            $this.removeAttr('disabled');
+                            formMessage(data.message);
+                        }
+                    }
+                });
+            });
+        })
+        /*=========注册账户（end）================================================================*/
+    </script>
+</head>
+<body class="aaabody">
+    <div style="position: absolute; top: 20px; left: 20px; color: #4b4b4b; font-size: 13px; line-height: 22px;">
+        在线体验，采用独立运行环境，提供持续稳定安全服务，24小时均可以访问<br>
+        用户名 System ，密码 0000，请勿在系统内发表不文明信息
+    </div>
+    <div class="wrap">
+        <div style="text-align: center;">
+            <img src="~/Content/images/on-line.png" style="border-radius: 96px; margin-bottom: -48px;" />
+        </div>
+        <div id="loginform" class="container">
+            <fieldset class="box">
+                <legend>登录伙伴</legend>
+                <dl class="form">
+                    <dd>
+                        <input id="username" type="text" class="px" placeholder="账户、邮箱或手机号"></dd>
+                    <dd>
+                        <input id="password" type="password" class="px" placeholder="密码"></dd>
+                    <dd style="overflow: hidden;">
+                        <div style="float: left; width: 65%">
+                            <input id="verifycode" maxlength="4" type="text" class="px" placeholder="图片验证码">
+                        </div>
+                        <div style="float: left; width: 35%">
+                            <img id="login_verifycode" class="img_verifycode" src="~/Login/VerifyCode" width="100" height="30" alt="点击切换验证码"
+                                title="点击切换验证码" style="cursor: pointer; padding-top: 2px; padding-left: 5px;" />
+                        </div>
+                    </dd>
+                    <dd>
+
+                        <select id="UItheme" class="ps" style="padding-left:2px;">
+                            <option value="1">主题风格-经典版</option>
+                            <option value="2">主题风格-风尚版</option>
+                            <option value="3">主题风格-炫动版</option>
+                            <option value="4">主题风格-飞扬版</option>
+                        </select>
+                    </dd>
+                    <dd>
+                        <span class="y"><a href="#" onclick="alert('请联系管理员')">忘记密码了？</a></span>
+                        <label style="cursor: pointer;">
+                            <input id="autologin" type="checkbox" class="pc" style="margin-bottom: 4.5px; margin-right: 0px; vertical-align: middle;">
+                            <span>下次自动登录</span>
+                        </label>
+                    </dd>
+                    <dd class="btn">
+                        <button id="btnlogin" type="button" class="pn"><span>登录</span></button>
+
+                    </dd>
+                    <dd class="ft"><span>还没有框架帐号？</span><a id="a_register" style="cursor: pointer;">立即注册</a>
+                    </dd>
+                    <dd class="ft" style="color: red;"><span>切换新版登录页？</span><a id="login2" style="cursor: pointer;">切换</a>
+                    </dd>
+                </dl>
+            </fieldset>
+        </div>
+        <div id="registerform" class="container" style="display: none;">
+            <fieldset class="box">
+                <legend>注册信息</legend>
+                <dl class="form">
+                    <dd>
+                        <input id="txt_register_account" maxlength="11" type="text" class="px" placeholder="手机号">
+                    </dd>
+                    <dd style="overflow: hidden;">
+                        <div style="float: left; width: 223px;">
+                            <input id="txt_register_code" maxlength="6" type="text" class="px" placeholder="短信验证码">
+                        </div>
+                        <div style="float: left;">
+                            <button id="register_getcode" type="button" class="pn_getcode">获取验证码</button>
+                        </div>
+                    </dd>
+                    <dd>
+                        <input id="txt_register_name" type="text" class="px" placeholder="姓名"></dd>
+                    <dd style="margin-bottom: 5px;">
+                        <input id="txt_register_password" type="password" class="px" placeholder="密码">
+                        <p class="info">密码长度为8~30个字符，需包含字母和数字</p>
+                        <span class="passlevel"><em></em><em></em><em></em></span>
+                    </dd>
+                    <dd style="overflow: hidden;">
+                        <div style="float: left; width: 65%">
+                            <input id="txt_register_verifycode" maxlength="4" type="text" class="px" placeholder="图片验证码">
+                        </div>
+                        <div style="float: left; width: 35%;">
+                            <img id="register_verifycode" width="100" height="30" alt="点击切换验证码" title="点击切换验证码" style="cursor: pointer; padding-top: 2px; padding-left: 5px;" />
+                        </div>
+                    </dd>
+                    <dd class="tos"><span>点击注册表示您已阅读并同意</span><a href="" target="_blank">《服务条款》</a></dd>
+                    <dd class="btn">
+                        <button id="btnregister" type="button" class="pn"><span>注册</span></button>
+                    </dd>
+                    <dd class="ft"><span>已有框架帐号？</span><a id="a_login" style="cursor: pointer;">直接登录</a>
+                    </dd>
+                </dl>
+            </fieldset>
+        </div>
+    </div>
+    <div class="copyright">
+        北京技术有限公司出品
+        @*<br>
+        LR-ADMS 敏捷开发框架官方网站：http://www.learun.cn/adms/index.html*@ 
+    </div>
+    <div class="rides-cs" style="display: none;">
+        <div style="float: left;">
+            <div id="onlineConsult" class="floatL" title="在线咨询">
+                <a class="btnOpen" style="top: 0px; display: block; background: #0471d0;" href="javascript:void(0);">
+                    <i class="fa fa-qq"></i>
+                </a>
+                <a class="btnCtn" style="top: 0px; display: none; background: #0471d0;" href="javascript:void(0);">
+                    <i class="fa fa-qq"></i>
+                </a>
+            </div>
+            <div id="phoneConsult" class="floatL" title="电话咨询">
+                <a class="btnOpen" style="top: 0px; display: block; background: #e66d15;" href="javascript:void(0);">
+                    <i class="fa fa-phone-square"></i>
+                </a>
+                <a class="btnCtn" style="top: 0px; display: none; background: #e66d15;" href="javascript:void(0);">
+                    <i class="fa fa-phone-square"></i>
+                </a>
+            </div>
+        </div>
+        <div class="floatR" id="onlineConsultView" style="width: 160px; border: 3px solid #0471d0; background-color: rgb(255, 255, 255); border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; display: none;">
+            <div id="pre-sales-qq" class="cn">
+                <h3 class="titZx">全国统一客服热线</h3>
+                <h2 style="font-size: 13px; text-align: center; color: #e66d15;">021-57711692</h2>
+                <div style="border-bottom: solid 1px #E6E4E4; margin-top: 10px;"></div>
+                <ul>
+                    <li>
+                        <div style="float: left; padding-left: 5px; padding-right: 5px;">售前咨询：</div>
+                        <div style="float: left; padding-top: 12px;">
+                            <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=812431372&site=qq&menu=yes">
+                                <img border="0" src="http://wpa.qq.com/pa?p=2:812431372:51" alt="点这里给我发消息" /></a>
+                        </div>
+                    </li>
+                    <li>
+                        <div style="float: left; padding-left: 5px; padding-right: 5px;">售前咨询：</div>
+                        <div style="float: left; padding-top: 12px;">
+                            <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=403722956&site=qq&menu=yes">
+                                <img border="0" src="http://wpa.qq.com/pa?p=2:403722956:51" alt="点这里给我发消息" /></a>
+                        </div>
+                    </li>
+                    <li>
+                        <div style="float: left; padding-left: 5px; padding-right: 5px;">售前咨询：</div>
+                        <div style="float: left; padding-top: 12px;">
+                            <a target="_blank" href="http://wpa.qq.com/msgrd?v=3&uin=286998563&site=qq&menu=yes">
+                                <img border="0" src="http://wpa.qq.com/pa?p=2:286998563:51" alt="点这里给我发消息" /></a>
+                        </div>
+                    </li>
+                </ul>
+                <div style="text-align: center; padding-top: 8px;">
+                    <p style="line-height: 25px;"></p>
+                    工作时间：9:00-18:00
+                    <p style="line-height: 25px;">（7×24 技术支持）</p>
+                </div>
+                <script>
+                    $(function ($) {
+                        var array = [];
+                        $("#pre-sales-qq li").each(function (i, dom) {
+                            array.push(this);
+                        });
+                        array.sort(function () {
+                            var rand = Math.random();
+                            if (rand > 0.5) return 1;
+                            else if (rand < 0.5) return -1;
+                        });
+                        $("#pre-sales-qq ul").append(array);
+                    });
+                </script>
+            </div>
+        </div>
+        <div class="floatR" id="phoneConsultView" style="width: 160px; border: 3px solid #e66d15; background-color: rgb(255, 255, 255); border-bottom-right-radius: 10px; border-bottom-left-radius: 10px; border-top-right-radius: 10px; display: none;">
+            <div id="pre-sales-phone" class="cn">
+                <h3 class="titZx">全国统一客服热线</h3>
+                <h2 style="font-size: 13px; text-align: center; color: #e66d15;">021-57711692</h2>
+                <div style="border-bottom: solid 1px #E6E4E4; margin-top: 10px;"></div>
+                <ul>
+                    <li title="佘工">售前咨询：18516792888</li>
+                    <li title="李工">售前咨询：13671911811</li>
+                    <li title="刘工">售前咨询：13524834043</li>
+                </ul>
+                <div style="text-align: center; padding-top: 8px;">
+                    <p style="line-height: 25px;"></p>
+                    工作时间：9:00-18:00
+                    <p style="line-height: 25px;">（7×24 技术支持）</p>
+                </div>
+                <script>
+                    $(function ($) {
+                        var array = [];
+                        $("#pre-sales-phone li").each(function (i, dom) {
+                            array.push(this);
+                        });
+                        array.sort(function () {
+                            var rand = Math.random();
+                            if (rand > 0.5) return 1;
+                            else if (rand < 0.5) return -1;
+                        });
+                        $("#pre-sales-phone ul").append(array);
+                    });
+                </script>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(".floatL .btnOpen,.floatL .btnCtn").click(function () {
+            if ($(this).hasClass('btnOpen')) {
+                $('.floatL').hide();
+                $(this).parent().show();
+                $(".btnOpen").hide();
+                $('.btnCtn').show();
+                $("#" + $(this).parent().attr('id') + "View").animate({ width: 'show', opacity: 'show' }, 100,
+                    function () {
+                    });
+            } else {
+                $(".btnCtn").hide();
+                $('.btnOpen').show();
+                $("#" + $(this).parent().attr('id') + "View").animate({ width: 'hide', opacity: 'hide' }, 100, function () {
+                    $('.floatL').show();
+                });
+            }
+        });
+    </script>
+    <div class="weixin" style="display: none;">
+        <div style="margin-bottom: 5px;">
+            扫描二维码，下载框架APP
+        </div>
+        <img src="~/Content/images/LeaRun_App.png" style="width: 150px;" alt="下载APP框架"/>
+    </div>
+</body>
+</html>

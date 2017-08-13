@@ -1,0 +1,42 @@
+﻿<ion-modal-view>
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <div class="item-input-inset" style="width:100%;">
+            <label class="item-input-wrapper">
+                <i class="icon ion-ios-search placeholder-icon"></i>
+                <input type="search" ng-model="searchData.keyword" placeholder="搜索">
+            </label>
+            <button class="button button-clear" ng-click="doSearch()">
+                搜索
+            </button>
+            <button class="button button-clear" ng-click="closeSearchModal()">
+                取消
+            </button>
+        </div>
+    </ion-header-bar>
+    <ion-content>
+        <div class="lr-searchTitle" ng-hide="searchData.records == 0 "><span>搜索结果 {{searchData.records}} 条</span></div>
+        <div class="list  list-inset lr-list-type2" style="margin-top:0px;">
+            <ion-list>
+                <ion-item ng-repeat="customer in searchData.customers" class="mt10" ng-click="openDetailsModal(customer.customerId)">
+                    <div class="row">
+                      <div class="col-80"><span class="lr-title">{{customer.fullName}}</span></div>
+                      <div class="col-20"><span class="lr-title" style="text-align:right;">{{customer.lastDate}}</span></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-33"><div class="lr-label {{customer.custIndustrybgColor}}">{{customer.custIndustryName}}</div></div>
+                        <div class="col-33 lr-item-content">
+                          <p><i class="icon ion-ios-person positive"></i><span>{{customer.contact}}</span></p>
+                          <p><i class="icon ion-ios-telephone-outline royal"></i><span>{{customer.mobile}}</span></p>
+                        </div>
+                        <div class="col-33 lr-item-content">
+                          <p><i class="icon ion-ios-personadd balanced"></i><span>跟进-{{customer.traceUserName}}</span></p>
+                          <p><i class="icon ion-ios-flame-outline energized"></i><span>{{customer.custDegreeId}}</span></p>
+                        </div>
+                    </div>
+                    <ion-option-button ng-click="doDelete(customer)"><span class="lr-trash-circled"><i class="icon ion-ios-trash-outline"></i></span></ion-option-button>
+                </ion-item>
+            </ion-list>
+        </div>
+        <ion-infinite-scroll ng-if="searchData.moredata" on-infinite="loadMoreSearch()" distance="1%"></ion-infinite-scroll>
+    </ion-content>
+</ion-modal-view>

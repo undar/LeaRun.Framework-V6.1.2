@@ -1,0 +1,110 @@
+﻿@{
+    ViewBag.Title = "应用管理";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>
+    $(function () {
+        resize();
+        GetList();
+    })
+    function resize() {
+        $('#pageayout').height($(window).height() - 20);
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#pageayout').height($(window).height() - 20);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //添加App
+    function btn_add_app() {
+        dialogOpen({
+            id: "Form",
+            title: '创建新应用',
+            url: '/WeChatManage/App/Form',
+            width: "550px",
+            height: "440px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //应用列表
+    function GetList() {
+        $.ajax({
+            url: "../../WeChatManage/App/GetListJson",
+            type: "get",
+            dataType: "json",
+            async: false,
+            beforeSend: function (xmlHttp) {
+                xmlHttp.setRequestHeader("If-Modified-Since", "0");
+                xmlHttp.setRequestHeader("Cache-Control", "no-cache");
+            },
+            success: function (data) {
+                var _html = "";
+                $(".app-box").find(".app-item").remove();
+                $.each(data, function (i) {
+                    var row = data[i];
+                    var AppLogo = top.contentPath + row.AppLogo;
+                    _html += '<li id="' + row.AppId + '" class="app-item" data-type="' + row.AppType + '" title="' + (row.Description == null ? "" : row.Description) + '">';
+                    _html += '<a class="app-logo"><img style="width: 80px; height: 80px;border-radius: 80px;" src="' + AppLogo + '"></a>';
+                    _html += '<h3 class="app-name">' + row.AppName + '</h3><div class="app-item-close"></div>';
+                    _html += ' </li>';
+                });
+                $(".app-box").prepend(_html);
+            }
+        });
+        $(".app-box").find(".app-logo").click(function () {
+            var AppId = $(this).parents('li').attr('id');
+            var AppType = $(this).parents('li').attr('data-type');
+            if (AppType == 1) {
+                dialogOpen({
+                    id: "FormNews",
+                    title: '消息型应用',
+                    url: '/WeChatManage/App/FormNews?keyValue=' + AppId,
+                    width: "550px",
+                    height: "440px",
+                    btn: null
+                });
+            } else if (AppType == 2) {
+                dialogOpen({
+                    id: "FormHome",
+                    title: '主页型应用',
+                    url: '/WeChatManage/App/FormHome?keyValue=' + AppId,
+                    width: "550px",
+                    height: "440px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].AcceptClick();
+                    }
+                });
+            }
+        });
+        $(".app-box").find(".app-item").hover(function () {
+            $(this).find('.app-item-close').show();
+        }, function () {
+            $(this).find('.app-item-close').hide();
+        });
+        //删除应用
+        $(".app-item-close").click(function () {
+            var AppId = $(this).parents('li').attr('id');
+            $.RemoveForm({
+                url: "../../WeChatManage/App/RemoveForm",
+                param: { keyValue: AppId },
+                success: function (data) {
+                    reload();
+                }
+            })
+            return false;
+        })
+    }
+</script>
+
+<div id="pageayout" class="border" style="background: #fff; overflow: auto;">
+    <div class="app-panel">
+        <ul class="app-box">
+            <li class="app-item-add" onclick="btn_add_app()" title="添加应用">
+                <a class="app-logo"></a>
+            </li>
+        </ul>
+    </div>
+</div>

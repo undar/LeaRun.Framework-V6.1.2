@@ -1,0 +1,39 @@
+﻿<ion-modal-view ng-controller="BusinesssCtrl">
+  <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+    <button class="button button-clear " ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+    <h1 class="title">商机管理</h1>
+    <button class="button button-clear" ng-click="openSearch()"><i class=" icon ion-ios-search "></i></button>
+  </ion-header-bar>
+  <div class="bar bar-subheader lr-subheader">
+      <div class="lr-left-tool">
+          <div class="lr-down-select"><span>全部</span><span class="num">{{data.records}}条</span><span><i class="icon ion-ios-arrow-down"></i></span></div>
+      </div>
+      <div class="lr-right-tool">
+          <button class="button button-clear"><i class="icon iconfont">&#xe6f5;</i></button>
+          <button class="button button-clear"><i class="icon iconfont">&#xe654;</i></button>
+      </div>
+  </div>
+  <ion-content delegate-handle="businesslist-content">
+      <ion-refresher pulling-text="下拉刷新" on-refresh="doRefresh()"></ion-refresher>
+      <div class="list  list-inset lr-list-type2" style="margin-top:40px;">
+          <ion-list>
+              <ion-item ng-repeat="business in data.businesss" class="item-remove-animate mt10" ng-click="openDetailsModal(business.chanceId)">
+                  <div class="row">
+                    <div class="col-80"><span class="lr-title">{{business.fullName}}</span></div>
+                    <div class="col-20"><span class="lr-title" style="text-align:right;">{{business.lastDate}}</span></div>
+                  </div>
+                  <div class="row">
+                      <div class="col-33"><div class="lr-label {{business.bgStageColor}}">{{business.stageName}}</div></div>
+                      <div class="col-33 lr-item-content"><p><i class="icon ion-ios-person positive"></i><span>{{business.contacts}}</span></p><p><i class="icon ion-ios-telephone-outline royal"></i><span>{{business.mobile}}</span></p></div>
+                      <div class="col-33 lr-item-content"><p><i class="icon iconfont balanced">&#xe616;</i><span>{{business.amount}}元</span></p><p><i class="icon iconfont energized">&#xe67c;</i><span>{{business.qQ}}</span></p></div>
+                  </div>
+                  <ion-option-button ng-click="doDelete(business)"><span class="lr-trash-circled"><i class="icon ion-ios-trash-outline"></i></span></ion-option-button>
+              </ion-item>
+          </ion-list>
+      </div>
+      <ion-infinite-scroll ng-if="data.moredata" on-infinite="doLoadMore()" distance="1%"></ion-infinite-scroll>
+  </ion-content>
+  <div class="lr-plug-btn">
+      <i class=" icon ion-ios-plus positive" ng-click="openEditModal()"></i>
+  </div>
+</ion-modal-view>

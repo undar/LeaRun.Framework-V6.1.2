@@ -1,0 +1,117 @@
+﻿@{
+    ViewBag.Title = "新闻管理";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link href="~/Content/scripts/plugins/simditor/css/simditor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/simditor/js/module.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/uploader.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/hotkeys.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/simditor.min.js"></script>
+<script>
+    var keyValue = request('keyValue');
+    var category = request('category');
+    var editor = null;
+    $(function () {
+        editor = new Simditor({
+            textarea: $('#NewsContent'),
+            placeholder: '这里输入文章内容...',
+            toolbar: ['title', 'bold', 'italic', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent']
+        });
+        initControl();
+    })
+    //初始化控件
+    function initControl() {
+        //栏目
+        $("#Category").ComboBox({
+            param: { EnCode: "NewsCategory" },
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            description: "==请选择==",
+            id: "ItemValue",
+            text: "ItemName",
+            height: "230px"
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../PublicInfoManage/News/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    editor.setValue(data.NewsContent);
+                }
+            });
+        } else {
+            $("#Category").ComboBoxTreeSetValue(category);
+        }
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = {
+            FullHead: $("#FullHead").val(),
+            Category: $("#Category").attr('data-value'),
+            ReleaseTime: $("#ReleaseTime").val(),
+            AuthorName: $("#AuthorName").val(),
+            CompileName: $("#CompileName").val(),
+            TagWord: $("#TagWord").val(),
+            Keyword: $("#Keyword").val(),
+            NewsContent: editor.getValue()
+        }
+        $.SaveForm({
+            url: "../../PublicInfoManage/News/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-top: 20px; margin-right: 30px;">
+    <table class="form" style="table-layout: auto;">
+        <tr>
+            <td class="formTitle">标题<font face="宋体">*</font></td>
+            <td class="formValue" colspan="3">
+                <input id="FullHead" type="text" class="form-control" placeholder="请输入标题" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">栏目<font face="宋体">*</font></td>
+            <td class="formValue">
+                <div id="Category" type="select" class="ui-select"></div>
+            </td>
+            <td class="formTitle">发布时间<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="ReleaseTime" type="text" class="form-control" value="@LeaRun.Util.Time.GetToday("yyyy/MM/dd HH:mm")" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">作者<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="AuthorName" type="text" class="form-control" placeholder="请输入作者" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <td class="formTitle">编辑<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="CompileName" type="text" class="form-control" placeholder="请输入编辑" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">Tag标签</td>
+            <td class="formValue">
+                <input id="TagWord" type="text" class="form-control" placeholder="多个标签之间用“,”分隔，最多不超过10个" />
+            </td>
+            <td class="formTitle">关键字</td>
+            <td class="formValue">
+                <input id="Keyword" type="text" class="form-control" placeholder="多个关键字之间用“,”分隔，最多不超过10个" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" valign="top" style="padding-top: 4px;">内容</th>
+            <td class="formValue" colspan="3">
+                <textarea id="NewsContent" class="form-control" rows="5"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>

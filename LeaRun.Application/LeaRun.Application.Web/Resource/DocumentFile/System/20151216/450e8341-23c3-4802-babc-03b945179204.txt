@@ -1,0 +1,32 @@
+.ui-switch {
+	position:relative;
+	display:inline-block;
+	width:40px;
+	height:20px;
+	border-radius:10px;
+	cursor:pointer;
+	vertical-align:middle
+}
+.ui-switch-open {
+	background-color:#4a90e2
+}
+.ui-switch-close {
+	background-color:#aaa
+}
+.ui-switch-button {
+	width:18px;
+	height:18px;
+	position:absolute;
+	background-color:#fff;
+	border-radius:50%;
+	top:1px
+}
+.ui-switch-open .ui-switch-button {
+	right:1px
+}
+.ui-switch-close .ui-switch-button {
+	left:1px
+}
+
+<span class="ui-switch ui-switch-close"><span class="ui-switch-button"></span></span>
+    <span class="ui-switch ui-switch-open"><span class="ui-switch-button"></span></span>

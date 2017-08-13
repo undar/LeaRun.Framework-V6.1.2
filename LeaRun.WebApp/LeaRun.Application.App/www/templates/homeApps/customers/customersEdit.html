@@ -1,0 +1,79 @@
+﻿<ion-modal-view>
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear " ng-click="closeEditModal()"><i class="icon ion-ios-close-empty"></i></button>
+        <h1 class="title">{{editTitle}}</h1>
+        <button class="button button-clear" ng-click="submitCust()">提交</button>
+    </ion-header-bar>
+    <ion-content>
+      <ion-list class="lr-list-form">
+        <div class="item item-divider">
+          客户名称<span>*</span>
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon ion-ios-pricetag-outline"></i>添加客户名称</div>
+          <input type="text" ng-model="editData.fullName" ng-class="{'active' : isInputActive('fullName')}"/>
+        </ion-item >
+        <div class="item item-divider">
+          客户类别<span>*</span>
+        </div>
+        <ion-item  ng-click="openTypeSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.custTypeId != null" ><i class="icon ion-ios-drag"></i>添加客户类别</div>
+          <div class="item-icon-right" ng-hide="editData.custTypeId == null">
+            <div class="lr-form-label royal-bg" >{{editData.custTypeName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >
+        <div class="item item-divider">
+          客户级别<span>*</span>
+        </div>
+        <ion-item  ng-click="openLevelSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.custLevelId != null" ><i class="icon ion-ios-drag"></i>添加客户级别</div>
+          <div class="item-icon-right" ng-hide="editData.custLevelId == null">
+            <div class="lr-form-label positive-bg" >{{editData.custLevelName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >
+        <div class="item item-divider">
+          客户程度<span>*</span>
+        </div>
+        <ion-item  ng-click="openDegreeSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.custDegreeId != null" ><i class="icon ion-ios-drag"></i>添加客户程度</div>
+          <div class="item-icon-right" ng-hide="editData.custDegreeId == null">
+            <div class="lr-form-label balanced-bg" >{{editData.custDegreeName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >
+        <div class="item item-divider">
+          跟进人员<span>*</span>
+        </div>
+        <ion-item  ng-click="openTraceUserSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.traceUserId != null" ><i class="icon ion-ios-personadd-outline"></i>添加跟进人员</div>
+          <div class="item-icon-right" ng-hide="editData.traceUserId == null">
+            <div class="lr-form-label calm-bg" >{{editData.traceUserName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >
+        <div class="item item-divider">
+          联系人<span>*</span>
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon ion-ios-personadd-outline"></i>添加联系人</div>
+          <input type="text"  ng-model="editData.contact"  ng-class="{'active' : isInputActive('contact')}" />
+        </ion-item >
+        <div class="item item-divider">
+          手机
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon ion-ios-telephone-outline"></i>添加手机</div>
+          <input type="text"  ng-model="editData.mobile"  ng-class="{'active' : isInputActive('mobile')}"/>
+        </ion-item >
+        <div class="item item-divider">
+          QQ
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon iconfont">&#xe67c;</i>添加QQ</div>
+          <input type="text"  ng-model="editData.qQ"  ng-class="{'active' : isInputActive('qQ')}" />
+        </ion-item >
+      </ion-list>
+    </ion-content>
+</ion-modal-view>

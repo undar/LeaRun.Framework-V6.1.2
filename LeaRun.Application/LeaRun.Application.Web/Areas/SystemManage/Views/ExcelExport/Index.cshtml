@@ -1,0 +1,132 @@
+@{;
+    ViewBag.Title = "列表页面";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>;
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设布局;
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            autowidth: true,
+            height: $(window).height() - 136.5,
+            url: "../../SystemManage/ExcelExport/GetPageListJson",
+            datatype: "json",
+            colModel: [
+                { label: '主键Id', name: 'F_Id', index: 'F_Id', width: 100, align: 'left',sortable: true ,hidden: true },
+                { label: '导出名称', name: 'F_Name', index: 'F_Name', width: 160, align: 'left',sortable: true  },
+               
+             {
+                 label: '绑定功能', name: 'F_ModuleId', index: 'F_ModuleId', width: 160, align: 'left',
+                 formatter: function (cellvalue, options, rowObject) {
+
+                     return top.clientModuleData[cellvalue] == null ? "" : top.clientModuleData[cellvalue].FullName;
+                 }
+             },
+                {
+                    label: '绑定按钮', name: 'F_ModuleBtnId', index: 'F_ModuleBtnId', width: 160, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return top.clientModuleButtonData[cellvalue] == null ? "" : top.clientModuleButtonData[cellvalue].FullName;
+                    }
+                },
+                 { label: '绑定的JQgirdId', name: 'F_GridId', index: 'F_GridId', width: 100, align: 'left', sortable: true },
+                  {
+                      label: "有效", name: "F_EnabledMark", index: "F_EnabledMark", width: 50, align: "center",
+                      formatter: function (cellvalue, options, rowObject) {
+                          return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                      }
+                  },
+                { label: '创建时间', name: 'F_CreateDate', index: 'F_CreateDate', width: 100, align: 'left',sortable: true  },
+                { label: '创建人姓名', name: 'F_CreateUserName', index: 'F_CreateUserName', width: 100, align: 'left',sortable: true  },
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'F_Id',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $('#' + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $('#' + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: 'Form',
+            title: '添加导出模板',
+            url: '/SystemManage/ExcelExport/Form',
+            width: '500px',
+            height: '360px',
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var keyValue = $('#gridTable').jqGridRowValue('F_Id');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'Form',
+                title: '编辑导出模板',
+                url: '/SystemManage/ExcelExport/Form?keyValue=' + keyValue,
+                width: '500px',
+                height: '360px',
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            })
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $('#gridTable').jqGridRowValue('F_Id');
+        if (keyValue) {
+            $.RemoveForm({
+                url: '../../SystemManage/ExcelExport/RemoveForm',
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的Excel导出！', 0);
+        }
+    }
+</script>
+<div class="titlePanel">
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload()"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+        </div>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>

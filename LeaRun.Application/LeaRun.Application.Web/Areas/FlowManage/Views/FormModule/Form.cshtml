@@ -1,0 +1,242 @@
+﻿@{
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_FlowFormNew.cshtml";
+}
+
+<style>
+    .boxs {
+        margin: auto;
+        width: 100%;
+        text-align: center;
+    }
+
+    .box {
+        display: inline-block;
+        margin-top: 75pt;
+        width: 300px;
+        height: 25pc;
+        cursor: pointer;
+    }
+
+        .box:hover {
+            border-radius: 5px;
+            box-shadow: -5px 10px 50px 10px hsla(0,0%,73%,.6);
+        }
+
+        .box i {
+            margin-top: 40px;
+            margin-bottom: 50px;
+            color: #f0ad4e;
+            font-size: 5pc;
+        }
+
+        .box h3 {
+            margin-bottom: 20px;
+        }
+
+        .box p {
+            color: #666;
+            font-weight: 400;
+            font-size: 1pc;
+        }
+
+        .box .btn {
+            margin-top: 40px;
+        }
+
+    .systemTable {
+        display: none;
+    }
+
+    .panelHead {
+        padding: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .panelBody .iframeBody {
+        float: left;
+        height: 100%;
+    }
+
+        .panelBody .iframeBody iframe {
+            width: 100%;
+            height: 100%;
+        }
+
+    .panelBody .filedBody {
+        position: absolute;
+        right: 0;
+        width: 200px;
+        border-left: 1px solid #ccc;
+    }
+
+        .panelBody .filedBody > div {
+            padding-left: 20px;
+            height: 30px;
+            border-bottom: 1px solid #ccc;
+            line-height: 30px;
+        }
+
+        .panelBody .filedBody > ul {
+            overflow-y: auto;
+            padding-top: 10px;
+            padding-left: 20px;
+        }
+
+    .Selectsystemform {
+        background: url('../../Content/images/Selectsystemform.png') 0 0 no-repeat #fff;
+        position: absolute;
+        top: 106px;
+        left: 0px;
+        z-index: 200;
+        width: 100%;
+    }
+</style>
+
+<div class="widget-body">
+    <div id="wizard" class="wizard" data-target="#wizard-steps">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>基本配置<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>表单设计<span class="chevron"></span></li>
+            <li data-target="#step-3"><span class="step">3</span>创建完成<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content wizard-step-content" id="wizard-steps">
+        <div class="step-pane wizard-step-pane active" id="step-1">
+            <div class="alert alert-danger" style="text-align: left; margin-bottom: 10px;">
+                <i class="fa fa-warning alert-dismissible" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+                请你填写表单信息，用于创建或修改表单！<span class="message"></span>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">表单基本信息配置</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="form">
+                        <tr>
+                            <td class="formTitle">表单编号<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <input id="FrmCode" type="text" class="form-control" placeholder="请输入编号" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="formTitle">表单名称<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <input id="FrmName" type="text" class="form-control" placeholder="请输入名称" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="formTitle">表单分类<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <div id="FrmCategory" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                            </td>
+                        </tr>
+                        <tr class="systemTable">
+                            <td class="formTitle">数据库<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <div id="FrmDbId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                            </td>
+                        </tr>
+                        <tr class="systemTable">
+                            <td class="formTitle">数据表<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <div id="FrmDbTable" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                            </td>
+                        </tr>
+                        <tr class="systemTable">
+                            <td class="formTitle">绑定主键<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <div id="FrmDbPkey" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle formTitle-top">
+                                备注
+                            </th>
+                            <td class="formValue">
+                                <textarea id="Description" class="form-control" style="height: 180px;"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="step-pane" id="step-2">
+            <div class="panelHead">
+                <table class="form">
+                    <tr>
+                        <td class="formTitle" style=" width: 40px;">地址<font face="宋体">*</font></td>
+                        <td class="formValue">
+                            <input id="F_url" type="text" class="form-control" placeholder="请输入表单地址" isvalid="yes" checkexpession="NotNull" />
+                        </td>
+                        <td class="formTitle">
+                            <a class="btn btn-primary" id="loadSystemForm">加载表单</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="panelBody">
+                <div class="iframeBody"><iframe id="systemFormiframe" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no"></iframe></div>
+                <div class="filedBody">
+                    <div>流程需要权限管控字段</div>
+                    <ul id="systemFormFieldList"></ul>
+                </div>
+                <div class="Selectsystemform"></div>
+            </div>
+        </div>
+        <div class="step-pane" id="step-3">
+            <div class="drag-tip">
+                <i class="fa fa-check-circle"></i>
+                <p>设计完成,请点击保存</p>
+            </div>
+        </div>
+    </div>
+    <div class="form-button" id="wizard-actions">
+        <a id="btn_last" disabled class="btn btn-default btn-prev">上一步</a>
+        <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+        <a id="btn_draft" class="btn btn-info">保存草稿</a>
+        <a id="btn_finish" disabled class="btn btn-success">保存</a>
+    </div>
+    <div id="createPanel" style="position:absolute;top:0;z-index:10000;background-color:#fff;width:100%;height:100%;">
+        <div class="boxs">
+            <div class="box" data-value="0">
+                <i class="fa fa-list-alt"></i>
+                <div>
+                    <h3>自定义表单</h3>
+                    <p>无需建表</p>
+                    <p>在线设计表单</p>
+                    <p>方便高效,快速实现功能</p>
+                    <p>（自定义表单,扩展属性,工作流)</p>
+                </div>
+                <a class="btn btn-primary">创建表单</a>
+            </div>
+            <div class="box" data-value="1">
+                <i class="fa fa-table"></i>
+                <div>
+                    <h3>自定义表单(建表)</h3>
+                    <p>需要建表</p>
+                    <p>在线设计表单</p>
+                    <p>方便进行数据统计</p>
+                    <p>(自定义表单,扩展属性,工作流)</p>
+                </div>
+                <a class="btn btn-primary">创建表单</a>
+            </div>
+            <div class="box" data-value="2">
+                <i class="fa fa-desktop"></i>
+                <div>
+                    <h3>系统表单</h3>
+                    <p>需要建表</p>
+                    <p>代码开发</p>
+                    <p>适合复杂功能开发</p>
+                    <p>(工作流)</p>
+                </div>
+                <a class="btn btn-primary">创建表单</a>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="/Content/scripts/utils/custmerform/formdesigner.js?v=@Guid.NewGuid()"></script>
+
+<script src="/Content/scripts/utils/custmerform/formbuilder.js?v=@Guid.NewGuid()"></script>
+
+

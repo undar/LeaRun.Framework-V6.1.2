@@ -1,0 +1,510 @@
+﻿@{
+    ViewBag.Title = "邮件中心";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+
+<script>
+    $(function () {
+        InitialPage();
+        InitialEmailNavCount();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //layout布局
+        $('#layout').layout({
+            applyDemoStyles: true,
+            west__resizable: false,
+            west__size: 220,
+            spacing_open: 0,
+            onresize: function () {
+                $(window).resize();
+            }
+        });
+        $('.profile-nav').height($(window).height() - 60);
+        $('.profile-content').height($(window).height() - 20);
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('#gridPanel').width() - 15));
+                $("#gridTable").setGridHeight($(window).height() - 139.5);
+                $('.profile-nav').height($(window).height() - 60);
+                $('.profile-content').height($(window).height() - 20);
+            }, 200);
+            e.stopPropagation();
+        });
+        InitialMyfloder();
+    }
+    //统计邮件数量
+    function InitialEmailNavCount() {
+        $.ajax({
+            url: "../../PublicInfoManage/Email/GetMailCount",
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (count) {
+                $("#unreadMail").find('span').html(count.unread);
+                $("#starredMail").find('span').html(count.asterisk);
+                $("#draftMail").find('span').html(count.draft);
+                $("#recycleMail").find('span').html(count.recycle);
+                $("#addresseeMail").find('span').html(count.addressee);
+                $("#sendMail").find('span').html(count.sent);
+            }
+        });
+    }
+    //初始化我的文件夹（新增、修改、删除）
+    function InitialMyfloder() {
+        $.ajax({
+            url: "../../PublicInfoManage/Email/GetCategoryListJson",
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                $("#myfloderArea ul").html('');
+                $.each(data, function (i) {
+                    var row = data[i];
+                    $("#myfloderArea ul").append('<li style="margin-bottom: 0px;"><i class="fa fa-tags" style="margin-right:5px; font-size: 13px;color: #666666;opacity: 0.9;"></i>' + row.FullName + '<span style="float: right; right: 9px; position: relative; color: #95A0AA; display: none;"><a data-value="' + row.CategoryId + '" class="edit_floder" style="color: #95A0AA;">编辑</a>&nbsp;<a data-value="' + row.CategoryId + '" class="delete_floder" style="color: #95A0AA;">删除</a></span></li>');
+                    $("#lr-moveTo").next('ul').append('<li><a data-value="' + row.CategoryId + '">&nbsp;' + row.FullName + '</a></li>');
+                });
+            }
+        });
+        $(".profile-nav li").click(function () {
+            $(".profile-nav li").removeClass("active");
+            $(".profile-nav li").removeClass("hover");
+            $(this).addClass("active");
+        }).hover(function () {
+            if (!$(this).hasClass("active")) {
+                $(this).addClass("hover");
+            }
+        }, function () {
+            $(this).removeClass("hover");
+        })
+        $("#myfloder").click(function () {
+            if (!$(this).hasClass("Expand")) {
+                $('#myfloderArea ul').show();
+                $(this).addClass("Expand");
+                $(".mail-floder-icon").find('i').swapClass("fa fa-chevron-right", "fa fa-chevron-down");
+            } else {
+                $('#myfloderArea ul').hide();
+                $(this).removeClass("Expand");
+                $(".mail-floder-icon").find('i').swapClass("fa fa-chevron-down", "fa fa-chevron-right");
+            }
+        }).parents('li').hover(function () {
+            $("#addfloder").show();
+        }, function () {
+            $("#addfloder").hide();
+        });
+        $("#myfloderArea li").hover(function () {
+            $(this).find("span").show();
+        }, function () {
+            $(this).find("span").hide();
+        });
+
+        //添加文件夹
+        $("#addfloder").unbind('click');
+        $("#addfloder").click(function () {
+            dialogOpen({
+                id: "Form",
+                title: '添加文件夹',
+                url: '/PublicInfoManage/Email/EmailCategoryForm',
+                width: "400px",
+                height: "200px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        });
+        //编辑文件夹
+        $("#myfloderArea li .edit_floder").click(function () {
+            var keyValue = $(this).attr('data-value');
+            dialogOpen({
+                id: "Form",
+                title: '编辑文件夹',
+                url: '/PublicInfoManage/Email/EmailCategoryForm?keyValue=' + keyValue,
+                width: "400px",
+                height: "200px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        });
+        //删除文件夹
+        $("#myfloderArea li .delete_floder").click(function () {
+            var keyValue = $(this).attr('data-value');
+            $.RemoveForm({
+                url: "../../PublicInfoManage/Email/RemoveCategoryForm",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    InitialMyfloder();
+                }
+            });
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $("#gridTable");
+        $gridTable.jqGrid({
+            url: "../../PublicInfoManage/Email/GetUnreadMailJson",
+            datatype: "json",
+            height: $(window).height() - 139.5,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'ContentId', hidden: true },
+                { label: '主键', name: 'ParentId', hidden: true },
+                {
+                    label: '&nbsp;', name: 'IsHighlight', width: 30, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (rowObject.IsHighlight == 1) {
+                            return "<a title=\"取消星标\" onclick=\"btn_cancelasterisk('" + rowObject.ContentId + "')\" style=\"cursor:pointer;font-size: 15px;color: #ffce55;\"><i class=\"fa fa-star\"></i></a>";
+                        } else {
+                            return "<a title=\"设置星标\" onclick=\"btn_asterisk('" + rowObject.ContentId + "')\" style=\"cursor:pointer;font-size: 15px;color: #d0d0d0;\"><i class=\"fa fa-star-o\"></i></a>";
+                        }
+                    }
+                },
+                { label: '发件人', name: 'SenderName', index: 'SenderName', width: 180, align: 'left' },
+                {
+                    label: '主题', name: 'Theme', index: 'Theme', width: $(".profile-content").width() - 430, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        //rowObject.ThemeColor
+                        return "<p onclick=\"btn_lookmail('" + rowObject.ContentId + "')\" style=\"cursor:pointer;color:" + rowObject.ThemeColor + ";\">" + cellvalue + "</p>";
+                    }
+                },
+                {
+                    label: "时间", name: "SenderTime", index: "SenderTime", width: 120, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $gridTable.getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $gridTable.setSelection(selectedRowIndex, false);
+                var ids = $gridTable.getDataIDs();
+                for (var i = 0; i < ids.length; i++) {
+                    var rowData = $gridTable.getRowData(ids[i]);
+                    if (rowData.ParentId == 0) {//如果天数等于0，则背景色置灰显示
+                        if (rowData.ThemeColor)
+                        {
+                            $('#' + ids[i]).find("td").css("font-weight", "800" );;
+                        }
+                        else
+                        {
+                            $('#' + ids[i]).find("td").css("font-weight","800");;
+                        }
+                       
+                    }
+                    else
+                    {
+                        $('#' + ids[i]).find("td").css("color", "DimGray");
+                    }
+                }
+            }
+        });
+
+
+
+        //邮件left导航事件（未读、星标、草稿、回收、收件、已发送）
+        $("#nav_email li").click(function () {
+            $("#txt_Keyword").val('');
+            $("#lr-delete").show();
+            $("#lr-thoroughdelete").show();
+            $("#lr-marked").show();
+            $("#lr-moveTo").show();
+            var _url = "";
+            var id = $(this).attr('id');
+            switch (id) {
+                case "unreadMail":
+                    _url = "../../PublicInfoManage/Email/GetUnreadMailJson";
+                    break;
+                case "starredMail":
+                    _url = "../../PublicInfoManage/Email/GetAsteriskMailJson";
+                    break;
+                case "draftMail":
+                    _url = "../../PublicInfoManage/Email/GetDraftMailJson";
+                    $("#lr-delete").hide();
+                    $("#lr-marked").hide();
+                    $("#lr-moveTo").hide();
+                    break;
+                case "recycleMail":
+                    _url = "../../PublicInfoManage/Email/GetRecycleMailJson";
+                    $("#lr-delete").hide();
+                    $("#lr-marked").hide();
+                    $("#lr-moveTo").hide();
+                    break;
+                case "addresseeMail":
+                    _url = "../../PublicInfoManage/Email/GetAddresseeMailJson";
+                    break;
+                case "sendMail":
+                    _url = "../../PublicInfoManage/Email/GetSentMailJson";
+                    break;
+                default:
+                    break;
+            }
+            $gridTable.jqGrid('setGridParam', {
+                url: _url,
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            $gridTable.jqGrid('setGridParam', {
+                postData: {
+                    keyword: $("#txt_Keyword").val(),
+                    page: 1
+                },
+            }).trigger('reloadGrid');
+        });
+    }
+    //收件事件
+    function btn_mailRecv() {
+        InitialEmailNavCount();
+        $("#gridTable").trigger("reloadGrid");
+    }
+    //写信、编辑草稿
+    function btn_mailSend(keyValue) {
+        dialogOpen({
+            id: "EmailWriteForm",
+            title: keyValue != "" ? "修改草稿" : "写信",
+            url: '/PublicInfoManage/Email/EmailWriteForm?keyValue=' + keyValue,
+            width: "1100px",
+            height: "700px",
+            btn: null
+        });
+    }
+    //查看邮件
+    function btn_lookmail(keyValue) {
+        var emailType = $("#nav_email li.active").attr('id');
+        if (emailType == 'draftMail') {
+            btn_mailSend(keyValue);
+        } else {
+            dialogOpen({
+                id: "EmailLookDetail",
+                title: "查看邮件",
+                url: '/PublicInfoManage/Email/EmailLookDetail?keyValue=' + keyValue,
+                width: "1100px",
+                height: "700px",
+                btn: null
+            });
+        }
+    }
+    //删除
+    function btn_maildelete() {
+        var keyValue = $("#gridTable").jqGridRowValue("ContentId");
+        var emailType = $("#nav_email li.active").attr('id');
+        if (keyValue) {
+            $.RemoveForm({
+                url: "../../PublicInfoManage/Email/RemoveEmailForm",
+                param: { keyValue: keyValue, emailType: emailType },
+                success: function (data) {
+                    InitialEmailNavCount();
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的数据！', 0);
+        }
+    }
+    //彻底删除
+    function btn_mailthoroughdelete() {
+        var keyValue = $("#gridTable").jqGridRowValue("ContentId");
+        var emailType = $("#nav_email li.active").attr('id');
+        if (keyValue) {
+            $.RemoveForm({
+                url: "../../PublicInfoManage/Email/ThoroughRemoveEmailForm",
+                param: { keyValue: keyValue, emailType: emailType },
+                success: function (data) {
+                    InitialEmailNavCount();
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择需要彻底删除的数据！', 0);
+        }
+    }
+    //邮件已读
+    function btn_read() {
+        var keyValue = $("#gridTable").jqGridRowValue("ContentId");
+        if (keyValue) {
+            $.ajax({
+                url: "../../PublicInfoManage/Email/ReadEmail",
+                data: { keyValue: keyValue, IsRead: 1 },
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    InitialEmailNavCount();
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            });
+        } else {
+            dialogMsg('请选择需要设置已读邮件！', 0);
+        }
+    }
+    //邮件未读
+    function btn_unread() {
+        var keyValue = $("#gridTable").jqGridRowValue("ContentId");
+        if (keyValue) {
+            $.ajax({
+                url: "../../PublicInfoManage/Email/ReadEmail",
+                data: { keyValue: keyValue, IsRead: 0 },
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    InitialEmailNavCount();
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            });
+        } else {
+            dialogMsg('请选择需要设置未读邮件！', 0);
+        }
+    }
+    //星标邮件
+    function btn_asterisk(keyValue) {
+        if (keyValue == undefined) {
+            keyValue = $("#gridTable").jqGridRowValue("ContentId");
+        }
+        if (keyValue) {
+            $.ajax({
+                url: "../../PublicInfoManage/Email/SteriskEmail",
+                data: { keyValue: keyValue, asterisk: 1 },
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    InitialEmailNavCount();
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            });
+        } else {
+            dialogMsg('请选择需要设置星标邮件！', 0);
+        }
+    }
+    //取消星标邮件
+    function btn_cancelasterisk(keyValue) {
+        if (keyValue == undefined) {
+            keyValue = $("#gridTable").jqGridRowValue("ContentId");
+        }
+        if (keyValue) {
+            $.ajax({
+                url: "../../PublicInfoManage/Email/SteriskEmail",
+                data: { keyValue: keyValue, asterisk: 0 },
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    InitialEmailNavCount();
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            });
+        } else {
+            dialogMsg('请选择需要设置取消星标邮件！', 0);
+        }
+    }
+</script>
+<div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel" style="border-right: none;">
+            <div class="mail-nav-top">
+                <div id="mailRecv" class="receive option" onclick="btn_mailRecv()">
+                    <i class="fa fa-download"></i>
+                    收件
+                </div>
+                <div id="mailSend" class="option" onclick="btn_mailSend('')">
+                    <i class="fa fa-edit"></i>
+                    写信
+                </div>
+            </div>
+            <div class="profile-nav" style="overflow: auto;">
+                <ul id="nav_email" style="padding-top: 10px;">
+                    <li id="unreadMail" class="active"><i class="fa fa-coffee" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9;"></i>未读邮箱<span style="float: right; right: 9px; top: 9px; position: relative;" class="label label-default">20</span></li>
+                    <li id="starredMail"><i class="fa fa-star" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; margin-top: -2px; font-size: 14px; color: #666666; opacity: 0.9;"></i>星标邮箱<span style="float: right; right: 9px; top: 9px; position: relative;" class="label label-default">20</span></li>
+                    <li id="draftMail"><i class="fa fa-inbox" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9;"></i>草稿箱<span style="float: right; right: 9px; top: 9px; position: relative;" class="label label-default">0</span></li>
+                    <li id="recycleMail"><i class="fa fa-trash" style="vertical-align: middle; margin-top: -3px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9;"></i>回收箱<span style="float: right; right: 9px; top: 9px; position: relative;" class="label label-default">8</span></li>
+                    <li id="addresseeMail"><i class="fa fa-sign-in" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9;"></i>收件箱<span style="float: right; right: 9px; top: 9px; position: relative;" class="label label-default">20</span></li>
+                    <li id="sendMail"><i class="fa fa-sign-out" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9;"></i>已发送<span style="float: right; right: 9px; top: 9px; position: relative;" class="label label-default">20</span></li>
+                    <div class="divide"></div>
+                    <li>
+                        <span class="mail-floder-icon"><i class="fa fa-chevron-right"></i></span>
+                        <span id="myfloder">我的文件夹</span>
+                        <span id="addfloder" style="float: right; right: 9px; position: relative; color: #95A0AA; display: none;" onclick="btn_add_floder()">添加</span>
+                    </li>
+                </ul>
+                <div id="myfloderArea">
+                    <ul style="display: block;"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="center-Panel">
+            <div class="profile-content" style="background: #fff; padding: 0px;">
+                <div class="titlePanel">
+                    <div class="title-search">
+                        <table>
+                            <tr>
+                                <td>
+                                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                                </td>
+                                <td style="padding-left: 5px;">
+                                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="toolbar">
+                        <div class="btn-group">
+                            <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                        </div>
+                        <div class="btn-group">
+                            <a id="lr-delete" class="btn btn-default" onclick="btn_maildelete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+                        </div>
+                        <div class="btn-group">
+                            <a id="lr-thoroughdelete" class="btn btn-default" onclick="btn_mailthoroughdelete()"><i class="fa fa-remove"></i>&nbsp;彻底删除</a>
+                        </div>
+                        <div class="btn-group">
+                            <a id="lr-marked" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-tags"></i>&nbsp;标记为<span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu pull-right">
+                                <li id="lr-read"><a onclick="btn_read()">&nbsp;已读邮件</a></li>
+                                <li id="lr-unread"><a onclick="btn_unread()">&nbsp;未读邮件</a></li>
+                                <li id="lr-asterisk"><a onclick="btn_asterisk()">&nbsp;星标邮件</a></li>
+                                <li id="lr-cancelasterisk"><a onclick="btn_cancelasterisk()">&nbsp;取消星标</a></li>
+                            </ul>
+                        </div>
+                        <div class="btn-group">
+                            <a id="lr-moveTo" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-retweet"></i>&nbsp;移动到<span class="caret"></span>
+                            </a>
+                            <ul class="dropdown-menu pull-right"></ul>
+                        </div>
+                        <script>$('.toolbar').authorizeButton()</script>
+                    </div>
+                </div>
+                <div id="gridPanel" style="padding-left: 15px; padding-right: 15px;">
+                    <table id="gridTable"></table>
+                    <div id="gridPager"></div>
+                    <style>
+                        .ui-jqgrid-htable th.ui-th-column {
+                            background-color: #F7F7F7;
+                        }
+                    </style>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style type="text/css">
+        .SelectBG{
+            background-color:#AAAAAA;
+            }
+    </style>

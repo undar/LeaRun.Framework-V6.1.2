@@ -1,0 +1,152 @@
+﻿@{
+    ViewBag.Title = "部门管理";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    var organizeId = request('organizeId');
+    var departmentId = request('departmentId');
+    var parentId = request('parentId');
+    $(function () {
+        initControl();
+    })
+    //初始化控件
+    function initControl() {
+        //上级部门
+        $("#OrganizeTree").ComboBoxTree({
+            url: "../../BaseManage/Department/GetOrganizeTreeJson",
+            description: "==请选择==",
+            height: "250px",
+            click: function (item) {
+                if (item.Sort == 'Organize') {
+                    organizeId = item.id;
+                    parentId = 0;
+                } else {
+                    parentId = item.id;
+                }
+            }
+        });
+        //负责人
+        $("#ManagerId").ComboBoxTree({
+            url: "../../BaseManage/User/GetTreeJson",
+            description: "==请选择==",
+            height: "220px",
+            allowSearch: true,
+            click: function (item) {
+                if (item.Sort != "User") {
+                $("#ManagerId").ComboBoxTreeSetValue();
+                dialogTop("请选择人员", "error");
+                return "false";   
+            }
+        }
+    });
+        //部门性质
+        $("#Nature").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "DepartmentNature" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../BaseManage/Department/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    if (data.ParentId == 0) {
+                        $("#OrganizeTree").ComboBoxTreeSetValue(data.OrganizeId);
+                    } else {
+                        $("#OrganizeTree").ComboBoxTreeSetValue(data.ParentId);
+                    }
+                    parentId = data.ParentId;
+                    organizeId = data.OrganizeId;
+                }
+            });
+        } else {
+            $("#OrganizeTree").ComboBoxTreeSetValue(departmentId);
+        }
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        postData["OrganizeId"] = organizeId;
+        postData["ParentId"] = parentId;
+        postData["Manager"] = $("#ManagerId").attr('data-text');
+        $.SaveForm({
+            url: "../../BaseManage/Department/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").resetSelection();
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-left: 20px; margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">上级部门<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="OrganizeTree" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+            <th class="formTitle">负责人</th>
+            <td class="formValue">
+                <div id="ManagerId" type="selectTree" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">部门名称<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="FullName" type="text" onblur="$.ExistField(this.id,'../../BaseManage/Department/ExistEnCode')" class="form-control" placeholder="请输入名称" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle">部门编号<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="EnCode" type="text" onblur="$.ExistField(this.id,'../../BaseManage/Department/ExistFullName')" class="form-control" placeholder="请输入编号" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">部门简称</th>
+            <td class="formValue">
+                <input id="ShortName" type="text" class="form-control" />
+            </td>
+            <th class="formTitle">部门性质</th>
+            <td class="formValue">
+                <div id="Nature" type="select" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">电话号</th>
+            <td class="formValue">
+                <input id="OuterPhone" type="text" class="form-control" />
+            </td>
+            <th class="formTitle">分机号</th>
+            <td class="formValue">
+                <input id="InnerPhone" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">邮箱</th>
+            <td class="formValue">
+                <input id="Email" type="text" class="form-control" />
+            </td>
+            <th class="formTitle">传真</th>
+            <td class="formValue">
+                <input id="Fax" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" valign="top" style="padding-top: 4px;">备注
+            </th>
+            <td class="formValue" colspan="3">
+                <textarea id="Description" class="form-control" style="height: 70px;"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>

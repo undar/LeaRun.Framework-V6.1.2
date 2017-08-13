@@ -1,0 +1,266 @@
+﻿@{;
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_OrderForm.cshtml";
+}
+<link href="~/Content/scripts/plugins/simditor/css/simditor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/simditor/js/module.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/uploader.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/hotkeys.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/simditor.min.js"></script>
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        InitialPage();
+        GetOrderEntryGrid();
+        initControl();
+    });
+    //初始化页面
+    function InitialPage() {;
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 240.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载明细表
+    function GetOrderEntryGrid() {
+        var $grid = $('#gridTable');
+        $grid.jqGrid({
+            unwritten: false,
+            datatype: 'local',
+            height: $(window).height() - 240.5,
+            autowidth: true,
+            colModel: [
+{ label: '编号', name: 'id', width: 80, align: '', sortable: false, resizable: false ,hidden: true },
+{ label: '人才编号', name: 'talentid', width: 80, align: '', sortable: false, resizable: false ,hidden: true },
+{ label: '姓名', name: 'f_name', width: 100, align: '', sortable: false, resizable: false },
+{ label: '称谓', name: 'f_appellation', width: 100, align: '', sortable: false, resizable: false },
+{ label: '工作地点', name: 'f_workaddress', width: 280, align: '', sortable: false, resizable: false  },
+{ label: '联系方式', name: 'f_contactway', width: 100, align: '', sortable: false, resizable: false  },
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: false,
+            gridComplete: function () {
+            }
+        });
+        //默认添加13行 空行
+        for (var i = 1; i < 13; i++) {
+            var rowdata = {
+id: '<input name="id" type="text" class="editable center" />',
+talentid: '<input name="talentid" type="text" class="editable center" />',
+f_name: '<input name="f_name" type="text" class="editable center" />',
+f_appellation: '<input name="f_appellation" type="text" class="editable center" />',
+f_workaddress: '<input name="f_workaddress" type="text" class="editable center" />',
+f_contactway: '<input name="f_contactway" type="text" class="editable center" />',
+            }
+            $grid.jqGrid('addRowData', i, rowdata);
+        };
+    }
+    //初始化控件
+    function initControl() {
+
+        //性别
+        $("#sex").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "sex" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //最高学历
+        $("#highestedu").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "highestedu" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //人才类型
+        $("#talenttype").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "talenttype" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../CustomerManage/Talent_OutTeam/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data.entity);
+                    //明细
+                    var childEntity = data.childEntity;
+                    $('#gridTable').find('[role=row]').each(function (i) {
+                        var row = childEntity[i - 1];
+                        if (row != undefined) {
+$(this).find('input[name="id"]').val(row.id);
+$(this).find('input[name="talentid"]').val(row.talentid);
+$(this).find('input[name="f_name"]').val(row.f_name);
+$(this).find('input[name="f_appellation"]').val(row.f_appellation);
+$(this).find('input[name="f_workaddress"]').val(row.f_workaddress);
+$(this).find('input[name="f_contactway"]').val(row.f_contactway);
+                        }
+                    });
+                }
+            })
+        }
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        var childEntryJson = [];
+        $('#gridTable').find('[role=row]').each(function (i) {
+        if (!!$(this).find('input[name="f_name"]').val()) {
+            childEntryJson.push({
+id: $(this).find('input[name="id"]').val(),
+talentid: $(this).find('input[name="talentid"]').val(),
+f_name: $(this).find('input[name="f_name"]').val(),
+f_appellation: $(this).find('input[name="f_appellation"]').val(),
+f_workaddress: $(this).find('input[name="f_workaddress"]').val(),
+f_contactway: $(this).find('input[name="f_contactway"]').val(),
+                 });
+            }
+        });
+        $.SaveForm({
+            url: "../../CustomerManage/Talent_OutTeam/SaveForm?keyValue=" + keyValue,
+            param: { "strEntity": JSON.stringify(postData), "strChildEntitys": JSON.stringify(childEntryJson) },
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-left: 10px; margin-right: 10px;">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#BaseInfo" data-toggle="tab">基本信息</a></li>
+        <li><a href="#ExpandInfo" data-toggle="tab">家庭成员</a></li>
+    </ul>
+    <div class="tab-content" style="padding-top: 15px;">
+        <div id="BaseInfo" class="tab-pane active" style="padding-right: 30px;">
+    <table class="form" style="width: 100%;">
+        <tr>
+<th class="formTitle" style="width: 60px;">姓名<font color="red">*</font></th>
+<td class="formValue"><input id="name" type="text"  class="form-control" isvalid="yes" checkexpession="NotNull"></td>
+<th class="formTitle" style="width: 60px;">性别<font color="red">*</font></th>
+<td class="formValue"><div id="sex"  type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div></td>
+<th class="formTitle" style="width: 60px;">民族</th>
+<td class="formValue"><input id="nation" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">出生年月</th>
+<td class="formValue"><input id="birth" type="text"  class="form-control input-datepicker" onfocus="WdatePicker()" ></td>
+<th class="formTitle" style="width: 60px;">工作时间</th>
+<td class="formValue"><input id="workingtime" type="text"  class="form-control input-datepicker" onfocus="WdatePicker()" ></td>
+<th class="formTitle" style="width: 60px;">入党时间</th>
+<td class="formValue"><input id="joinpartytiem" type="text" class="form-control input-datepicker" onfocus="WdatePicker()" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">毕业院校</th>
+<td class="formValue" colspan="2"><input id="graduateschool" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">专业</th>
+<td class="formValue" colspan="2"><input id="specialty" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">工作单位</th>
+<td class="formValue" colspan="2"><input id="workcom" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">职务</th>
+<td class="formValue" colspan="2"><input id="duty" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+ <th class="formTitle" style="width: 60px;">最高学历<font color="red">*</font></th>
+<td class="formValue" colspan="2"><div id="highestedu" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull" ></div></td>
+<th class="formTitle" style="width: 60px;">职称</th>
+<td class="formValue" colspan="2"><input id="professionaltitle" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">现工作地<font color="red">*</font></th>
+<td class="formValue" colspan="2"><input id="domicile" type="text"  class="form-control" isvalid="yes" checkexpession="NotNull" ></td>
+<th class="formTitle" style="width: 60px;">研究方向</th>
+<td class="formValue" colspan="2"><input id="researchorientation" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">人才类型<font color="red">*</font></th>
+<td class="formValue"  colspan="2"><div id="talenttype" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull" ></div></td>
+<th class="formTitle" style="width: 60px;">联系方式</th>
+<td class="formValue"  colspan="2"><input id="contactway1" type="text"  class="form-control" ></td>
+</tr>
+ <tr>
+     <th class="formTitle" style="width: 60px;">备注</th>
+    <td class="formValue" colspan="5"> 
+         <textarea id="memo" class="form-control" rows="5"></textarea>
+    </td>
+ </tr>
+<tr>
+<th class="formTitle" style="width: 60px;">编制类型</th>
+<td class="formValue"><input id="authtype" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">政治面貌<font color="red">*</font></th>
+<td class="formValue"><input id="politicsstatus" type="text"  class="form-control" isvalid="yes" checkexpession="NotNull"></td>
+</tr>
+
+<tr>
+<th class="formTitle" style="width: 60px;">报送单位<font color="red">*</font></th>
+<td class="formValue"><input id="submissioncom" type="text"  class="form-control"  isvalid="yes" checkexpession="NotNull"></td>
+<th class="formTitle" style="width: 60px;">报送人</th>
+<td class="formValue"><input id="submissionperson" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">联系方式</th>
+<td class="formValue"><input id="contactway2" type="text"  class="form-control" ></td>
+<!--<th class="formTitle" style="width: 60px;">创建时间</th>
+<td class="formValue"><input id="create_on" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">创建者</th>
+<td class="formValue"><input id="create_by" type="text"  class="form-control" ></td>-->
+</tr>
+
+<!--<tr>
+<th class="formTitle" style="width: 60px;">更新时间</th>
+<td class="formValue"><input id="update_on" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">更新者</th>
+<td class="formValue"><input id="update_by" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">标识</th>
+<td class="formValue"><input id="flag" type="text"  class="form-control" ></td>
+     </tr>-->
+    </table>
+</div>
+        <div id="ExpandInfo" class="tab-pane ">
+              <div class="gridPanel" style="border-top: 1px solid #ccc;">
+                <table id="gridTable"  style="width: 100%;" ></table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    body {
+        margin:0px;
+    }
+    .bills {
+        overflow: hidden;
+        border-radius: 0px;
+        position: relative;
+        background: #FFFFFF;
+        border: 0px solid rgb(204, 204, 204);
+        box-shadow:none;
+        padding: 0px;
+    }
+    .ui-widget-content {
+        border-left: 0px;
+        border-right: 0px;
+        border-bottom: 0px;
+    }
+</style>

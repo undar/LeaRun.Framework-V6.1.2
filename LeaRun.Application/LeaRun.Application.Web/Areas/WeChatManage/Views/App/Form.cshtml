@@ -1,0 +1,116 @@
+﻿@{
+    ViewBag.Title = "应用表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script src="~/Content/scripts/plugins/uploadify/ajaxfileupload.js"></script>
+<script>
+    $(function () {
+        //应用类型
+        $("#AppType").ComboBox({
+            description: "==请选择==",
+        });
+        $('#uploadFile').change(function () {
+            var f = document.getElementById('uploadFile').files[0]
+            var src = window.URL.createObjectURL(f);
+            document.getElementById('uploadPreview').src = src;
+        });
+    });
+    //保存表单
+    function AcceptClick() {
+        if (!document.getElementById('uploadFile').files[0]) {
+            top.dialogTop('请添加应用Logo', 'error');
+            return false;
+        }
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var AppId = $("#AppId").val();
+        //上传应用图标
+        $.ajaxFileUpload({
+            url: "../../WeChatManage/App/UploadFile?AppId=" + AppId,
+            secureuri: false,
+            fileElementId: 'uploadFile',
+            dataType: 'json',
+            success: function (data) {
+                var postData = $("#form1").GetWebControls("");
+                postData["AppLogo"] = data.message;
+                $.SaveForm({
+                    url: "../../WeChatManage/App/SaveForm",
+                    param: postData,
+                    loading: "正在保存数据...",
+                    success: function () {
+                        $.currentIframe().reload();
+                    }
+                })
+            }
+        });
+    }
+</script>
+
+<div style="margin-left: 20px; margin-top: 20px; margin-right: 50px;">
+    <div class="applogo " style="text-align: center; margin-bottom: 15px;">
+        <div class="file" style="width: 100px; height: 100px;">
+            <img id="uploadPreview" style="width: 100px; height: 100px; border-radius: 100px;" src="~/Content/images/logo-headere47d5.png" />
+            <input type="file" name="uploadFile" id="uploadFile">
+        </div>
+    </div>
+    <table class="form">
+        <tr>
+            <th class="formTitle">应用名称</th>
+            <td class="formValue">
+               <input id="AppId" type="hidden" value="@Guid.NewGuid().ToString()" />
+                <input id="AppName" type="text" class="form-control" placeholder="2-16个字" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">应用类型</td>
+            <td class="formValue">
+                <div id="AppType" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                    <ul>
+                        <li data-value="1">消息型应用</li>
+                        <li data-value="2">主页型应用</li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">可信域名</td>
+            <td class="formValue">
+                <input id="RedirectDomain" type="text" class="form-control" placeholder="填写应用的域名地址，如：qy.weixin.qq.com:8080" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" valign="top" style="padding-top: 4px;">应用介绍
+            </th>
+            <td class="formValue">
+                <textarea id="Description" class="form-control" style="height: 70px;" placeholder="描述该应用的功能与特色，内容为4-120个字"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>
+
+
+<style>
+    .file {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+        text-decoration: none;
+        text-indent: 0;
+        cursor: pointer !important;
+    }
+
+        .file input {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer !important;
+        }
+
+        .file:hover {
+            text-decoration: none;
+            cursor: pointer !important;
+        }
+</style>

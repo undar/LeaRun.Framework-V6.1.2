@@ -1,0 +1,180 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>@LeaRun.Util.Config.GetValue("SystemName").ToString()</title>
+    <script src="~/Content/scripts/jquery/jquery-1.10.2.min.js"></script>
+    <script src="~/Content/scripts/plugins/cookie/jquery.cookie.js"></script>
+    <link href="~/Content/styles/font-awesome.min.css" rel="stylesheet" />
+    @System.Web.Optimization.Styles.Render("~/Content/styles/learun-ui.css")
+    @System.Web.Optimization.Scripts.Render("~/Content/scripts/utils/js")
+    <script src="~/Content/scripts/plugins/dialog/dialog.js"></script>
+    <script src="~/Content/scripts/utils/learun-clientdata.js"></script>
+    <script src="~/Content/adminDefault/index.js"></script>
+    <link href="~/Content/adminDefault/css/index.css" rel="stylesheet" />
+    <!--即时通信start-->
+    <script src="~/Content/scripts/plugins/signalr/jquery.signalR-2.2.0.min.js"></script>
+    <script src="@LeaRun.Util.Config.GetValue("SignalRUrl")/hubs"></script>
+    <link href="~/Content/styles/learun-im.css" rel="stylesheet" />
+    <script src="~/Content/scripts/utils/learun-im.js"></script>
+    <!--即时通信end-->
+    <script>
+        var contentPath = '@Url.Content("~")'.substr(0, '@Url.Content("~")'.length - 1);
+        $(function() {
+            initialPage();
+            if ('@LeaRun.Util.Config.GetValue("UseMessage")' == 'true') {
+                IMInit({
+                    url: "@LeaRun.Util.Config.GetValue("SignalRUrl")",
+                    userId: "@LeaRun.Application.Code.OperatorProvider.Provider.Current().UserId",
+                    userName: "@LeaRun.Application.Code.OperatorProvider.Provider.Current().UserName"
+                });
+            } else {
+                $('#btn_message').remove();
+                $('.message-wrap').remove();
+                $(".message-window").remove();
+            }
+        });
+        //初始化页面
+        function initialPage() {
+            $("#container").height($(window).height());
+            $(window).resize(function (e) {
+                $("#container").height($(window).height());
+            });
+            loadnav();
+            $(window).load(function () {
+                window.setTimeout(function () {
+                    $('#ajax-loader').fadeOut();
+                }, 300);
+            });
+        }
+    </script>
+</head>
+<body style="overflow: hidden;">
+    <div id="ajax-loader" style="cursor: progress; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: #fff; z-index: 10000; overflow: hidden;">
+        <img src="~/Content/Images/ajax-loader.gif" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin: auto;" />
+    </div>
+    <div id="container">
+        <div id="side">
+            @*<img id="icon-vension" src="~/Content/Images/icon_v_b_e.png" alt="企业版">*@
+            <ul id="nav"></ul>
+        </div>
+        <div id="main">
+            <div id="main-hd">
+                <div id="main-hd-title">
+                    <a>@LeaRun.Util.Config.GetValue("SystemName").ToString()</a>
+                </div>
+                <div style="float: right">
+                    <ul id="topnav">
+                        <li class="list" id="GoToHome">
+                            <a>
+                                <span><i class="fa fa-home"></i></span>
+                                系统首页
+                            </a>
+                        </li>
+                        <li class="list" id="UserSetting">
+                            <a>
+                                <span><i class="fa fa-user"></i></span>
+                                个人中心
+                            </a>
+                        </li>
+                        <li class="list" id="Voice">
+                            <a>
+                                <span><i class="fa fa-bell"></i></span>
+                                消息通知
+                            </a>
+                        </li>
+                        <li class="list" onclick="IndexOut()">
+                            <a>
+                                <span><i class="fa fa-power-off"></i></span>
+                                安全退出
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div id="main-bd">
+                <div id="tab_list_add">
+                </div>
+                <div class="contextmenu">
+                    <ul>
+                        <li onclick="$.removeTab('reloadCurrent')">刷新当前</li>
+                        <li onclick="$.removeTab('closeCurrent')">关闭当前</li>
+                        <li onclick="$.removeTab('closeAll')">全部关闭</li>
+                        <li onclick="$.removeTab('closeOther')">除此之外全部关闭</li>
+                        <div class='m-split'></div>
+                        <li>退出</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--载进度条start-->
+    <div id="loading_background" class="loading_background" style="display: none;"></div>
+    <div id="loading_manage">
+        正在拼了命为您加载…
+    </div>
+    <!--载进度条end-->
+    <!--聊天窗口start-->
+    <a id="btn_message" href="#" class="message-prompt" title="消息提醒"><i id="icon_message" class="fa fa-commenting"></i></a>
+    <div class="message-wrap">
+        <div class="message-content">
+            <div class="message-header">
+                企业内部微信
+                <div class="message-close">
+                    <a href="javascript:;">×</a>
+                </div>
+            </div>
+            <div class="message-body">
+                <div class="message-body-search">
+                    <input type="text" class="search-text" placeholder="搜索：同事名称、讨论组名称">
+                    <i class="fa fa-search"></i>
+                </div>
+                <div class="message-body-container">
+                    <div class="message-nav" style="display: block;">
+                        <ul>
+                            <li id="nav-contact-tab" class="active">
+                                <a title="联系人"><i class="fa fa-user"></i></a>
+                            </li>
+                            <li id="nav-group-tab">
+                                <a title="讨论组"><i class="fa fa-users" style="font-size: 20px;"></i></a>
+                            </li>
+                            <li id="nav-last-tab">
+                                <a title="最近回话"><i class="fa fa-comment"></i><span class="message-count">2</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="message-group" style="height: 335px; overflow: auto; overflow-x: hidden;">
+                        <ul id="message-contact-list"></ul>
+                        <ul id="message-group-list" class="message-chatlist" style="display: none;">
+                            <div style="color: red;">目前不支持</div>
+                        </ul>
+                        <ul id="message-last-list" class="message-chatlist" style="display: none;">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="message-window">
+        <div class="message-window-header">
+            <span class="text">与 XXX 聊天中</span>
+            <div class="close">
+                <a href="javascript:;">×</a>
+            </div>
+        </div>
+        <div class="message-window-chat" style="overflow: auto; height: 260px;">
+            <div class="message-window-content" style="padding: 15px; height: auto; overflow: hidden;">
+            </div>
+        </div>
+        <div class="message-window-tool">
+            <a class="message-window-tool-seechatlog"><i class="fa fa-clock-o"></i>沟通记录</a>
+        </div>
+        <div class="message-window-send">
+            <textarea autofocus placeholder="按回车发送消息,shift+回车换行"></textarea>
+        </div>
+    </div>
+    <!--聊天窗口end-->
+</body>
+</html>

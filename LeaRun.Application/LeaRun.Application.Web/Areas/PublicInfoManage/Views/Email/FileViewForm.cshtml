@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.Title = "查看会议详情";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    var file =decodeURIComponent(request('file'));
+    $(function () {
+        initControl();
+    });
+    //初始化控件
+    function initControl() {
+        //获取表单
+        if (!!file) {
+            $.SetForm({
+                url: '../../PublicInfoManage/OfficePreview/Index',
+                param: { file: file},
+                success: function (data) {
+                    window.location.href = data.Data;         
+                }
+            })
+        }
+    }
+
+</script>
+
+
+
+
+
+
+
+

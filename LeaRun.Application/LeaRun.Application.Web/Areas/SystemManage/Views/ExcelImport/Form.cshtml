@@ -1,0 +1,131 @@
+@{
+ViewBag.Title = "导入模板配置";
+Layout = "~/Views/Shared/_FormNew.cshtml";
+}
+<link href="/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    .ui-select.ui-select-radius .ui-select-text {
+        border-radius: 4px !important;
+    }
+
+    .flieds .ui-widget-content {
+        border: 0;
+    }
+
+    .flieds .ui-jqgrid .ui-state-highlight {
+        background: 0 0;
+        color: #000;
+        border-top: 0;
+    }
+
+    .flieds .ui-jqgrid tr.ui-row-ltr td {
+        border-right: 1px solid #ccc;
+    }
+
+    .flieds .ui-jqgrid tr.ui-row-ltr td {
+        padding: 0;
+    }
+
+    .flieds .ui-jqgrid .editable {
+        height: 25px;
+        background-color: #fff;
+        border: 0;
+        outline: 0;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .flieds .ui-jqgrid input.center {
+        text-align: center;
+    }
+
+    .flieds .jqbtn > span {
+        color: #3b65a7;
+        margin-right: 8px;
+        cursor: pointer;
+        line-height: 25px;
+    }
+</style>
+
+<div class="widget-body">
+    <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>选择数据表<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>模板配置<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content" id="wizard-steps" style="border-left: none; border-bottom: none; border-right: none;">
+        <div class="step-pane active" id="step-1" style="margin: 10px; margin-bottom: 0px;">
+            <div class="titlePanel">
+                <div class="title-search">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <th style="white-space: nowrap; font-weight: normal;">数据库：</th>
+                                <td>
+                                    <div id="txt_DataBase" type="select" class="ui-select ui-select-radius" style="width: 150px"></div>
+                                </td>
+                                <td style="padding-left: 1px;">
+                                    <input id="txt_Keyword" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" type="text">
+                                </td>
+                                <td style="padding-left: 5px;">
+                                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="gridPanel">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+        <div class="step-pane" id="step-2">
+            <div>
+                <div id="FormFieldTree" class="border-right" style="width: 260px; float: left;"></div>
+                <div style="margin: 0px auto; height: 100%; overflow: hidden;">
+                    <div style="height:40px;line-height:40px;border-bottom:1px solid #ccc;">
+                        <table class="form" id="templateInfo">
+                            <tbody>
+                                <tr>
+                                    <th class="formTitle" style="width:62px;">模板名字<font face="宋体">*</font></th>
+                                    <td class="formValue">
+                                        <input id="F_Name" class="form-control" isvalid="yes" checkexpession="NotNull" type="text">
+                                    </td>
+                                    <th class="formTitle" style="width:62px;">绑定功能<font face="宋体">*</font></th>
+                                    <td class="formValue">
+                                        <div id="F_ModuleId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"><div class="ui-select-text" style="color:#999;">==请选择==</div></div>
+                                    </td>
+                                    <th class="formTitle" style="width:62px;">绑定按钮<font face="宋体">*</font></th>
+                                    <td class="formValue">
+                                        <div id="F_ModuleBtnId" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"><div class="ui-select-text" style="color:#999;">==请选择==</div></div>
+                                    </td>
+                                    <th class="formTitle" style="width:62px;">错误机制<font face="宋体">*</font></th>
+                                    <td class="formValue" style="width:80px;">
+                                        <div id="F_ErrorType" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull" data-value="1" data-text="跳过"><div class="ui-select-text" style="color: rgb(0, 0, 0);">跳过</div></div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="gridPanel flieds">
+                        <table id="gridTableFlied"></table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="form-button" id="wizard-actions">
+        <a id="btn_last" disabled="" class="btn btn-default btn-prev">上一步</a>
+        <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+        <a id="btn_finish" disabled="" class="btn btn-success">完成</a>
+    </div>
+</div>
+<script src="~/Content/scripts/plugins/jqgrid/js.js"></script>
+<script src="~/Content/scripts/utils/learun-elis.js?v=@Guid.NewGuid().ToString()"></script>
+
+

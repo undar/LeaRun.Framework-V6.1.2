@@ -1,0 +1,46 @@
+﻿#nav{padding-top:46px;margin-bottom:10px;-moz-user-select: none;-webkit-user-select: none;-ms-user-select: none;-khtml-user-select: none;user-select: none;}
+#nav .item{position:relative;zoom:1;float:left;width:100%}
+#nav .item.on{background:rgba(0, 0, 0, 0.25);}
+#nav .main-nav{position:relative;display:block;height:65px;width:100%;float:left;font-family:"新宋体","宋体";color:#fff;text-decoration:none;text-align:center;margin: 5px 0px;}
+#nav .main-nav-icon i{font-size:28px;margin-left:-1px;margin-top:6px;opacity: 0.9;}
+#nav .main-nav-text{/*font-size:13px;*/margin-top:9px;/*letter-spacing:3px;*/font-family: "Helvetica Neue",Helvetica,Arial,"Hiragino Sans GB","Hiragino Sans GB W3","Microsoft YaHei UI","Microsoft YaHei","WenQuanYi Micro Hei",sans-serif;}
+#nav .arrow{position:absolute;left:65px;top:57px;display:block;text-indent:0;font-weight:bold;color:#b8d2e1}
+#nav .on .arrow{text-indent: -99999px;width: 0;height: 0;border-style: solid;border-width: 8px;border-color: transparent;border-right-color: white;border-left: none;left: 72px;top: 50%;margin-top: -8px;}
+#nav .sub-nav-wrap{width: 130px;display: none;position: absolute;left: 80px;border: 4px solid #ccc;border-left: 0;border-top-right-radius: 4px;border-bottom-right-radius: 4px;z-index: 99;background-color: #fff;}
+#nav .sub-nav-wrap i{width:17px;font-size: 15px;margin-right:8px;vertical-align: middle;margin-bottom: 1px;color: #666666;}
+#nav .sub-nav{background-color: #fff;padding: 10px 0 5px;line-height: 28px;}
+#nav .sub-nav li{margin-bottom: 8px;position: relative;cursor:pointer;}
+#nav .sub-nav li:hover{background-color: #eee;color: #555;}
+#nav .sub-nav a{padding-left: 15px;display: block;zoom: 1;}
+#nav ul li.sub{background-repeat:no-repeat;background-position:right 11px;background-image:url(../img/arrow1.png);}
+#nav ul li.sub ul{padding-top:10px;padding-bottom:5px;line-height: 28px;display:none;position:absolute;color:#000000;width: 130px;border: 4px solid #ccc;border-top-right-radius: 4px;border-bottom-right-radius: 4px;z-index: 99;background-color: #fff;}
+#nav ul li.sub ul li{margin-bottom: 8px;position: relative;cursor:pointer;}
+#nav ul li.sub ul a{padding-left: 15px;display: block;zoom: 1;}
+#main{margin:0px auto;height:100%;overflow:hidden;}
+#main #main-hd{height: 55px;background-color:#fff;}
+#main #main-hd #main-hd-title{line-height: 55px;top: 0;height: 55px;padding: 0 0 0 30px;font-family:'Microsoft Yahei';float:left;}
+#main #main-hd #main-hd-title a{cursor:pointer;font-size: 18px;font-weight: bold;float: left;cursor: default;color: #444;font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;}
+#main #main-bd{background-color:#fff;height:auto;overflow: hidden;}
+#topnav ul{position:relative;}
+#topnav li.list{float:left;display:inline;margin:3px 12px 0px 0px;}
+#topnav li a{cursor:pointer;display:inline;float:left;width:50px;height:46px;text-align:center;padding:5px 7px 0px;text-decoration:none;text-shadow:0px -1px rgba(0,0,0,0.2);-webkit-border-radius:3px;border-radius:3px;overflow:hidden;-moz-border-radius:5px;/* Gecko browsers*/-webkit-border-radius:5px;/* Webkit browsers*/border-radius:5px;/* W3C syntax*/}
+#topnav li a:hover{background:rgba(0, 0, 0, 0.25);}
+#topnav li a.onnav{background:rgba(0, 0, 0, 0.25);}
+#topnav li a span{display:block;margin:0px auto 0px;width:25px;height:26px;overflow:hidden;}
+#topnav li a span i{color: #666666;font-size: 22px;}
+.tab{float:left;width:5000px;position:relative;left:0px;-moz-user-select: none;-webkit-user-select: none;-ms-user-select: none;-khtml-user-select: none;user-select: none;}
+.tab .on{margin-left:0px;display:block;color:#000000;text-align:center;border:1px solid #ccc;border-top:2px solid #303e4d;border-bottom:none;background:#F5F5F5;line-height:28px;height:29px;}
+.tab .on .text{font-weight:bold}
+.tab .off{margin-left:0px;display:block;text-align:center;border:1px solid #ccc;border-bottom:none;}
+.tab ul{list-style:none;position:absolute;top:1.5px;}
+.tab li{list-style:none;padding:0;float:left;height:30px;line-height:30px;margin:0px;margin-right:5px;cursor:pointer;}
+.tab li i{font-size: 13px;vertical-align: middle;margin-bottom: 1.5px;color: #666666;}
+.tab .inner{padding-left:13px;padding-right:15px}
+.tab .inner .tab_close{float:right;width:12px;height:13px;margin-right:-10px;display:block;background:url(../img/tab_close.png) no-repeat}
+.tab .inner .tab_close:hover{background-position:0 -12px}
+.tab-div{border-bottom:1px solid #ccc;padding-left:20px}
+.tab-div .scroll-left{float:left;position:relative;width:17px;height:30px;cursor:pointer;z-index:5;left:-20px;top:1.5px;border:1px solid #ccc;background:#ffffff}
+.tab-div .scroll-left i{border-style:solid;border-width:5px;font-size:0;height:0;margin:10px 0 0 0;display:block;width:0;height:0;overflow:hidden;border-color:#FFF #555 #FFF #FFF}
+.tab-div .scroll-right{float:right;position:relative;width:17px;height:30px;cursor:pointer;z-index:5;top:1.5px;border:1px solid #ccc;background:#ffffff}
+.tab-div .scroll-right i{border-color:#FFF #FFF #FFF #555;border-style:solid;border-width:5px;font-size:0;height:0;margin:10px 0 0 7px;display:block;width:0;height:0;overflow:hidden}
+.tab-div-content{float:left;margin: 0 auto;padding: 0;width: 100%;background: #F5F5F5;}

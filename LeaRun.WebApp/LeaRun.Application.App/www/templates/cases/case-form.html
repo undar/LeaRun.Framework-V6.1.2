@@ -1,0 +1,104 @@
+﻿<ion-modal-view ng-controller="CaseFormCtrl">
+  <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+    <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+    <h1 class="title">实例－表单</h1>
+  </ion-header-bar>
+  <ion-content>
+      <div class="bar bar-header item-input-inset">
+          <label class="item-input-wrapper">
+              <i class="icon ion-ios-search placeholder-icon"></i>
+              <input type="search" placeholder="搜索">
+          </label>
+          <button class="button button-clear">
+              取消
+          </button>
+      </div>
+      <div class="list mt10">
+          <div class="item item-input-inset ">
+              <label class="item-input-wrapper">
+                  <input type="text" placeholder="Email">
+              </label>
+              <button class="button button-small">
+                  Submit
+              </button>
+          </div>
+          <label class="item item-input item-select mt10">
+              <div class="input-label">
+                  Lightsaber
+              </div>
+              <select>
+                  <option>Blue</option>
+                  <option selected>Green</option>
+                  <option>Red</option>
+              </select>
+          </label>
+          <label class="item item-input mt10">
+              <input type="text" placeholder="First Name">
+          </label>
+
+          <label class="item item-input mt10">
+              <span class="input-label">用户名：</span>
+              <input type="text">
+          </label>
+
+          <label class="item item-input">
+              <span class="input-label">密码：</span>
+              <input type="password">
+          </label>
+
+          <label class="item item-input item-stacked-label mt10">
+              <span class="input-label">First Name</span>
+              <input type="text" placeholder="John">
+          </label>
+
+
+      </div>
+      <div class="list list-inset">
+          <label class="item item-input">
+              <input type="text" placeholder="First Name">
+          </label>
+          <label class="item item-input mt10">
+              <i class="icon ion-search placeholder-icon"></i>
+              <input type="text" placeholder="Search">
+          </label>
+      </div>
+      <ul class="list">
+          <li class="item item-toggle">
+              Checked
+              <label class="toggle toggle-positive">
+                  <input type="checkbox" checked="">
+                  <div class="track">
+                      <div class="handle"></div>
+                  </div>
+              </label>
+          </li>
+          <li class="item item-toggle">
+              Unchecked
+              <label class="toggle toggle-royal">
+                  <input type="checkbox">
+                  <div class="track">
+                      <div class="handle"></div>
+                  </div>
+              </label>
+          </li>
+      </ul>
+      <ion-list>
+          <ion-checkbox ng-model="checkbox">Red</ion-checkbox>
+          <ion-checkbox ng-model="checkbox1">Yellow</ion-checkbox>
+          <ion-radio ng-model="choice" ng-value="'A'">Choose A</ion-radio>
+          <ion-radio ng-model="choice" ng-value="'B'">Choose B</ion-radio>
+      </ion-list>
+      <div class="list mt10">
+          <div class="item range range-royal">
+              <i class="icon ion-volume-low"></i>
+              <input type="range" name="volume">
+              <i class="icon ion-volume-high"></i>
+          </div>
+          <div class="item range range-positive">
+              <i class="icon ion-ios-sunny-outline"></i>
+              <input type="range" name="volume" min="0" max="100" value="33">
+              <i class="icon ion-ios-sunny"></i>
+          </div>
+      </div>
+  </ion-content>
+</ion-modal-view>

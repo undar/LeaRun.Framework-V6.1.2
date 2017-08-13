@@ -1,0 +1,240 @@
+@{;
+  ViewBag.Title = "列表页面";
+  Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>;
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设布局;
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            autowidth: true,
+            height: $(window).height() - 136.5,
+            url: "../../CustomerManage/Customer/GetPageListJson",
+            datatype: "json",
+            colModel: [
+                { label: '客户主键', name: 'CustomerId', index: 'CustomerId', width: 100, align: 'left', sortable: true, hidden: true },
+                { label: '客户编号', name: 'EnCode', index: 'EnCode', width: 100, align: 'left', sortable: true },
+                { label: '客户名称', name: 'FullName', index: 'FullName', width: 300, align: 'left', sortable: true },
+                {
+                    label: '客户级别', name: 'CustLevelId', index: 'CustLevelId', width: 80, align: 'center', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return top.clientdataItem["Client_Level"][cellvalue];
+                    }
+                },
+                { label: '客户类别', name: 'CustTypeId', index: 'CustTypeId', width: 80, align: 'center', sortable: true },
+                { label: '客户程度', name: 'CustDegreeId', index: 'CustDegreeId', width: 80, align: 'center', sortable: true },
+                { label: '公司行业', name: 'CustIndustryId', index: 'CustIndustryId', width: 80, align: 'center', sortable: true },
+                { label: '联系人', name: 'Contact', index: 'Contact', width: 80, align: 'left', sortable: true },
+                { label: '跟进人员', name: 'TraceUserName', index: 'TraceUserName', width: 80, align: 'left', sortable: true },
+                { label: '最后更新', name: 'ModifyDate', index: 'ModifyDate', width: 130, align: 'left', sortable: true, formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i', newformat: 'Y-m-d H:i' } },
+                { label: '备注', name: 'Description', index: 'Description', width: 200, align: 'left', sortable: true },
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'ModifyDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $('#' + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $('#' + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        $gridTable.authorizeColModel();
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: 'Form',
+            title: '添加客户',
+            url: '/CustomerManage/Customer/Form',
+            width: '750px',
+            height: '600px',
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var keyValue = $("#gridTable").jqGridRowValue('CustomerId');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'Form',
+                title: '编辑客户',
+                url: '/CustomerManage/Customer/Form?keyValue=' + keyValue,
+                width: '750px',
+                height: '600px',
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            })
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue('CustomerId');
+        if (keyValue) {
+            $.RemoveForm({
+                url: '../../CustomerManage/Customer/RemoveForm',
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的客户信息！', 0);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var keyValue = $("#gridTable").jqGridRowValue("CustomerId");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "Detail",
+                title: '客户信息',
+                url: '/CustomerManage/Customer/Detail?keyValue=' + keyValue,
+                width: '750px',
+                height: '550px',
+                btn: null
+            });
+        }
+    }
+    //导出
+    function btn_export() {
+        dialogOpen({
+            id: "ExcelIExportDialog",
+            title: '导出客户数据',
+            url: '/Utility/ExcelExportForm?gridId=gridTable&filename=客户信息',
+            width: "500px",
+            height: "380px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }, btn: ['导出Excel', '关闭']
+        });
+    }
+    //联系人
+    function btn_contact() {
+        var keyValue = $("#gridTable").jqGridRowValue('CustomerId');
+        var fullName = $("#gridTable").jqGridRowValue('FullName');
+        if (keyValue) {
+            dialogOpen({
+                id: 'ContactIndex',
+                title: fullName + ' - 联系人',
+                url: '/CustomerManage/Customer/ContactIndex?customerId=' + keyValue,
+                width: '900px',
+                height: '550px',
+                btn: null
+            });
+        } else {
+            dialogMsg('请选择客户信息！', 0);
+        }
+    }
+    //跟进记录
+    function btn_chancetrail() {
+        var keyValue = $("#gridTable").jqGridRowValue('CustomerId');
+        var fullName = $("#gridTable").jqGridRowValue('FullName');
+        if (keyValue) {
+            dialogOpen({
+                id: 'ChanceTrailIndex',
+                title: fullName + ' - 跟进记录',
+                url: '/CustomerManage/TrailRecord/Index?objectId=' + keyValue + '&objectSort=2',
+                width: '750px',
+                height: '550px',
+                btn: null
+            });
+        } else {
+            dialogMsg('请选择商机信息！', 0);
+        }
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>
+                    <div id="queryCondition" class="btn-group">
+                        <a class="btn btn-default dropdown-text" data-toggle="dropdown">选择条件</a>
+                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a data-value="EnCode">客户编号</a></li>
+                            <li><a data-value="FullName">客户名称</a></li>
+                            <li><a data-value="Contact">联系人</a></li>
+                            <li><a data-value="TraceUserName">跟进人员</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td style="padding-left: 2px;">
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload()"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+            <a id="lr-detail" class="btn btn-default" onclick="btn_detail()"><i class="fa fa-list-alt"></i>&nbsp;详细</a>
+            <a id="lr-export" class="btn btn-default" onclick="btn_export()"><i class="fa fa-sign-out"></i>&nbsp;导出</a>
+        </div>
+        <div class="btn-group">
+            <a id="lr-contact" class="btn btn-default" onclick="btn_contact()"><i class="fa fa fa-book"></i>&nbsp;联系人</a>
+            <a id="lr-chancetrail" class="btn btn-default" onclick="btn_chancetrail()"><i class="fa fa-clock-o"></i>&nbsp;跟进记录</a>
+
+        </div>
+        <script>$('.toolbar').authorizeButton()</script>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>

@@ -1,0 +1,45 @@
+﻿<ion-modal-view  ng-controller="CaseListCtrl">
+  <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+    <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+    <h1 class="title">实例－列表</h1>
+  </ion-header-bar>
+  <ion-content>
+      <div class="list mt5">
+          <ion-item class="item-remove-animate item-icon-left item-icon-right " type="item-text-wrap" ng-click="showList('splitlist')">
+              <i class="icon ion-ios-pricetag-outline "></i>
+              <span>带分隔符列表</span>
+              <i class="icon ion-chevron-right icon-accessory "></i>
+          </ion-item>
+          <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="showList('iconlist')">
+              <i class="icon ion-ios-star-outline"></i>
+              <span>带图标列表</span>
+              <i class="icon ion-chevron-right icon-accessory "></i>
+          </ion-item>
+          <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="showList('buttonlist')">
+              <i class="icon ion-ios-toggle-outline"></i>
+              <span>带按钮列表</span>
+              <i class="icon ion-chevron-right icon-accessory "></i>
+          </ion-item>
+          <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="showList('avatarlist')">
+              <i class="icon ion-ios-person-outline"></i>
+              <span>带头像列表</span>
+              <i class="icon ion-chevron-right icon-accessory "></i>
+          </ion-item>
+          <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="showList('imglist')">
+              <i class="icon ion-ios-analytics-outline"></i>
+              <span>缩略图列表</span>
+              <i class="icon ion-chevron-right icon-accessory "></i>
+          </ion-item>
+          <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="showList('insetlist')">
+              <i class="icon ion-ios-paper-outline"></i>
+              <span>内嵌列表</span>
+              <i class="icon ion-chevron-right icon-accessory "></i>
+          </ion-item>
+          <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="showList('extendlist')">
+              <i class="icon ion-ios-paperplane-outline"></i>
+              <span>扩展列表</span>
+              <i class="icon ion-chevron-right icon-accessory "></i>
+          </ion-item>
+      </div>
+  </ion-content>
+</ion-modal-view>

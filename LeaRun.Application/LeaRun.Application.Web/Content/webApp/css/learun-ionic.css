@@ -1,0 +1,229 @@
+﻿/*ionic原有的*/
+/*联系人*/
+.lr-list .list {
+  width: 90%;
+  margin-left: 10px;
+  margin-right: auto;
+  margin-top: -1px;
+}
+.lr-list .list .lr-item {
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  padding-left: 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.lr-contacts-item {
+  padding: 0px !important;
+}
+.lr-item .lr-contacts-pic {
+  color: white;
+  height: 36px;
+  width: 36px;
+  line-height: 36px;
+  float: left;
+  font-size: 28px;
+  text-align: center;
+}
+.lr-item h2 {
+  padding-left: 10px;
+  position: absolute;
+  margin: auto !important;
+  top: 0;
+  bottom: 0;
+  left: 36px;
+  height: 32px;
+  line-height: 32px;
+  color:#444;
+}
+.lr-contacts-pic img {
+  width: 36px;
+  height: 36px;
+}
+.lr-contacts-index-bar {
+  background-color: #E8E8E8;
+  padding-left: 10px;
+  height: 20px;
+  line-height: 20px;
+  font-size: 80%;
+  color: #545454;
+}
+.lr-contacts-right-bar {
+  position: fixed;
+  right: 0;
+  width: 20px;
+  height: 464px;
+  z-index: 2;
+  text-align: center;
+  font-size: 80%;
+  color: #545454;
+}
+.lr-contacts-right-bar div {
+  height: 16px;
+}
+.lr-contacts-middle-bar {
+  position: fixed;
+  margin: auto;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  height: 60px;
+  width: 60px;
+  line-height: 60px;
+  text-align: center;
+  color: #FFF;
+  font-size: 300%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.item > .lr-sm-red-icon {
+  position: absolute;
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: #FF0000;
+  line-height: 18px;
+  text-align: center;
+  top: 5px;
+  left: 40px;
+}
+.item > .lr-sm-red-icon > p {
+  color: #FFF;
+  font-size: 12px;
+}
+.item .lr-list-p {
+  font-size: 13px;
+  color: #6a6a6a;
+}
+.lr-push-right {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  color: #8c8c8c;
+  font-size: 13px;
+}
+.lr-item-top {
+  background-color: #F1F1F1 !important;
+}
+/*弹框*/
+.popup-container .popup {
+  border-radius:3px;
+  background-color:#f8f8f8;
+}
+.popup-body {
+  border-bottom: 1px solid #eee;
+}
+.popup-buttons {
+  padding:0px;
+  min-height:40px;
+}
+.popup-buttons .button {
+  min-height:40px;
+  margin-right:0px;
+  border: 0px;
+}
+/*底部菜单区域*/
+.tabs{
+  background-color: #fff;
+}
+/*内容区域*/
+.scroll-content{
+  background-color: #F9F9F9;
+}
+.col-99 {
+  -webkit-box-flex: 0;
+  -webkit-flex: 0 0 90%;
+  -moz-box-flex: 0;
+  -moz-flex: 0 0 90%;
+  -ms-flex: 0 0 90%;
+  flex: 0 0 99%;
+  max-width: 99%;
+}
+.input-label {
+  max-width:80px;
+}
+/*ionic 列表*/
+.list-inset {
+  background-color:rgba(0, 0, 0, 0.00);
+}
+.item {
+  border-color:#EAEAEA;
+  font-size: 14px;
+}
+.item-stacked-label {
+  background-color:#fff;
+}
+.item-icon-left .icon:before,
+.item-icon-right .icon:before {
+  margin: 0px 3px;
+}
+.item-complex .item-content,
+.item-radio .item-content {
+    padding-top:13px;
+    padding-bottom:13px;
+}
+.item-avatar > img:first-child,
+.item-avatar .item-image,
+.item-avatar .item-content > img:first-child,
+.item-avatar .item-content .item-image,
+.item-avatar-left > img:first-child,
+.item-avatar-left .item-image,
+.item-avatar-left .item-content > img:first-child,
+.item-avatar-left .item-content .item-image {
+    border-radius: 5px;
+    max-height:50px;
+    max-width:50px;
+    top:15px;
+}
+/*头部*/
+.nav-bar-block,
+.bar {
+  background-color:#387EF5 !important;/*#34495e !important;*/
+}
+.bar .title {
+    color:#fff;
+}
+.bar.bar-stable .title {
+    color: #fff;
+}
+.bar-stable .button.button-clear {
+    color: #fff;
+}
+/*按钮*/
+.button-outline.button-outline:hover {
+    background-color: #f9f9f9;
+    color: #34495e;
+}
+.button-outline.button-outline.active,
+.button-outline.button-outline.activated {
+    background-color: #f9f9f9;
+    box-shadow: none;
+    color: #34495e;
+}
+.button-clear.button-clear {
+    color: #fff;
+}
+
+/*协同办公*/
+.label-success-learun {
+    background: #0aa699 none repeat scroll 0 0;
+    border-radius:3px;
+    color:#fff;
+}
+.label-inverse-learun {
+    background: #1f3853 none repeat scroll 0 0;
+    border-radius:3px;
+    color:#fff;
+}
+.label-info {
+    background-color: #5bc0de;
+    border-radius:3px;
+    color:#fff;
+}
+.label-success {
+    background-color: #5cb85c;
+    border-radius:3px;
+    color:#fff;
+}

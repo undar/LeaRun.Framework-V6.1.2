@@ -1,0 +1,62 @@
+﻿@{
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_FlowFormNew.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    var formRelationId = request('formRelationId');
+    $(function () {
+        $.pageFn.init();
+    });
+    (function ($) {
+        var frm = {
+            content: JSON.parse($.currentIframe().$.pageFn.frmEntity.FrmContent),
+            loadForm: function () {
+                $('#frmpreview').height($(window).height());
+                $('#frmpreview').formRendering('init', { formData: frm.content.data });
+            }
+        };
+        var getData = function () {
+            if (!!keyValue) {
+                //获取表单
+                $.SetForm({
+                    url: "../../FlowManage/FormModule/GetInstanceEntityJson",
+                    param: { keyValue: keyValue },
+                    success: function (data) {
+                       
+                        $('#frmpreview').formRendering('set', { data: JSON.parse(data.FrmInstanceJson) });
+                    }
+                });
+            }
+        };
+        $.pageFn = {
+            init: function () {
+                frm.loadForm();
+                getData();
+            }
+        };
+    })(window.jQuery);
+    //保存表单
+    function AcceptClick() {
+        var data = $('#frmpreview').formRendering('get');
+        if (!!data) {
+            var postData = {
+                FrmContentId: $.currentIframe().$.pageFn.frmEntity.Id,
+                FrmInstanceJson: JSON.stringify(data),
+                ObjectId: formRelationId
+            };
+            $.SaveForm({
+                url: "../../FlowManage/FormModule/SaveCustmerFormInstance?keyValue=" + keyValue,
+                param: postData,
+                loading: "正在保存数据...",
+                success: function () {
+                    $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                }
+            });
+        }
+    };
+</script>
+<div id="frmpreview" style="padding-right:20px;overflow-y:auto;">
+</div>
+
+

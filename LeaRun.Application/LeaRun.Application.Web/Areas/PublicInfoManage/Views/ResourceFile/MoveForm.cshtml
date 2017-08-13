@@ -1,0 +1,48 @@
+﻿@{
+    ViewBag.Title = "文件（夹）移动位置";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    var fileType = request('fileType');
+    $(function () {
+        GetTree();
+    });
+    var moveFolderId = "";
+    function GetTree() {
+        var itemtree = {
+            height: 295,
+            slimscroll: false,
+            onnodeclick: function (item) {
+                moveFolderId = item.id;
+            },
+            url: "../../PublicInfoManage/ResourceFile/GetTreeJson",
+        };
+        $("#ItemsTree").treeview(itemtree);
+        $("#ItemsTree_" + keyValue.replace(/-/g, '_')).parent('li').remove();
+    }
+    //保存事件
+    function AcceptClick() {
+        if (moveFolderId == "") {
+            top.dialogTop('请选择要移动到的位置', 'error');
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        postData["keyValue"] = keyValue;
+        postData["moveFolderId"] = moveFolderId;
+        postData["fileType"] = fileType;
+        $.SaveForm({
+            url: "../../PublicInfoManage/ResourceFile/SaveMoveForm",
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin: 5px; margin-bottom: 0px;">
+    <div id="ItemsTree">
+    </div>
+</div>
+

@@ -1,0 +1,57 @@
+﻿<ion-modal-view>
+  <ion-header-bar class="bar-stable  nav-bar-block nav-title-slide-ios7">
+    <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+    <h1 class="title">{{userinfo.realname}}</h1>
+  </ion-header-bar>
+    <ion-content>
+        <ion-list>
+            <ion-item class="item-remove-animate item-avatar item-icon-right mt5 lr-headimgitem" type="item-text-wrap" >
+                <img ng-src="{{userinfo.headicon}}" style="left:auto;right:30px;"/>
+                <span>头像</span>
+                <i class="icon ion-chevron-right icon-accessory"></i>
+            </ion-item>
+            <div class="P13">
+            <ion-item  type="item-text-wrap">
+                <span>账号</span>
+                <span class="item-note">{{userinfo.account}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>姓名</span>
+                <span class="item-note">{{userinfo.realname}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>性别</span>
+                <span class="item-note">{{userinfo.gender}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>公司</span>
+                <span class="item-note">{{userinfo.organizename}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>部门</span>
+                <span class="item-note">{{userinfo.departmentname}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>岗位</span>
+                <span class="item-note">{{userinfo.dutyname}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>职位</span>
+                <span class="item-note">{{userinfo.postname}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>角色</span>
+                <span class="item-note">{{userinfo.rolename}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>主管</span>
+                <span class="item-note">{{userinfo.manager}}</span>
+            </ion-item>
+            <ion-item type="item-text-wrap">
+                <span>介绍</span>
+                <span class="item-note">{{userinfo.description}}</span>
+            </ion-item>
+            <div>
+        </ion-list>
+    </ion-content>
+</>

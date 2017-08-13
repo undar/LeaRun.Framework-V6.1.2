@@ -1,0 +1,100 @@
+﻿@{
+    ViewBag.Title = "自定义菜单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var menuId = request('menuId');
+    var parentId = request('parentId');
+    var dataJson = top.FormNews.menuJson;
+    $(function () {
+        //类型
+        $("#MenuType").ComboBox({
+            description: "==请选择==",
+            height: "120px"
+        })
+        //上级
+        $("#ParentId").ComboBoxTree({
+            url: "../../WeChatManage/App/MenuListToTreeJson",
+            param: { menuJson: JSON.stringify(dataJson) },
+            method: "post",
+            description: "==请选择==",
+            height: "160px"
+        });
+        //获取表单
+        if (!!menuId) {
+            $.each(dataJson, function (i) {
+                var row = dataJson[i];
+                if (row.MenuId == menuId) {
+                    $("#form1").SetWebControls(row);
+                }
+            });
+        } else {
+            $("#ParentId").ComboBoxTreeSetValue(parentId);
+        }
+    });
+    //保存表单
+    function AcceptClick(callback) {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = {
+            MenuId: $("#MenuId").val(),
+            MenuName: $("#MenuName").val(),
+            MenuType: $("#MenuType").attr('data-value'),
+            MenuTypeName: $("#MenuType").attr('data-text'),
+            MenuUrl: $("#MenuUrl").val(),
+            ParentId: ($("#ParentId").attr('data-value') == undefined ? "0" : $("#ParentId").attr('data-value')),
+            SortCode: $("#SortCode").val(),
+        }
+        callback(postData);
+        dialogClose();
+    }
+</script>
+<div style="margin-top: 10px; margin-right: 35px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">上级</th>
+            <td class="formValue">
+                <input id="MenuId" type="hidden" value="@Guid.NewGuid().ToString()" />
+                <div id="ParentId" type="selectTree" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">类型</th>
+            <td class="formValue">
+                <div id="MenuType" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                    <ul>
+                        <li data-value="view">跳转URL</li>
+                        <li data-value="click">点击推事件</li>
+                        <li data-value="scancode_push">扫码推事件</li>
+                        <li data-value="scancode_waitmsg">扫码推事件且弹出“消息接收中”提示框</li>
+                        <li data-value="pic_sysphoto">弹出系统拍照发图</li>
+                        <li data-value="pic_photo_or_album">弹出拍照或者相册发图</li>
+                        <li data-value="pic_weixin">弹出微信相册发图器</li>
+                        <li data-value="location_select">弹出地理位置选择器</li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">名称</th>
+            <td class="formValue">
+                <input id="MenuName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">地址
+            </th>
+            <td class="formValue">
+                <input id="MenuUrl" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">排序</th>
+            <td class="formValue">
+                <input id="SortCode" type="text" class="form-control" isvalid="yes" checkexpession="Num" />
+            </td>
+        </tr>
+    </table>
+</div>
+

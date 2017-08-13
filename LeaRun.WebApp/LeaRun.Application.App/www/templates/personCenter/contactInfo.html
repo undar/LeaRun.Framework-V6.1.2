@@ -1,0 +1,34 @@
+﻿<ion-modal-view >
+  <ion-header-bar class="bar-stable  nav-bar-block nav-title-slide-ios7">
+    <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+    <h1 class="title">联系方式</h1>
+  </ion-header-bar>
+  <ion-content>
+      <ion-list class="P13">
+          <ion-item class="mt20" type="item-text-wrap">
+              <span>手机</span>
+              <span class="item-note">{{userinfo.mobile}}</span>
+          </ion-item>
+          <ion-item type="item-text-wrap">
+              <span>电话</span>
+              <span class="item-note">{{userinfo.telephone}}</span>
+          </ion-item>
+          <ion-item type="item-text-wrap">
+              <span>邮箱</span>
+              <span class="item-note">{{userinfo.email}}</span>
+          </ion-item>
+          <ion-item type="item-text-wrap">
+              <span>微信</span>
+              <span class="item-note">{{userinfo.wechat}}</span>
+          </ion-item>
+          <ion-item type="item-text-wrap">
+              <span>QQ</span>
+              <span class="item-note">{{userinfo.oicq}}</span>
+          </ion-item>
+          <ion-item type="item-text-wrap">
+              <span>MSN</span>
+              <span class="item-note">{{userinfo.msn}}</span>
+          </ion-item>
+      </ion-list>
+  </ion-content>
+</ion-modal-view>

@@ -1,0 +1,144 @@
+﻿@{
+    ViewBag.Title = "角色成员";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    var roleId = request('roleId');
+    $(function () {
+        InitialPage();
+        GetMember();
+        GetTree();
+    });
+    //初始化页面
+    function InitialPage() {
+        //layout布局
+        $('#layout').layout({
+            applyDemoStyles: true,
+            west__size: 160,
+            spacing_open: 0,
+            onresize: function () {
+                $(window).resize()
+            }
+        });
+        $(".center-Panel").height($(window).height() - 40)
+    }
+    //加载树
+    var departmentid = "card-box";
+    function GetTree() {
+        var item = {
+            height: $(window).height() - 1,
+            url: "../../AuthorizeManage/PermissionRole/GetDepartmentTreeJson?roleId=" + roleId,
+            onnodeclick: function (item) {
+                Loading(true);
+                window.setTimeout(function () {
+                    if (item.parentnodes == "0") {
+                        $(".card-box").show();
+                        departmentid = "card-box";
+                    } else {
+                        $(".card-box").hide();
+                        $('.' + item.id).show();
+                        departmentid = item.id;
+                    }
+                    Loading(false);
+                }, 200);
+            }
+        };
+        //初始化
+        $("#itemTree").treeview(item);
+    }
+    //加载成员
+    function GetMember() {
+        $.ajax({
+            url: "../../AuthorizeManage/PermissionRole/GetUserListJson?roleId=" + roleId,
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                var _html = "";
+                $.each(data, function (i) {
+                    var row = data[i];
+                    if (row.isdefault == 0) {
+                        var imgName = "UserCard01.png";
+                        if (row.gender == 1) {
+                            imgName = "UserCard02.png";
+                        }
+                        var active = "";
+                        if (row.ischeck == 1) {
+                            active = "active";
+                        }
+                        _html += '<div class="card-box ' + row.departmentid + ' ' + active + '">';
+                        _html += '    <div class="card-box-img">';
+                        _html += '        <img src="/Content/images/' + imgName + '" />';
+                        _html += '    </div>';
+                        _html += '    <div id="' + row.userid + '" class="card-box-content">';
+                        _html += '        <p>账户：' + row.account + '</p>';
+                        _html += '        <p>姓名：' + row.realname + '</p>';
+                        _html += '        <p>部门：' + row.departmentname + '</p>';
+                        _html += '    </div><i></i>';
+                        _html += '</div>';
+                    }
+                });
+                $(".gridPanel").html(_html);
+                $(".card-box").click(function () {
+                    if (!$(this).hasClass("active")) {
+                        $(this).addClass("active")
+                    } else {
+                        $(this).removeClass("active")
+                    }
+                })
+                Loading(false);
+            }, beforeSend: function () {
+                Loading(true);
+            }
+        });
+        //模糊查询用户（注：这个方法是理由jquery查询）
+        $("#txt_TreeKeyword").keyup(function () {
+            var value = $(this).val();
+            if (value != "") {
+                window.setTimeout(function () {
+                    $("." + departmentid)
+                     .hide()
+                     .filter(":contains('" + (value) + "')")
+                     .show();
+                }, 200);
+            } else {
+                $("." + departmentid).show();
+            }
+        }).keyup();
+    }
+    //保存表单
+    function AcceptClick() {
+        var userIds = [];
+        $('.gridPanel .active .card-box-content').each(function () {
+            userIds.push($(this).attr('id'));
+        });
+        var postData = $("#form1").GetWebControls();
+        postData["roleId"] = roleId;
+        postData["userIds"] = String(userIds)
+        $.SaveForm({
+            url: "../../AuthorizeManage/PermissionRole/SaveMember",
+            param: postData,
+            loading: "正在保存角色成员...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel" style="margin: 0px; border-top: none; border-left: none; border-bottom: none;">
+            <div id="itemTree"></div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="treesearch">
+            <input id="txt_TreeKeyword" type="text" class="form-control" style="border-top: none;" placeholder="请输入要查询关键字" />
+            <span id="btn_TreeSearch" class="input-query" title="Search"><i class="fa fa-search"></i></span>
+        </div>
+        <div class="center-Panel" style="margin: 0px; border-right: none; border-left: none; border-bottom: none; background-color: #fff; overflow: auto; padding-bottom: 10px;">
+            <div class="gridPanel">
+            </div>
+        </div>
+    </div>
+</div>

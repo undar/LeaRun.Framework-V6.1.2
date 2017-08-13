@@ -1,0 +1,24 @@
+﻿<ion-view>
+  <ion-nav-title>
+     <div class="button-bar lr-btnToggles">
+       <a class="button button-outline" ng-class="{'button-positive' : isActive('btnNoRead')}" ng-click="setActive('btnNoRead')">未读</a>
+       <a class="button button-outline" ng-class="{'button-positive' : isActive('btnRead')}" ng-click="setActive('btnRead')">已读</a>
+     </div>
+  </ion-nav-title>
+  <ion-content>
+    <ion-list class="lr-list-type1">
+      <ion-item class="item item-icon-left" ng-repeat="notice in notices" ng-click="openNoticesModal(notice.noticeId)"  type="item-text-wrap">
+        <div class="row">
+          <i class="icon ion-ios-paper-outline bgcolor_a"></i>
+          <div class="col-80">
+            <span>{{notice.title}}</span>
+            <p>{{notice.content}}</p>
+          </div>
+          <div class="col-20">
+            <p class="lr-time">{{notice.datatime}}</p>
+          </div>
+        </div>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-view>

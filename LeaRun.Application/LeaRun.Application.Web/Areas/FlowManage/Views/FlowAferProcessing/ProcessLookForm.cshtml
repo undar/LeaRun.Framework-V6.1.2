@@ -1,0 +1,65 @@
+﻿@{
+    ViewBag.Title = "查看流程状态";
+    Layout = "~/Views/Shared/_FlowForm.cshtml";
+}
+<script>
+    var processSchemeId = request('processSchemeId');
+    var ActivityId = request('activityId');
+    $(function () {
+        var schemeContent;
+        $.SetForm({
+            url: "../../FlowManage/FlowProcess/GetProcessSchemeEntityByUserId",
+            param: { keyValue: processSchemeId },
+            success: function (data) {
+                schemeContent = JSON.parse(JSON.parse(data.processScheme.SchemeContent).SchemeContent);
+                //frmdata = JSON.parse(JSON.parse(data.SchemeContent).frmData);
+
+                //$('#frmtab').height($(window).height() - 42);
+                //$('#frmpreview').frmPreview({
+                //    tablecotent: schemeContent.Frm.FrmContent,
+                //    width:1080
+                //});
+
+                $('#FlowPanel').flowdesign({
+                    width: $(window).width()+3,
+                    height: $(window).height()-42,
+                    flowcontent: schemeContent.Flow,
+                    haveTool: false,
+                    isprocessing: true,
+                    activityId: ActivityId,
+                    nodeData: schemeContent.Flow.nodes
+                });
+
+                //$('#frmpreview').frmSetData(frmdata);
+                //$('#frmpreview').find('input,select,textarea,.ui-select').attr('disabled', 'disabled');
+            }
+        });
+    });
+</script>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#FlowPanel" data-toggle="tab">流程信息</a></li>
+    @*<li><a href="#frmtab" data-toggle="tab">表单信息</a></li>*@
+</ul>
+
+<div class="tab-content">
+    <div id="FlowPanel" class="tab-pane active">
+    </div>
+    <div id="frmtab" class="tab-pane" >
+        <div id="frmpreview" class="app_layout app_preview">
+        </div>
+    </div>
+</div>
+<style>
+    body {
+        overflow: hidden;
+    }
+    .app_layout .item_row {
+        background-color: #fff;
+    }
+    .app_layout .item_field_label  {
+        background-color: #fff;
+    }
+    input, textarea {
+        background: #fff !important;
+    }
+</style>

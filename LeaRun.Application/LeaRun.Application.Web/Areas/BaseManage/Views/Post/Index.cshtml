@@ -1,0 +1,210 @@
+﻿@{
+    ViewBag.Title = "岗位管理";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $("#gridTable").setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            url: "../../BaseManage/Post/GetPageListJson",
+            datatype: "json",
+            height: $(window).height() - 136.5,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'RoleId', hidden: true },
+                { label: '岗位编号', name: 'EnCode', index: 'EnCode', width: 100, align: 'left' },
+                { label: '岗位名称', name: 'FullName', index: 'FullName', width: 200, align: 'left' },
+                {
+                    label: '所在公司', name: 'OrganizeId', index: 'OrganizeId', width: 250, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return top.clientorganizeData[cellvalue] == null ? "" : top.clientorganizeData[cellvalue].FullName;
+                    }
+                },
+                {
+                    label: '创建时间', name: 'CreateDate', index: 'CreateDate', width: 130, align: 'center',
+                    formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i', newformat: 'Y-m-d H:i' }
+                },
+                {
+                    label: "有效", name: "EnabledMark", index: "EnabledMark", width: 50, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                { label: "岗位描述", name: "Description", index: "Description", width: 200, align: "left" }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $("#" + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $("#" + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        $gridTable.authorizeColModel();
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: "Form",
+            title: '添加岗位',
+            url: '/BaseManage/Post/Form',
+            width: "500px",
+            height: "360px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    };
+    //编辑
+    function btn_edit() {
+        var keyValue = $("#gridTable").jqGridRowValue("RoleId");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "Form",
+                title: '修改岗位',
+                url: '/BaseManage/Post/Form?keyValue=' + keyValue,
+                width: "500px",
+                height: "360px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue("RoleId");
+        if (keyValue) {
+            $.RemoveForm({
+                url: "../../BaseManage/Post/RemoveForm",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的岗位！', 0);
+        }
+    }
+    //岗位成员
+    function btn_member() {
+        var keyValue = $("#gridTable").jqGridRowValue("RoleId");
+        var FullName = $("#gridTable").jqGridRowValue("FullName");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "AllotMember",
+                title: '岗位成员 - ' + FullName,
+                url: '/AuthorizeManage/PermissionPost/AllotMember?postId=' + keyValue,
+                width: "800px",
+                height: "520px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        }
+    }
+    //岗位授权
+    function btn_authorize() {
+        var keyValue = $("#gridTable").jqGridRowValue("RoleId");
+        var FullName = $("#gridTable").jqGridRowValue("FullName");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "AllotAuthorize",
+                title: '岗位授权 - ' + FullName,
+                url: '/AuthorizeManage/PermissionPost/AllotAuthorize?postId=' + keyValue,
+                width: "700px",
+                height: "690px",
+                btn: null
+            });
+        }
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>
+                    <div id="queryCondition" class="btn-group">
+                        <a class="btn btn-default dropdown-text" data-toggle="dropdown">选择条件</a>
+                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a data-value="EnCode">岗位编号</a></li>
+                            <li><a data-value="FullName">岗位名称</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td style="padding-left: 2px;">
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+        </div>
+        <div class="btn-group">
+            <a id="lr-member" class="btn btn-default" onclick="btn_member()"><i class="fa fa fa-group"></i>&nbsp;岗位成员</a>
+            <a id="lr-authorize" class="btn btn-default" onclick="btn_authorize()"><i class="fa fa-gavel"></i>&nbsp;岗位授权</a>
+        </div>
+        <script>$('.toolbar').authorizeButton()</script>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>

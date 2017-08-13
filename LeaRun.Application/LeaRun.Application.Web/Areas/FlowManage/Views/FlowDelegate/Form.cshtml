@@ -1,0 +1,180 @@
+﻿@{
+    ViewBag.Title = "角色成员";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        InitialPage();
+        GetMember();
+    });
+    //初始化页面
+    function InitialPage() {
+        //layout布局
+        $('#layout').layout({
+            applyDemoStyles: true,
+            west__size: 260,
+            spacing_open: 0,
+            onresize: function () {
+                $(window).resize()
+            }
+        });
+        $(".center-Panel").height($(window).height() - 40)
+        $(".west-Panel").height($(window).height());
+
+        //被委托人
+        $("#ToUserId").ComboBoxTree({
+            url: "../../BaseManage/User/GetTreeJson",
+            description: "==请选择==",
+            height: "348px",
+            allowSearch: true
+        });
+        if (!!keyValue)
+        {
+            //获取表单
+            $.SetForm({
+                url: "../../FlowManage/FlowDelegate/GetRuleEntityJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#ruleinfo").SetWebControls(data);
+                }
+            });
+        }
+    }
+    //加载成员
+    function GetMember() {
+        $.ajax({
+            url: "../../FlowManage/FlowDelegate/GetSchemeInfoList?ruleId=" + keyValue,
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                var _html = "";
+                $.each(data, function (i,row) {
+                    var imgName = "Scheme.png";
+                    var active = "";
+                    if (row.ischecked == 1) {
+                        active = "active";
+                    }
+                    _html += '<div class="card-box shcemeinfocheck ' + active + '">';
+                    _html += '    <div class="card-box-img">';
+                    _html += '        <img src="/Content/images/filetype/' + imgName + '" />';
+                    _html += '    </div>';
+                    _html += '    <div id="' + row.id + '" class="card-box-content">';
+                    _html += '        <p>编号：' + row.schemecode + '</p>';
+                    _html += '        <p>名称：' + row.schemename + '</p>';
+                    _html += '        <p>类别：' + row.schemetypename + '</p>';
+                    _html += '    </div><i></i>';
+                    _html += '</div>';
+                });
+                $(".gridPanel").html(_html);
+                $(".card-box").click(function () {
+                    if (!$(this).hasClass("active")) {
+                        $(this).addClass("active")
+                    } else {
+                        $(this).removeClass("active")
+                    }
+                })
+                Loading(false);
+            }, beforeSend: function () {
+                Loading(true);
+            }
+        });
+        //模糊查询模板（注：这个方法是理由jquery查询）
+        $("#txt_TreeKeyword").keyup(function () {
+            var value = $(this).val();
+            if (value != "") {
+                window.setTimeout(function () {
+                    $(".shcemeinfocheck")
+                     .hide()
+                     .filter(":contains('" + (value) + "')")
+                     .show();
+                }, 200);
+            } else {
+                $(".shcemeinfocheck").show();
+            }
+        }).keyup();
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#ruleinfo').Validform()) {
+            return false;
+        }
+        var _schemeInfoIds = [];
+        $('.gridPanel .active .card-box-content').each(function () {
+            _schemeInfoIds.push($(this).attr('id'));
+        });
+        var postData = $("#ruleinfo").GetWebControls();
+        postData["ToUserName"] = $('#ToUserId').attr('data-text');
+        $.SaveForm({
+            url: "../../FlowManage/FlowDelegate/SaveDelegateRule",
+            param: { keyValue: keyValue, rlueStr: JSON.stringify(postData), shcemeInfoIds: String(_schemeInfoIds) },
+            loading: "正在保存委托规则...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel" style="margin: 0px; border-top: none; border-left: none; border-bottom: none;">
+            <div style="color:#9f9f9f;padding-top:5px; padding-bottom:5px;padding-left:8px;"><i style="padding-right:5px;" class="fa fa-info-circle"></i><span>填写内容,选择右侧工作流模板</span></div>
+            <table class="form" id="ruleinfo">
+                <tr>
+                    <th class="formTitle">被委托人<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <div id="ToUserId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="formTitle">开始时间<font face="宋体">*</font></td>
+                    <td class="formValue">
+                        <input id="BeginDate" readonly type="text" class="form-control input-datepicker" isvalid="yes" checkexpession="NotNull" onfocus="WdatePicker({ minDate: '%y-%M-%d' })">
+                    </td>
+                </tr>
+                <tr>
+                    <td class="formTitle">结束时间<font face="宋体">*</font></td>
+                    <td class="formValue">
+                        <input id="EndDate" readonly type="text" class="form-control input-datepicker" isvalid="yes" checkexpession="NotNull" onfocus="WdatePicker({ minDate: '%y-%M-%d' })">
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">
+                        委托理由
+                    </th>
+                </tr>
+                <tr>
+                    <td class="formValue" colspan="2">
+                        <textarea id="Description" class="form-control" style="height: 267px;"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="treesearch">
+            <input id="txt_TreeKeyword" type="text" class="form-control" style="border-top: none;" placeholder="请输入要查询关键字" />
+            <span id="btn_TreeSearch" class="input-query" title="Search"><i class="fa fa-search"></i></span>
+        </div>
+        <div class="center-Panel" style="margin: 0px; border-right: none; border-left: none; border-bottom: none; background-color: #fff; overflow: auto; padding-bottom: 10px;">
+            <div class="gridPanel">
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .form .formTitle {
+        width:65px;
+    }
+    .card-box-img {
+    line-height:initial;
+    }
+    .card-box-img img {
+    width: 59px;
+    height: 58px;
+    border-radius: 0px;
+    margin-left:0px;
+    }
+</style>

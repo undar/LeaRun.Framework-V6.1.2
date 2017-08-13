@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>@LeaRun.Util.Config.GetValue("SystemName").ToString()</title>
+    <script src="~/Content/scripts/jquery/jquery-1.10.2.min.js"></script>
+    <script src="~/Content/scripts/plugins/cookie/jquery.cookie.js"></script>
+    <link href="~/Content/styles/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/scripts/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Content/scripts/bootstrap/bootstrap.min.js"></script>
+    <script src="~/Content/scripts/plugins/dialog/dialog.js"></script>
+    <script src="~/Content/scripts/utils/learun-clientdata.js"></script>
+    <script src="~/Content/scripts/utils/learun-ui.js"></script>
+    <link href="~/Content/styles/learun-ui.css" rel="stylesheet" />
+    <script src="~/Content/adminWindos/index.js"></script>
+    <link href="~/Content/adminWindos/css/index.css" rel="stylesheet" />
+    <!--即时通信start-->
+    <script src="~/Content/scripts/plugins/signalr/jquery.signalR-2.2.0.min.js"></script>
+    <script src="@LeaRun.Util.Config.GetValue("SignalRUrl")/hubs"></script>
+    <link href="~/Content/styles/learun-im.css" rel="stylesheet" />
+    <script src="~/Content/scripts/utils/learun-im.js"></script>
+    <!--即时通信end-->
+    <script>
+    var contentPath = '@Url.Content("~")'.substr(0, '@Url.Content("~")'.length - 1);
+        $(function () {
+            $.learunindex.load();
+            $.learunindex.loadMenu();
+            $.learuntab.init();
+            if ('@LeaRun.Util.Config.GetValue("UseMessage")' == 'true') {
+                IMInit({
+                    url: "@LeaRun.Util.Config.GetValue("SignalRUrl")",
+                    userId: "@LeaRun.Application.Code.OperatorProvider.Provider.Current().UserId",
+                    userName: "@LeaRun.Application.Code.OperatorProvider.Provider.Current().UserName"
+                });
+            } else {
+                $('#btn_message').remove();
+                $('.message-wrap').remove();
+                $(".message-window").remove();
+            }
+        });
+    </script>
+</head>
+<body class="hold-transition skin-blue sidebar-mini" style="overflow: hidden;">
+    <div id="ajax-loader" style="cursor: progress; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%; background: #fff; z-index: 10000; overflow: hidden;">
+        <img src="~/Content/images/ajax-loader.gif" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; margin: auto;" />
+    </div>
+    <div class="wrapper">
+        <!--头部信息-->
+        <header class="main-header">
+            <a href="#" class="logo">
+                <span class="logo-lg">@LeaRun.Util.Config.GetValue("SystemName").ToString()</span>
+            </a>
+            <nav class="navbar navbar-static-top">
+                <a class="sidebar-toggle">
+                    <span class="sr-only">Toggle navigation</span>
+                </a>
+                <div class="navbar-custom-menu">
+                    <ul class="nav navbar-nav">
+                        <li class="dropdown user-menu">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <img src="~/Content/images/head/user2-160x160.jpg" class="user-image" alt="User Image">
+                                <span class="hidden-xs">超级管理员<i class="fa fa-caret-down" style="padding-left: 10px;"></i></span>
+                            </a>
+                            <ul class="dropdown-menu pull-right">
+                                <em></em>
+                                <li><a class="menuItem" data-id="userInfo" href="/PersonCenter/Index"><i class="fa fa-user"></i>个人信息</a></li>
+                                <li><a href="javascript:void();"><i class="fa fa-trash-o"></i>清空缓存</a></li>
+                                <li class="divider"></li>
+                                <li><a href="javascript:void();" onclick="$.learunindex.indexOut()"><i class="ace-icon fa fa-power-off"></i>安全退出</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+        </header>
+        <!--左边导航-->
+        <div class="sidebar-menu">
+            <em></em>
+            <div class="sidebar-menu-left">
+                <div class="head">
+                    <i class="fa fa-user"></i>
+                </div>
+                <ul></ul>
+            </div>
+            <div class="sidebar-menu-right">
+                <ul>
+                    <li><a href="#"><i class="fa fa-leaf"></i><span>行政区域</span></a></li>
+                    <li><a href="#"><i class="fa fa-book"></i><span>通用字典</span></a></li>
+                    <li><a href="#"><i class="fa fa-barcode"></i><span>单据编码</span></a></li>
+                    <li><a href="#"><i class="fa fa-database"></i><span>数据管理</span><i class="fa fa-angle-left pull-right"></i></a></li>
+                    <li><a href="#"><i class="fa fa-weixin"></i><span>微信管理</span><i class="fa fa-angle-left pull-right"></i></a></li>
+                    <li><a href="#"><i class="fa fa-warning"></i><span>系统日志</span></a></li>
+                    <li><a href="#"><i class="fa fa-navicon"></i><span>系统功能</span></a></li>
+                    <li><a href="#"><i class="fa fa-paw"></i><span>系统表单</span></a></li>
+                    <li><a href="#"><i class="fa fa-code"></i><span>快速开发</span></a></li>
+                    <li><a href="#"><i class="fa fa-file-code-o"></i><span>移动开发</span></a></li>
+                </ul>
+            </div>
+        </div>
+        <!--中间内容-->
+        <div id="content-wrapper" class="content-wrapper">
+            <div class="content-tabs">
+                <a class="start_menu" href="javascript:;" title="开始菜单">
+                    <i class="fa fa-windows" aria-hidden="true"></i>
+                </a>
+                <nav class="page-tabs menuTabs">
+                    <div class="page-tabs-content" style="margin-left: 0px;">
+                        <a href="javascript:;" class="menuTab active" data-id="/Home/AdminWindosDesktop">欢迎首页</a>
+                    </div>
+                </nav>
+                <button class="roll-nav roll-left tabLeft">
+                    <i class="fa fa-backward"></i>
+                </button>
+                <button class="roll-nav roll-right tabRight">
+                    <i class="fa fa-forward" style="margin-left: 3px;"></i>
+                </button>
+                <button class="roll-nav roll-right fullscreen"><i class="fa fa-arrows-alt"></i></button>
+            </div>
+            <div class="content-tabs-sub">
+                <div class="notice">
+                    <i class="fa fa-volume-up"></i>公告：
+                    <span>企业信息化敏捷开发框架使用注意事项及新手指南
+                    </span>
+                </div>
+            </div>
+            <div class="content-iframe" style="overflow: hidden;">
+                <div class="mainContent" id="content-main" style="">
+                    <iframe class="LRADMS_iframe" width="100%" height="100%" src="/Home/AdminWindosDesktop" frameborder="0" data-id="/Home/AdminWindosDesktop"></iframe>
+                </div>
+            </div>
+        </div>
+        <!--底部-->
+        <div class="footer">
+            <div style="float: left; width: 30%;">
+                &nbsp;技术支持：<a href="http://www.learun.cn/adms/index.html" target="_blank" style="color: white;">北京信息技术有限公司</a>
+            </div>
+            <div style="float: left; width: 40%; text-align: center;">
+                Copyright © 2014 - 2016 By XX.Net
+            </div>
+            <div style="float: left; width: 30%; text-align: right;">
+                <i class="fa fa-bell" title="消息通知" style="width: 30px; font-size: 16px; vertical-align: middle; margin-top: -1px; cursor: pointer;"></i>
+                <i id="btn_message" class="fa fa-comments" title="即时通讯" style="width: 30px; font-size: 18px; vertical-align: middle; margin-top: -1px; cursor: pointer;"></i>
+                <i class="fa fa-users" title="在线用户" style="width: 30px; font-size: 14px; vertical-align: middle; margin-top: -1px; cursor: pointer; margin-right: 5px;"></i>
+            </div>
+        </div>
+    </div>
+    <div id="loading_background" class="loading_background" style="display: none;"></div>
+    <div id="loading_manage">
+        正在拼了命为您加载…
+    </div>
+    <!--聊天窗口start-->
+    <div class="message-wrap">
+        <div class="message-content">
+            <div class="message-header">
+                企业内部微信
+                <div class="message-close">
+                    <a href="javascript:;">×</a>
+                </div>
+            </div>
+            <div class="message-body">
+                <div class="message-body-search">
+                    <input type="text" class="search-text" placeholder="搜索：同事名称、讨论组名称">
+                    <i class="fa fa-search"></i>
+                </div>
+                <div class="message-body-container">
+                    <div class="message-nav" style="display: block;">
+                        <ul>
+                            <li id="nav-contact-tab" class="active">
+                                <a title="联系人"><i class="fa fa-user"></i></a>
+                            </li>
+                            <li id="nav-group-tab">
+                                <a title="讨论组"><i class="fa fa-users" style="font-size: 20px;"></i></a>
+                            </li>
+                            <li id="nav-last-tab">
+                                <a title="最近回话"><i class="fa fa-comment"></i><span class="message-count">2</span></a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="message-group" style="height: 335px; overflow: auto; overflow-x: hidden;">
+                        <ul id="message-contact-list"></ul>
+                        <ul id="message-group-list" class="message-chatlist" style="display: none;">
+                            <div style="color: red;">目前不支持</div>
+                        </ul>
+                        <ul id="message-last-list" class="message-chatlist" style="display: none;">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="message-window">
+        <div class="message-window-header">
+            <span class="text">与 XXX 聊天中</span>
+            <div class="close">
+                <a href="javascript:;">×</a>
+            </div>
+        </div>
+        <div class="message-window-chat" style="overflow: auto; height: 260px;">
+            <div class="message-window-content" style="padding: 15px; height: auto; overflow: hidden;">
+            </div>
+        </div>
+        <div class="message-window-tool">
+            <a class="message-window-tool-seechatlog"><i class="fa fa-clock-o"></i>沟通记录</a>
+        </div>
+        <div class="message-window-send">
+            <textarea autofocus placeholder="按回车发送消息,shift+回车换行"></textarea>
+        </div>
+    </div>
+    <!--聊天窗口end-->
+</body>
+</html>
+

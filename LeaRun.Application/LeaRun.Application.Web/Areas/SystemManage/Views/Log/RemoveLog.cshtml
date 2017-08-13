@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.Title = "系统日志》清空数据页面";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var categoryId = request('categoryId');
+    //保存事件
+    function AcceptClick() {
+        var postData = $("#form1").GetWebControls("");
+        postData["categoryId"] = categoryId;
+        $.SaveForm({
+            url: "../../SystemManage/Log/RemoveLog",
+            param: postData,
+            loading: "正在清空数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+
+<div style="margin: 25px; margin-left: 40px; margin-right: 40px;">
+    <div style="padding-bottom: 5px;">日志保留时间</div>
+    <div>
+        <select id="keepTime" class="form-control" style="padding: 4px; padding-left: 6px;">
+            <option value="7">保留近一周</option>
+            <option value="1">保留近一个月</option>
+            <option value="3">保留近三个月</option>
+            <option value="0">不保留，全部删除</option>
+        </select>
+    </div>
+</div>

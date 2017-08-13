@@ -1,0 +1,34 @@
+<ion-modal-view ng-controller="lrOrderCtrl">
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear " ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+        <h1 class="title">订单管理</h1>
+    </ion-header-bar>
+    <div class="bar bar-subheader lr-subheader">
+      <div class="lr-left-tool">
+          <div class="lr-down-select"><span>全部</span><span class="num">{{data.records}}条</span><span><i class="icon ion-ios-arrow-down"></i></span></div>
+      </div>
+      <div class="lr-right-tool">
+          <button class="button button-clear"><i class="icon iconfont">&#xe6f5;</i></button>
+          <button class="button button-clear"><i class="icon iconfont">&#xe654;</i></button>
+      </div>
+  </div>
+  <ion-content delegate-handle="orderlist-content">
+    <ion-refresher pulling-text="下拉刷新" on-refresh="doRefresh()"></ion-refresher>
+    <div class="list  list-inset lr-list-type2" style="margin-top:40px;">
+      <ion-list>
+        <ion-item ng-repeat="order in data.orderInfos" class="item-remove-animate mt10" ng-click="openDetailsModal(order.orderId)">
+          <div class="row">
+            <div class="col-67"><span class="lr-title">{{order.customerName}}</span></div>
+            <div class="col-33"><span class="lr-title" style="text-align:right;">{{order.paymentDate}}</span></div>
+          </div>
+          <div class="row">
+            <div class="col-46"><div class="lr-label {{order.OrderbgColor}}">{{order.orderCode}}</div></div>
+            <div class="col-46 lr-item-content"><p><i class="icon ion-ios-person positive"></i><span>{{order.createUserName}}</span></p><p><i class="icon iconfont balanced">&#xe616;</i><span>{{order.accounts}}元</span></p></div>
+          </div>
+          <ion-option-button ng-click="doDelete(order)"><span class="lr-trash-circled"><i class="icon ion-ios-trash-outline"></i></span></ion-option-button>
+        </ion-item>
+      </ion-list>
+    </div>
+    <ion-infinite-scroll ng-if="data.moredata" on-infinite="doLoadMore()" distance="1%"></ion-infinite-scroll>
+  </ion-content>
+</ion-modal-view>

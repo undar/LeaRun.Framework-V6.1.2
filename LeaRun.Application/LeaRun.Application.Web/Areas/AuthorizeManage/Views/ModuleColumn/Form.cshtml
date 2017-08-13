@@ -1,0 +1,65 @@
+﻿@{
+    ViewBag.Title = "Form";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script type="text/javascript">
+    var moduleColumnId = request('moduleColumnId');
+    var moduleId = request('moduleId');
+    $(function () {
+        initControl();
+    })
+    var dataJson = top.Form.columnJson;
+    //初始化控件
+    function initControl() {
+        if (!!moduleColumnId) {
+            $.each(dataJson, function (i) {
+                var row = dataJson[i];
+                if (row.ModuleColumnId == moduleColumnId) {
+                    $("#form1").SetWebControls(row);
+                }
+            });
+        } else {
+            $("#ModuleId").val(moduleId);
+        }
+    }
+    //保存表单
+    function AcceptClick(callback) {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var data = $("#form1").GetWebControls(moduleColumnId);
+        data["ParentId"] = 0;
+        callback(data);
+        dialogClose();
+    }
+</script>
+<div style="margin-top: 10px; margin-right: 30px;">
+    <input id="ModuleColumnId" type="hidden" value="@Guid.NewGuid().ToString()" />
+    <input id="ModuleId" type="hidden" />
+    <table class="form">
+        <tr>
+            <th class="formTitle">编号<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="EnCode" type="text" class="form-control" placeholder="请输入编号" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">名称<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="FullName" type="text" class="form-control" placeholder="请输入名称" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">排序<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="SortCode" type="text" class="form-control" placeholder="请输入排序" isvalid="yes" checkexpession="Num" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">描述</th>
+            <td class="formValue">
+                <input id="Description" type="text" class="form-control" />
+            </td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,204 @@
+﻿@{
+    ViewBag.Title = "新闻管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+        InitialPage();
+        GetTree();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //layout布局
+        $('#layout').layout({
+            applyDemoStyles: true,
+            onresize: function () {
+                $(window).resize()
+            }
+        });
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $("#gridTable").setGridHeight($(window).height() - 169.5);
+                $("#itemTree").setTreeHeight($(window).height() - 52);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载树
+    var _Category;
+    function GetTree() {
+        var item = {
+            height: $(window).height() - 52,
+            param: { EnCode: "NewsCategory" },
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson",
+            onnodeclick: function (item) {
+                _Category = item.value;
+                $('#btn_Search').trigger("click");
+            }
+        };
+        //初始化
+        $("#itemTree").treeview(item);
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $grid = $("#gridTable");
+        $grid.jqGrid({
+            url: "../../PublicInfoManage/News/GetPageListJson",
+            datatype: "json",
+            height: $(window).height() - 169.5,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'NewsId', hidden: true },
+                { label: '标题', name: 'FullHead', index: 'FullHead', width: 500, align: 'left' },
+                { label: '作者', name: 'AuthorName', index: 'AuthorName', width: 100, align: 'left' },
+                { label: '小编', name: 'CompileName', index: 'CompileName', width: 100, align: 'left' },
+                { label: '栏目', name: 'Category', index: 'Category', width: 100, align: 'left' },
+                {
+                    label: "发布时间", name: "ReleaseTime", index: "ReleaseTime", width: 140, align: "left",
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                { label: '阅读次数', name: 'PV', index: 'PV', width: 80, align: 'center' },
+                {
+                    label: "发布状态", name: "EnabledMark", index: "EnabledMark", width: 80, align: "center", autowidth: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == 1) {
+                            return "<span class=\"label label-success\">已发布</span>";
+                        } else {
+                            return "<span class=\"label label-danger\">未发布</span>";
+                        }
+                    }
+                }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $grid.getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $grid.setSelection(selectedRowIndex, false);
+            }
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                Category: _Category,
+                FullHead: $("#txt_Keyword").val()
+            }
+            $grid.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+            }).trigger('reloadGrid');
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: "Form",
+            title: '添加文章',
+            url: '/PublicInfoManage/News/Form?category=' + escape(_Category),
+            width: "1000px",
+            height: "630px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    };
+    //编辑
+    function btn_edit() {
+        var keyValue = $("#gridTable").jqGridRowValue("NewsId");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "Form",
+                title: '修改文章',
+                url: '/PublicInfoManage/News/Form?keyValue=' + keyValue,
+                width: "1000px",
+                height: "630px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue("NewsId");
+        if (keyValue) {
+            $.RemoveForm({
+                url: "../../PublicInfoManage/News/RemoveForm",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的新闻！', 0);
+        }
+    }
+    //新闻栏目
+    function btn_category() {
+        dialogOpen({
+            id: "DataItemList",
+            title: '新闻栏目栏目',
+            url: '/SystemManage/DataItemList/Index?ItemCode=NewsCategory',
+            width: "800px",
+            height: "500px",
+            btn: null
+        });
+    }
+</script>
+<div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel">
+            <div class="panel-Title">新闻栏目</div>
+            <div id="itemTree"></div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="center-Panel">
+            <div class="panel-Title">新闻管理</div>
+            <div class="titlePanel">
+                <div class="title-search">
+                    <table>
+                        <tr>
+                            <td>
+                                <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                            </td>
+                            <td style="padding-left: 5px;">
+                                <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="toolbar">
+                    <div class="btn-group">
+                        <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                        <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+                        <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+                        <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+                    </div>
+                    <div class="btn-group">
+                        <a id="lr-category" class="btn btn-default" onclick="btn_category()"><i class="fa fa-tags"></i>&nbsp;新闻栏目</a>
+                    </div>
+                    <script>$('.toolbar').authorizeButton()</script>
+                </div>
+            </div>
+            <div class="gridPanel">
+                <table id="gridTable"></table>
+                <div id="gridPager"></div>
+            </div>
+        </div>
+    </div>
+</div>
+

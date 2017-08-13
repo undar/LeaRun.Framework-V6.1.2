@@ -1,0 +1,89 @@
+﻿@{
+    ViewBag.Title = "商机跟进页面";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var objectId = request('objectId');
+    var objectSort = request('objectSort');
+    $(function () {
+        GetTimeline();
+    })
+    //获取跟进记录列表
+    function GetTimeline() {
+        $.ajax({
+            url: "../../CustomerManage/TrailRecord/GetListJson",
+            data: { objectId: objectId },
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                var timeline = data.timeline;
+                var rows = data.rows;
+                var _html = "";
+                $.each(timeline, function (key) {
+                    _html += '<li> ';
+                    _html += '    <span class="label label-warning"><i class="fa fa-circle"></i>' + key + '</span> ';
+                    _html += '    <div class="content"> ';
+                    $.each(rows, function (i) {
+                        var row = rows[i];
+                        if (timeline[key] == formatDate(row.CreateDate, 'yyyy-MM-dd')) {
+                            _html += '        <div class="row"> ';
+                            _html += '            <span class="item-flag"><i class="fa fa-file-text-o"></i></span> ';
+                            _html += '            <div class="item-data"> ';
+                            _html += '                <span class="time">' + formatDate(row.CreateDate, 'hh:mm') + '</span> ';
+                            _html += '                <span class="name">' + row.CreateUserName + '<i class="fa fa-caret-right"></i></span> ';
+                            _html += '                <span class="action">' + row.TrackContent + '</span> ';
+                            _html += '            </div> ';
+                            _html += '        </div> ';
+                        }
+                    });
+                    _html += '    </div> ';
+                    _html += '</li> ';
+
+                });
+                $("#ul_timeline").html(_html);
+            }
+        });
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls("");
+        postData["ObjectId"] = objectId;
+        postData["ObjectSort"] = objectSort;
+        $.SaveForm({
+            url: "../../CustomerManage/TrailRecord/SaveForm",
+            param: postData,
+            loading: "正在保存数据...",
+            close: false,
+            success: function () {
+                GetTimeline();
+                $("#TrackContent").val('');
+            }
+        })
+    }
+</script>
+<div style="margin: 10px; margin-bottom: 0px;">
+    <table class="form">
+        <tr>
+            <td class="formValue">
+                <textarea id="TrackContent" maxlength="200" placeholder="活动记录内容" class="form-control" isvalid="yes" checkexpession="NotNull" style="height: 60px; border-radius: 5px;"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td class="formValue" style="text-align: right;">
+                <a id="btn_Search" class="btn btn-success" onclick="AcceptClick()"><i class="fa fa-paper-plane"></i>&nbsp;发布内容</a>
+            </td>
+        </tr>
+    </table>
+    <div style="overflow: auto; height: 380px">
+        <div class="timeline">
+            <div class="line"></div>
+            <ul id="ul_timeline">
+            </ul>
+        </div>
+    </div>
+</div>
+

@@ -1,0 +1,175 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{D6B8ABEA-C923-4605-99A9-B7ACA5DE4D8A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LeaRun.Application.Service</RootNamespace>
+    <AssemblyName>LeaRun.Application.Service</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\LeaRun.Application.Service.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccountService.cs" />
+    <Compile Include="AppManage\App_TemplatesService.cs" />
+    <Compile Include="AppManage\App_ProjectService.cs" />
+    <Compile Include="AuthorizeManage\AuthorizeService.T.cs" />
+    <Compile Include="AuthorizeManage\AuthorizeService.cs" />
+    <Compile Include="AuthorizeManage\ModuleFormInstanceService.cs" />
+    <Compile Include="AuthorizeManage\ModuleFormService.cs" />
+    <Compile Include="BaseManage\studentService.cs" />
+    <Compile Include="CustomerManage\Cadre_BaseService.cs" />
+    <Compile Include="CustomerManage\Cadre_PlanAdjustService.cs" />
+    <Compile Include="CustomerManage\CashBalanceService.cs" />
+    <Compile Include="CustomerManage\ChanceService.cs" />
+    <Compile Include="CustomerManage\ExpensesService.cs" />
+    <Compile Include="CustomerManage\InvoiceService.cs" />
+    <Compile Include="CustomerManage\ReceivableService.cs" />
+    <Compile Include="CustomerManage\Talent_InTeamService.cs" />
+    <Compile Include="CustomerManage\Talent_OutTeamService.cs" />
+    <Compile Include="CustomerManage\Talent_TeamService.cs" />
+    <Compile Include="CustomerManage\TrailRecordService.cs" />
+    <Compile Include="CustomerManage\CustomerContactService.cs" />
+    <Compile Include="CustomerManage\CustomerService.cs" />
+    <Compile Include="CustomerManage\OrderEntryService.cs" />
+    <Compile Include="CustomerManage\OrderService.cs" />
+    <Compile Include="CustomerManage\ReceivableReportService.cs" />
+    <Compile Include="DemoManage\OfficeRkService.cs" />
+    <Compile Include="FlowManage\FormModuleInstanceService.cs" />
+    <Compile Include="FlowManage\FormModuleRelationService.cs" />
+    <Compile Include="FlowManage\FormModuleContentService.cs" />
+    <Compile Include="FlowManage\FormModuleService.cs" />
+    <Compile Include="FlowManage\WFDelegateRecordService.cs" />
+    <Compile Include="FlowManage\WFDelegateRuleService.cs" />
+    <Compile Include="FlowManage\WFProcessInstanceService.cs" />
+    <Compile Include="FlowManage\WFProcessOperationHistoryService.cs" />
+    <Compile Include="FlowManage\WFProcessSchemeService.cs" />
+    <Compile Include="FlowManage\WFProcessTransitionHistoryService.cs" />
+    <Compile Include="FlowManage\WFRuntimeService.cs" />
+    <Compile Include="FlowManage\WFSchemeInfoService.cs" />
+    <Compile Include="FlowManage\WFSchemeContentService.cs" />
+    <Compile Include="FlowManage\WFFrmMainService.cs" />
+    <Compile Include="PublicInfoManage\ScheduleService.cs" />
+    <Compile Include="ReportManage\RptTempService.cs" />
+    <Compile Include="SystemManage\DataSourceService.cs" />
+    <Compile Include="SystemManage\ExcelExportService.cs" />
+    <Compile Include="SystemManage\ExcelImportService.cs" />
+    <Compile Include="SystemManage\LogService.cs" />
+    <Compile Include="SystemManage\CodeRuleService.cs" />
+    <Compile Include="PublicInfoManage\FileFolderService.cs" />
+    <Compile Include="PublicInfoManage\FileInfoService.cs" />
+    <Compile Include="PublicInfoManage\EmailCategoryService.cs" />
+    <Compile Include="PublicInfoManage\EmailContentService.cs" />
+    <Compile Include="MessageManage\IMContentService.cs" />
+    <Compile Include="MessageManage\IMGroupService.cs" />
+    <Compile Include="MessageManage\IMUserService.cs" />
+    <Compile Include="PublicInfoManage\NewsService.cs" />
+    <Compile Include="PublicInfoManage\NoticeService.cs" />
+    <Compile Include="SystemManage\DataBaseBackupService.cs" />
+    <Compile Include="AuthorizeManage\FilterIPService.cs" />
+    <Compile Include="AuthorizeManage\FilterTimeService.cs" />
+    <Compile Include="SystemManage\DataBaseLinkService.cs" />
+    <Compile Include="SystemManage\DataBaseTableService.cs" />
+    <Compile Include="SystemManage\AreaService.cs" />
+    <Compile Include="AuthorizeManage\ModuleButtonService.cs" />
+    <Compile Include="AuthorizeManage\ModuleColumnService.cs" />
+    <Compile Include="AuthorizeManage\ModuleService.cs" />
+    <Compile Include="AuthorizeManage\PermissionService.cs" />
+    <Compile Include="BaseManage\DepartmentService.cs" />
+    <Compile Include="BaseManage\OrganizeService.cs" />
+    <Compile Include="BaseManage\RoleService.cs" />
+    <Compile Include="BaseManage\UserService.cs" />
+    <Compile Include="BaseManage\PostService.cs" />
+    <Compile Include="BaseManage\JobService.cs" />
+    <Compile Include="BaseManage\UserGroupService.cs" />
+    <Compile Include="SystemManage\DataItemDetailService.cs" />
+    <Compile Include="SystemManage\DataItemService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WeChatManage\WeChatAppService.cs" />
+    <Compile Include="WeChatManage\WeChatOrganizeService.cs" />
+    <Compile Include="WeChatManage\WeChatUserService.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\LeaRun.Data\LeaRun.Data.Repository\LeaRun.Data.Repository.csproj">
+      <Project>{1751a2dd-0f00-4c76-b180-97e8f72fe078}</Project>
+      <Name>LeaRun.Data.Repository</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LeaRun.Data\LeaRun.Data\LeaRun.Data.csproj">
+      <Project>{528f308b-d2cd-4bd1-a94f-bf94abef08d7}</Project>
+      <Name>LeaRun.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LeaRun.Util\LeaRun.Util.Extension\LeaRun.Util.Extension.csproj">
+      <Project>{4b7dde80-dfa1-4938-93f8-3721e2c592b9}</Project>
+      <Name>LeaRun.Util.Extension</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LeaRun.Util\LeaRun.Util.FlowWork\LeaRun.Util.FlowWork.csproj">
+      <Project>{2db6492a-3cda-40cb-9bab-51f00510b0c2}</Project>
+      <Name>LeaRun.Util.FlowWork</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LeaRun.Util\LeaRun.Util.WebControl\LeaRun.Util.WebControl.csproj">
+      <Project>{93f81df7-5a0b-4a13-a90e-8cf7c41955c3}</Project>
+      <Name>LeaRun.Util.WebControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\LeaRun.Util\LeaRun.Util\LeaRun.Util.csproj">
+      <Project>{07aa2566-d0e5-47af-a17d-3b1c6aee598d}</Project>
+      <Name>LeaRun.Util</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LeaRun.Application.Code\LeaRun.Application.Code.csproj">
+      <Project>{9b10db87-130c-41d3-8687-1fac877db74a}</Project>
+      <Name>LeaRun.Application.Code</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LeaRun.Application.Entity\LeaRun.Application.Entity.csproj">
+      <Project>{c10920fe-8c74-4993-a7f4-1da189da842c}</Project>
+      <Name>LeaRun.Application.Entity</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LeaRun.Application.IService\LeaRun.Application.IService.csproj">
+      <Project>{6ce11ff9-1cb7-494e-89c7-5f06bea94211}</Project>
+      <Name>LeaRun.Application.IService</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

@@ -1,0 +1,198 @@
+﻿@{
+    ViewBag.Title = "设置字段关联属性";
+    Layout = "~/Views/Shared/_FormNew.cshtml";
+}
+
+<style>
+    .dataSources {
+        display: none;
+    }
+</style>
+<div style=" margin-top: 20px; margin-right: 20px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">设置字段<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="F_FliedLabel" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" readonly />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">关联类型<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_RelationType" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                </div>
+            </td>
+        </tr>
+        <tr class="dataSources dataValue">
+            <th class="formTitle">固定数值<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="F_Value" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr class="dataSources dataDataItem">
+            <th class="formTitle">数据字典<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_DataItemEncode" type="selectTree" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <th class="formTitle">数据库<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_DbId" type="select" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <th class="formTitle">数据表<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_DbTable" type="select" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <th class="formTitle">对应字段<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_DbRelationFlied" type="select" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <th class="formTitle">保存字段<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_DbSaveFlied" type="select" class="ui-select"></div>
+            </td>
+        </tr>
+    </table>
+</div>
+<script>
+    var data = {};
+    data.F_FliedLabel = decodeURI(request('F_FliedLabel'));
+    data.F_RelationType = decodeURI(request('F_RelationType'));
+    data.F_DataItemEncode = decodeURI(request('F_DataItemEncode'));
+    data.F_Value = decodeURI(request('F_Value'));
+    data.F_DbId = decodeURI(request('F_DbId'));
+    data.F_DbTable = decodeURI(request('F_DbTable'));
+    data.F_DbSaveFlied = decodeURI(request('F_DbSaveFlied'));
+    data.F_DbRelationFlied = decodeURI(request('F_DbRelationFlied'));
+
+    $(function () {
+        initControl();
+        $('#form1').setWebControls(data);
+    })
+    //初始化控件
+    function initControl() {
+        //关联类型0:无关联,1:GUID,2:数据字典3:数据表
+        $("#F_RelationType").comboBox({
+            data: [{ "id": 0, "text": "无关联" }, { "id": 1, "text": "GUID" }, { "id": 2, "text": "数据字典" }, { "id": 3, "text": "数据表" }, { "id": 4, "text": "固定数据" }, { "id": 5, "text": "操作人ID" }, { "id": 6, "text": "操作人名字" }, { "id": 7, "text": "操作时间" }],
+            id: "id",
+            text: "text",
+            selectOne: true,
+            description: "",
+            maxHeight: "140px",
+        }).bind('change', function () {
+            var value = $(this).attr('data-value');
+            if (value == "2") {
+                $('.dataDataDb').hide();
+                $('.dataValue').hide();
+                $('.dataDataItem').show();
+            }
+            else if (value == "3") {
+                $('.dataDataItem').hide();
+                $('.dataValue').hide();
+                $('.dataDataDb').show();
+            }
+            else if (value == "4") {
+                $('.dataDataItem').hide();
+                $('.dataDataDb').hide();
+                $('.dataValue').show();
+            }
+            else {
+                $('.dataSources').hide();
+            }
+        });
+        //绑定数据表
+        $("#F_DbId").comboBox({});
+        $("#F_DbTable").comboBox({});
+        $("#F_DbSaveFlied").comboBox({});
+        $("#F_DbRelationFlied").comboBox({});
+        //数据字典
+        $("#F_DataItemEncode").comboBoxTree({
+            url: "../../SystemManage/DataItem/GetTreeJson",
+            maxHeight: "120px",
+            allowSearch:true
+        });
+        //数据库
+        learun.getDataForm({
+            type: "get",
+            url: "../../SystemManage/DataBaseLink/GetListJson",
+            async: true,
+            success: function (data) {
+                $("#F_DbId").unbind();
+                $("#F_DbId").bind('change', function () {
+                    var dbId = $(this).attr('data-value');
+                    //数据表
+                    $("#F_DbTable").unbind();
+                    $("#F_DbTable").bind('change', function () {
+                        var tableName = $(this).attr('data-value');
+                        //数据字段
+                        learun.getDataForm({
+                            type: "get",
+                            url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                            param: { dataBaseLinkId: dbId, tableName: tableName },
+                            async: true,
+                            success: function (filedData) {
+                                $("#F_DbSaveFlied").comboBox({
+                                    data: filedData,
+                                    id: "column",
+                                    text: "column",
+                                    selectOne: true,
+                                    maxHeight: "160px",
+                                    description: ""
+                                });
+                                $("#F_DbRelationFlied").comboBox({
+                                    data: filedData,
+                                    id: "column",
+                                    text: "column",
+                                    selectOne: true,
+                                    maxHeight: "160px",
+                                    description: ""
+                                });
+                            }
+                        });
+                    });
+                    $("#F_DbTable").comboBox({
+                        url: "../../SystemManage/DataBaseTable/GetTableListJson",
+                        param: { dataBaseLinkId: dbId },
+                        id: "name",
+                        text: "name",
+                        selectOne: true,
+                        maxHeight: "80px",
+                        description: "",
+                        allowSearch: true
+                    });
+                });
+                $("#F_DbId").comboBox({
+                    data: data,
+                    id: "DatabaseLinkId",
+                    text: "DBAlias",
+                    selectOne: true,
+                    maxHeight: "140px",
+                    description: ""
+                });
+            }
+        });
+    }
+    //保存表单
+    function AcceptClick(callback) {
+        var postData = $("#form1").GetWebControls();
+        postData.F_DataItemName = $('#F_DataItemEncode').attr('data-text');
+        if (postData.F_RelationType == "2" && !postData.F_DataItemEncode)
+        {
+            learun.dialogTop({ msg: "请选择数据字典", type: "error" });
+            return false;
+        }
+        if (postData.F_RelationType == "4" && !postData.F_Value) {
+            learun.dialogTop({ msg: "请固定值", type: "error" });
+            return false;
+        }
+        callback(postData);
+        learun.dialogClose();
+    }
+</script>

@@ -1,0 +1,23 @@
+1.html文件：
+
+     在div.node_list_cont标签中加入内容：
+<div class="look_contract">
+	您已签署了纸质版合同（即购房优惠说明书），暂无线上电子合同
+</div>
+
+
+2.css文件（style.css）加入：
+.look_contract{
+	display:block;
+	position: absolute;
+	top:20%;
+	left:20%;
+	padding:0.16rem 0.266667rem;
+	width:60%;
+	background: rgba(0,0,0,.6);
+	border-radius: 0.106667rem;
+	text-align:center;
+	line-height: 1.4;
+	font-size: 0.373333rem;
+	color:#fff;
+}

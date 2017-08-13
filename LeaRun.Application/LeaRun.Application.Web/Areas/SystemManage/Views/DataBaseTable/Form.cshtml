@@ -1,0 +1,187 @@
+﻿@{
+    ViewBag.Title = "数据表表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<!--jqgrid表格组件start-->
+<link href="~/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="~/Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
+<!--表格组件end-->
+<script>
+    var dataBaseLinkId = request('dataBaseLinkId');
+    var tableName = request('tableName');
+    var tableDescription = request('tableDescription');
+    $(function () {
+        if (tableName != "") {
+            $("#tableName").val(tableName);
+            $("#tableDescription").val(tableDescription);
+        }
+        GetGrid();
+    })
+    function GetGrid() {
+        var $gridTable = $("#gridTable");
+        var _url = "../../SystemManage/DataBaseTable/GetTableFiledListJson";
+        if (tableName == "") {
+            _url = "";
+        }
+        $gridTable.jqGrid({
+            url: _url,
+            postData: { dataBaseLinkId: dataBaseLinkId, tableName: tableName },
+            datatype: "json",
+            height: 306,
+            autowidth: true,
+            unwritten:false,
+            colModel: [
+                { label: 'datatype', name: 'datatype', hidden: true },
+                { label: 'length', name: 'length', hidden: true },
+                { label: 'isnullable', name: 'isnullable', hidden: true },
+                { label: 'identity', name: 'identity', hidden: true },
+                { label: 'key', name: 'key', hidden: true },
+                { label: "字段名称", name: "column", width: 150, align: "left", sortable: false },
+                {
+                    label: "数据类型", name: "_column", width: 100, align: "left", sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        var length = "";
+                        if (rowObject.datatype == 'varchar') {
+                            length = "(" + rowObject.length + ")";
+                        }
+                        return rowObject.datatype + length;
+                    }
+                },
+                {
+                    label: "允许空", name: "_isnullable", width: 50, align: "center", sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return rowObject.isnullable == 1 ? "√" : "";
+                    }
+                },
+                {
+                    label: "标识", name: "_identity", width: 50, align: "center", sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return rowObject.identity == 1 ? "√" : "";
+                    }
+                },
+                {
+                    label: "主键", name: "_key", width: 50, align: "center", sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return rowObject.key == 1 ? "√" : "";
+                    }
+                },
+                { label: "默认值", name: "defaults", width: 100, align: "left", sortable: false },
+                { label: "说明", name: "remark", width: 100, align: "left", sortable: false }
+            ],
+            caption: "表字段信息",
+            rowNum: "1000",
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            hidegrid: false
+        });
+    }
+    //添加
+    function btn_add_field() {
+        dialogOpen({
+            id: "FieldForm",
+            title: '添加字段',
+            url: '/SystemManage/DataBaseTable/FieldForm',
+            width: "450px",
+            height: "350px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    };
+    //修改
+    function btn_edit_field() {
+        var keyValue = $("#gridTable").getGridParam('selrow');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "FieldForm",
+                title: '修改字段',
+                url: '/SystemManage/DataBaseTable/FieldForm?keyValue=' + keyValue,
+                width: "450px",
+                height: "350px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        }
+    }
+    //移除
+    function btn_delete_field() {
+        var keyValue = $("#gridTable").getGridParam('selrow');
+        if (keyValue) {
+            dialogConfirm('注：您确定要移除吗？该操作将无法恢复？', function (r) {
+                if (r) {
+                    $("#gridTable").delRowData(keyValue);
+                    dialogMsg("移除成功。", 1);
+                }
+            });
+
+        } else {
+            dialogMsg('请选择需要移除的字段！', 0);
+        }
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var fieldListJson = [];
+        var rows = $('#gridTable').find('[role=row]');
+        for (var i = 1; i < rows.length; i++) {
+            fieldListJson.push({
+                datatype: rows[i].childNodes[1].innerHTML.replace("&nbsp;", ''),
+                length: rows[i].childNodes[2].innerHTML.replace("&nbsp;",''),
+                isnullable: rows[i].childNodes[3].innerHTML.replace("&nbsp;", ''),
+                identity: rows[i].childNodes[4].innerHTML.replace("&nbsp;", ''),
+                key: rows[i].childNodes[5].innerHTML.replace("&nbsp;", ''),
+                column: rows[i].childNodes[6].innerHTML.replace("&nbsp;", ''),
+                defaults: rows[i].childNodes[11].innerHTML.replace("&nbsp;", ''),
+                remark: rows[i].childNodes[12].innerHTML.replace("&nbsp;", '')
+            });
+        }
+        var postData = {
+            dataBaseLinkId: dataBaseLinkId,
+            tableName: $("#tableName").val(),
+            tableDescription: $("#tableDescription").val(),
+            fieldListJson: JSON.stringify(fieldListJson)
+        }
+        $.SaveForm({
+            url: "../../SystemManage/DataBaseTable/SaveForm",
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div class="border-left border-right border-top" style="margin: 5px; margin-bottom: 0px; padding-bottom: 2px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">表名称：</th>
+            <td class="formValue">
+                <input id="tableName" type="text" class="form-control" style="box-shadow:none ;border-top: 0px; border-left: 0px; border-right: 0px;" placeholder="请输入表名称" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">表说明：</th>
+            <td class="formValue">
+                <input id="tableDescription" type="text" class="form-control" style="box-shadow:none ;border-top: 0px; border-left: 0px; border-right: 0px;" placeholder="添加说明" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+    </table>
+</div>
+<div style="margin: 5px; margin-top: 0px; margin-bottom: 0px;">
+    <table id="gridTable"></table>
+    <style>
+        .ui-jqgrid .ui-jqgrid-caption {
+            text-align: right;
+            padding-right: 5px;
+            background-color: #F5F5F5;
+        }
+    </style>
+</div>
+<div style="position: absolute; top: 51.5px; left: 10px;">
+    <a id="lr-add" class="btn btn-success btn-xs" onclick="btn_add_field()"><i class="fa fa-plus"></i>&nbsp;添加</a>
+    <a id="lr-edit" class="btn btn-info btn-xs" onclick="btn_edit_field()"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
+    <a id="lr-delete" class="btn btn-danger btn-xs" onclick="btn_delete_field()"><i class="fa fa-trash-o"></i>&nbsp;移除</a>
+</div>

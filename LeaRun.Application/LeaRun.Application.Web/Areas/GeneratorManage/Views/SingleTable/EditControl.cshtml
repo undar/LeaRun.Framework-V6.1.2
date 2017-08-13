@@ -1,0 +1,283 @@
+﻿@{
+    ViewBag.Title = "编辑控件";
+    Layout = "~/Views/Shared/_FormNew.cshtml";
+}
+<style>
+    .dataSources {
+        display: none;
+    }
+</style>
+<div style="margin-left: 10px; margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">字段标识</th>
+            <td class="formValue">
+                <input id="ControlId" disabled type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">字段名称</th>
+            <td class="formValue">
+                <input id="ControlName" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">字段验证</td>
+            <td class="formValue">
+                <select id="ControlValidator" class="form-control">
+                    <option value="">==请选择==</option>
+                    <option value="NotNull">不能为空</option>
+                    <option value="Num">数字</option>
+                    <option value="NumOrNull">数字或空</option>
+                    <option value="Double">小数</option>
+                    <option value="DoubleOrNull">小数或空</option>
+                    <option value="Phone">必须电话格式</option>
+                    <option value="PhoneOrNull">必须电话格式或空</option>
+                    <option value="Mobile">手机格式</option>
+                    <option value="MobileOrNull">手机格式或空</option>
+                    <option value="Email">电子邮件格式</option>
+                    <option value="isEmailOrNull">电子邮件格式或空</option>
+                    <option value="IDCard">身份证格式</option>
+                    <option value="IDCardOrNull">身份证格式或空</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">合并列</th>
+            <td class="formValue">
+                <div class="radio">
+                    <label>
+                        <input name="ControlColspan" type="radio" checked="checked" value="0">
+                        不合并
+                    </label>
+                    <label>
+                        <input name="ControlColspan" type="radio" value="1">
+                        合并
+                    </label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">默认值</th>
+            <td class="formValue">
+                <input id="ControlDefault" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">字段类型</td>
+            <td class="formValue">
+                <select id="ControlType" class="form-control">
+                    <option value="input">文本框</option>
+                    <option value="select">下拉框</option>
+                    <option value="datetime">日期框</option>
+                    <option value="textarea">文本区</option>
+                </select>
+            </td>
+        </tr>
+        <tr class="dataSources">
+            <td class="formTitle">数据类型</td>
+            <td class="formValue">
+                <select id="ControlDataSource" class="form-control">
+                    <option value="dataItem">数据字典</option>
+                    <option value="dataDb">数据表</option>
+                </select>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataItem">
+            <td class="formTitle">数据字典</td>
+            <td class="formValue">
+                <div id="ControlDataItemEncode" type="selectTree" class="ui-select"></div>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <td class="formTitle">数据库</td>
+            <td class="formValue">
+                <select id="ControlDataDb" class="form-control"></select>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <td class="formTitle">数据表</td>
+            <td class="formValue">
+                <select id="ControlDataTable" class="form-control"></select>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <td class="formTitle">id字段名</td>
+            <td class="formValue">
+                <select id="ControlDataFliedId" class="form-control"></select>
+            </td>
+        </tr>
+        <tr class="dataSources dataDataDb">
+            <td class="formTitle">text字段名</td>
+            <td class="formValue">
+                <select id="ControlDataFliedText" class="form-control"></select>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+    (function ($) {
+        "use strict";
+
+        $.formJS = {
+            controlId: request('controlId'),
+            dataJson: top.Form.bindingFormJson,
+            initial: function () {
+                console.log(request('controlId'));
+                console.log(top.Form.bindingFormJson);
+                $.formJS.initialControl();
+                $.formJS.initialData();
+            },
+            initialData: function () {
+                $.each($.formJS.dataJson, function (i, item) {
+                    if (item.controlId == $.formJS.controlId) {
+                        $("#ControlId").val(item.controlId);
+                        $("#ControlName").val(item.controlName);
+                        $("#ControlValidator").val(item.controlValidator);
+                        $("input[name='ControlColspan'][value=" + item.controlColspan + "]").attr("checked", true);
+                        $("#ControlDefault").val(item.controlDefault);
+                        $('#ControlType').val(item.controlType);
+                        if (item.controlType == "select") {
+                            $('#ControlType').trigger('change');
+                            $('#ControlDataSource').val(item.controlDataSource);
+                            $('#ControlDataSource').trigger('change');
+                            if (item.controlDataSource == "dataItem") {
+                                $('#ControlDataItemEncode').ComboBoxTreeSetValue(item.controlDataItemEncode);
+                            }
+                            else {
+                                $('#ControlDataDb').val(item.controlDataDb);
+                                $('#ControlDataDb').trigger('change');
+                                $('#ControlDataTable').val(item.controlDataTable);
+                                $('#ControlDataTable').trigger('change');
+                                $('#ControlDataFliedId').val(item.controlDataFliedId);
+                                $('#ControlDataFliedText').val(item.controlDataFliedText);
+                            }
+                        }
+                        return false;
+                    }
+                });
+            },
+            initialControl: function () {
+                $('#ControlType').on('change', function () {
+                    var $obj = $(this);
+                    var value = $obj.val();
+                    if (value == "select") {
+                        $('.dataSources').show();
+                        var datasourceType = $('#ControlDataSource').val();
+                        if (datasourceType == "dataItem") {
+                            $('.dataDataDb').hide();
+                        }
+                        else {
+                            $('.dataDataItem').hide();
+                        }
+                    }
+                    else {
+                        $('.dataSources').hide();
+                    }
+                });
+                $('#ControlDataSource').on('change', function () {
+                    var $obj = $(this);
+                    var value = $obj.val();
+                    if (value == "dataItem") {
+                        $('.dataDataItem').show();
+                        $('.dataDataDb').hide();
+                    }
+                    else {
+                        $('.dataDataItem').hide();
+                        $('.dataDataDb').show();
+                    }
+                });
+                $("#ControlDataItemEncode").comboBoxTree({
+                    url: "../../SystemManage/DataItem/GetTreeJson",
+                    maxHeight: "200px",
+                    click: function (item) {
+                        $.formJS.dataJson.controlDataItemEncodeValue = item.value;
+                    }
+                });
+                $.ajax({
+                    url: "../../SystemManage/DataBaseLink/GetListJson",
+                    type: "get",
+                    dataType: "json",
+                    async: false,
+                    success: function (data) {
+                        $("#ControlDataDb").append($("<option title='请选择'></option>").html("请选择"));
+                        $.each(data, function (i) {
+                            $("#ControlDataDb").append($("<option title='" + data[i].DBName + "'></option>").val(data[i].DatabaseLinkId).html(data[i].DBAlias));
+                            $("#ControlDataDb").change(function () {
+                                $.ajax({
+                                    url: "../../SystemManage/DataBaseTable/GetTableListJson",
+                                    data: { dataBaseLinkId: $("#ControlDataDb").val() },
+                                    type: "get",
+                                    dataType: "json",
+                                    async: false,
+                                    success: function (data) {
+
+                                        $("#ControlDataTable").html("");
+                                        $("#ControlDataFliedId").html("");
+                                        $("#ControlDataFliedText").html("");
+                                        $("#ControlDataTable").append($("<option title='请选择'></option>").html("请选择"));
+                                        if (data.errorcode != 0) {
+                                            //绑定表
+                                            $.each(data, function (i) {
+                                                $("#ControlDataTable").append($("<option></option>").val(data[i].name).html(data[i].name));
+                                            });
+                                            //表字段
+                                            $("#ControlDataTable").change(function () {
+
+                                                $.ajax({
+                                                    url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                                                    data: { dataBaseLinkId: $("#ControlDataDb").val(), tableName: $("#ControlDataTable").val() },
+                                                    type: "get",
+                                                    dataType: "json",
+                                                    async: false,
+                                                    success: function (data) {
+                                                        $("#ControlDataFliedId").html("");
+                                                        $("#ControlDataFliedText").html("");
+                                                        $.each(data, function (i) {
+                                                            $("#ControlDataFliedId").append($("<option title='" + data[i].remark + "'></option>").val(data[i].column).html(data[i].column));
+                                                            $("#ControlDataFliedText").append($("<option title='" + data[i].remark + "'></option>").val(data[i].column).html(data[i].column));
+                                                        });
+                                                    }
+                                                });
+                                            });
+                                        }
+                                    }
+                                });
+                            });
+                        });
+                    }
+                });
+            },
+            acceptClick: function (callBack) {//保存表单
+                var data = {
+                    controlId: $("#ControlId").val(),
+                    controlName: $("#ControlName").val(),
+                    controlValidator: $("#ControlValidator").val(),
+                    controlColspan: parseInt($("input[name='ControlColspan']:checked").val()),
+                    controlDefault: $("#ControlDefault").val(),
+                    controlType: $("#ControlType").val(),
+                    controlDataSource: $("#ControlDataSource").val(),
+                    controlDataItemEncode: $("#ControlDataItemEncode").attr('data-value'),
+                    controlDataItemEncodeValue: $.formJS.dataJson.controlDataItemEncodeValue,
+                    controlDataDb: $("#ControlDataDb").val(),
+                    controlDataTable: $("#ControlDataTable").val(),
+                    controlDataFliedId: $("#ControlDataFliedId").val(),
+                    controlDataFliedText: $("#ControlDataFliedText").val()
+                }
+                if (data.controlName == "") {
+                    dialogTop("请填写字段名称", "error");
+                }
+                else {
+                    callBack(data);
+                    dialogClose();
+                }
+            }
+        };
+
+        $(function () {
+            $.formJS.initial();
+        });
+
+    })(window.jQuery);
+</script>

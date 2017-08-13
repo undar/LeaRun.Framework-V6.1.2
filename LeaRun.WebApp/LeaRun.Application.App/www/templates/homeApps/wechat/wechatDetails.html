@@ -1,0 +1,40 @@
+<ion-modal-view>
+  <ion-header-bar  class="bar-stable nav-bar-block">
+    <div class="buttons">
+        <button class="button button-clear" ng-click="closeMessageDetailModel()"><i class="icon ion-ios-arrow-left"></i></button>
+    </div>
+      <div class="title" ng-bind="imServer.userAllList[imServer.currentUserId].RealName"></div>
+    <!--<div class="buttons">
+      <button class="button button-clear button-icon icon ion-person"></button>
+    </div>-->
+  </ion-header-bar>
+  <ion-content class="lr-stable-content" delegate-handle="messageDetailsScroll" id="message-detail-content">
+    <!--<ion-refresher pulling-text="..." on-refresh="doRefresh()" pulling-icon=""></ion-refresher>-->
+      <div ng-repeat="item in imServer.messages">
+          <p class="lr-message-time" ng-bind="formatDate(item.CreateDate)" ng-if="true"></p>
+          <div class="lr-message-wrap" ng-if="item.SendId == imServer.currentUserId">
+              <img ng-src="{{vm.getHeadImg(imServer.userAllList[imServer.currentUserId].UserOnLine)}}" class="lr-head-pic">
+              <span class="lr-triangle-left"></span>
+              <p class="lr-message" ng-bind="item.Content"></p>
+          </div>
+          <div class="lr-message-wrap" ng-if="item.SendId != imServer.currentUserId">
+              <img src="img/me.png" class="lr-head-pic-right">
+              <span class="lr-triangle-right"></span>
+              <p class="lr-message-right" ng-bind="item.Content"></p>
+          </div>
+      </div>
+  </ion-content>
+  <ion-footer-bar align-title="left" class="bar-light" resize-foot-bar>
+    <label class="item item-input lr-footer-input">
+        <textarea msd-elastic ng-model="vm.send_content"></textarea>
+      <!--<div class="buttons">
+        <button class="lr-footer-btn button button-icon icon ion-happy-outline"></button>
+      </div>-->
+    </label>
+    <div class="lr-footer-btn-wrap">
+      <div class="lr-send-button" ng-click="sendMsg()" >
+        <p>发送</p>
+      </div>
+    </div>
+  </ion-footer-bar>
+</ion-modal-view>

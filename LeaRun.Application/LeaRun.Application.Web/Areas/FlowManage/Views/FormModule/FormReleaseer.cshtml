@@ -1,0 +1,415 @@
+﻿@{
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_FlowFormNew.cshtml";
+}
+<link href="/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<style>
+    .boxs {
+        margin: auto;
+        width: 100%;
+        text-align: center;
+    }
+
+    .box {
+        display: inline-block;
+        margin-top: 30px;
+        width: 300px;
+        height: 25pc;
+        cursor: pointer;
+    }
+
+        .box:hover {
+            border-radius: 5px;
+            box-shadow: -5px 10px 50px 10px hsla(0,0%,73%,.6);
+        }
+
+        .box i {
+            margin-top: 40px;
+            margin-bottom: 50px;
+            color: #f0ad4e;
+            font-size: 5pc;
+        }
+
+        .box h3 {
+            margin-bottom: 20px;
+        }
+
+        .box p {
+            color: #666;
+            font-weight: 400;
+            font-size: 1pc;
+        }
+
+        .box .btn {
+            margin-top: 40px;
+        }
+
+    .previewBtn {
+        position: absolute;
+        right: 5px;
+        border: 1px solid #ccc;
+        height: 28px;
+        line-height: 28px;
+        width: 40px;
+        text-align: center;
+        cursor: pointer;
+        color: #999;
+        background: #F5F5F5;
+    }
+</style>
+
+<div id="custmerForm" style="padding:10px;display:none;">
+    <div class="alert alert-danger" style="text-align: left; margin-bottom: 10px;">
+        <i class="fa fa-warning alert-dismissible" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+        请你填写自定义表单功能发布信息，用于生成左侧菜单入口！
+    </div>
+    <div class="panel panel-default" style="margin-bottom: 10px;">
+        <div class="panel-heading">
+            <h3 class="panel-title">功能发布信息配置</h3>
+        </div>
+        <div class="panel-body">
+            <table class="form">
+                <tr>
+                    <th class="formTitle">编号<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input id="EnCode" type="text" class="form-control" placeholder="请输入编号" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                    <th class="formTitle">名称<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input id="FullName" type="text" class="form-control" placeholder="请输入名称" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">表单<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <div id="FrmId" type="selectTree" class="ui-select" style="float:left;width:235px;" isvalid="yes" checkexpession="NotNull"></div>
+                        <div title="预览表单" class="previewBtn">预览</div>
+                    </td>
+                    <th class="formTitle">排序<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input id="SortCode" type="text" class="form-control" isvalid="yes" checkexpession="Num" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">上级<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <div id="ParentId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                        </div>
+                    </td>
+                    <th class="formTitle">图标</th>
+                    <td class="formValue">
+                        <input id="Icon" type="text" class="form-control" />
+                        <span class="input-button selectIcon" title="选取图标">...</span>
+                    </td>
+
+                </tr>
+                <tr>
+                    <th class="formTitle" style="height: 37px;">选项</th>
+                    <td class="formValue">
+                        <div class="checkbox user-select">
+                            <label>
+                                <input id="IsMenu" type="checkbox" />
+                                菜单
+                            </label>
+                            <label>
+                                <input id="IsPublic" type="checkbox" />
+                                公共
+                            </label>
+                            <label>
+                                <input id="AllowExpand" type="checkbox" />
+                                展开
+                            </label>
+                            <label>
+                                <input id="EnabledMark" type="checkbox" checked="checked" />
+                                有效
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">
+                        描述
+                    </th>
+                    <td class="formValue" colspan="3">
+                        <textarea id="Description" class="form-control" style="height: 70px;"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+<div id="attrExForm" style="display:none;">
+
+    <div class="border-left border-right border-top" style="margin: 5px; margin-bottom: 0px; padding-bottom: 2px;">
+        <div style="border-bottom: 1px solid #ccc;height: 30px;line-height: 30px;background: #F5F5F5;color: #666;padding-left: 10px;">
+            <i class="fa fa-warning alert-dismissible" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+            请你填写扩展属性关联信息，给指定表单扩展输入字段！
+        </div>
+        <div style="height: 100px;padding-top:10px;">
+            <table class="form">
+                <tr>
+                    <th class="formTitle" style="text-align: left; padding-left: 7px; width: 65px;">表单选择<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <div id="FrmId2" type="selectTree" class="ui-select ui-underline" style="float:left;width:669px;" isvalid="yes" checkexpession="NotNull"></div>
+                        <div title="预览表单" class="previewBtn" style="border-radius:3px;">预览</div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle" style="text-align: left; padding-left: 7px; width: 65px;">所属功能<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <div id="ObjectId" type="selectTree" class="ui-select ui-underline" isvalid="yes" checkexpession="NotNull"></div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="margin: 5px; margin-top: 0px; margin-bottom: 0px;">
+        <table id="gridTable"></table>
+        <style>
+            .ui-jqgrid .ui-jqgrid-caption {
+                text-align: right;
+                padding-right: 5px;
+                background-color: #F5F5F5;
+            }
+        </style>
+    </div>
+</div>
+<div class="form-button">
+    <a id="btn_finish" class="btn btn-success">保存</a>
+</div>
+<div id="createPanel" style="position:absolute;top:0;z-index:10000;background-color:#fff;width:100%;height:100%;">
+    <div class="boxs">
+        <div class="box" onclick="$.formJs.initialType(0)" style="margin-right:40px;">
+            <i class="fa fa-file-text-o"></i>
+            <div>
+                <h3>自定义表单关联</h3>
+                <p>将表单发布成功能块</p>
+            </div>
+            <a class="btn btn-primary">创建关联</a>
+        </div>
+        <div class="box" onclick="$.formJs.initialType(1)">
+            <i class="fa fa-copy"></i>
+            <div>
+                <h3>扩展属性关联</h3>
+                <p>给现有的表单增加字段输入扩展</p>
+            </div>
+            <a class="btn btn-primary">创建关联</a>
+        </div>
+    </div>
+</div>
+<script src="/Content/scripts/plugins/jqgrid/js.js"></script>
+
+<script>
+    (function ($) {
+        "use strict";
+
+        var parameter = {
+            keyValue: false,
+            baseInfo: { FrmId: "", FrmKind: "", FrmName: "" },
+            moduleInfo: {}
+        };
+
+        $.formJs = {
+            type: 0,
+            initialType: function (type, isEdit) {
+                parameter.baseInfo.FrmKind = type;
+                switch (type) {
+                    case 0://自定义表单
+                        $('#custmerForm').show();
+                        $('#custmerForm textarea').height($(window).height() - 350);
+                        //上级
+                        $("#ParentId").comboBoxTree({
+                            url: "../../AuthorizeManage/Module/GetTreeJson?target=expand",
+                            description: "==请选择==",
+                            maxHeight: "195px",
+                            allowSearch: true
+                        });
+                        //绑定表单选择
+                        $("#FrmId").comboBoxTree({
+                            maxHeight: "190px",
+                            url: "../../FlowManage/FormModule/GetTreeJson",
+                            param: { "queryJson": '{"FrmType2": 2}' },
+                            //dataItemName: "FormSort",
+                            allowSearch: true,
+                            click: $.formJs.event.selectForm
+                        });
+                        if (!!isEdit) {
+                            $("#custmerForm").SetWebControls(parameter.moduleInfo);
+                            $("#FrmId").comboBoxTreeSetValue(parameter.baseInfo.FrmId);
+                        }
+                        break;
+                    case 1://属性扩展
+                        $('#attrExForm').show();
+                        //所属功能
+                        $("#ObjectId").comboBoxTree({
+                            url: "../../AuthorizeManage/Module/GetTreeJson",
+                            description: "==请选择==",
+                            maxHeight: "195px",
+                            allowSearch: true,
+                            click: function (item) {
+                                if (item.F_Target == "iframe") {
+                                    $(".tip_container").remove();
+                                    parameter.baseInfo.ObjectId = item.id;
+                                    parameter.baseInfo.ObjectName = item.text;
+                                    parameter.baseInfo.ObjectFormId = "";
+                                    $("#gridTable").jqGrid('setGridParam', {
+                                        postData: { moduleId: item.id },
+                                        url: "../../AuthorizeManage/ModuleButton/GetTreeListJson"
+                                    }).trigger('reloadGrid');
+                                }
+                                else {
+                                    learun.dialogTop({ msg: "请选择功能页面", type: "error" });
+                                    return "false";
+                                }
+                            }
+                        });
+                        //绑定表单选择
+                        $("#FrmId2").comboBoxTree({
+                            maxHeight: "190px",
+                            url: "../../FlowManage/FormModule/GetTreeJson",
+                            param: { "queryJson": '{"FrmType2": 2}' },
+                            //dataItemName: "FormSort",
+                            allowSearch: true,
+                            click: $.formJs.event.selectForm
+                        });
+                        var $gridTable = $("#gridTable");
+                        $gridTable.jqGrid({
+                            datatype: "json",
+                            height: 212,
+                            postData: { moduleId: parameter.baseInfo.ObjectId },
+                            url: "../../AuthorizeManage/ModuleButton/GetTreeListJson",
+                            autowidth: true,
+                            unwritten: false,
+                            colModel: [
+                                { label: "主键", name: "ModuleButtonId", hidden: true },
+                                { label: "名称", name: "FullName", width: 140, align: "left", sortable: false },
+                                { label: "编号", name: "EnCode", width: 140, align: "left", sortable: false },
+                                { label: "地址", name: "ActionAddress", width: 400, align: "left", sortable: false },
+                            ],
+                            multiselect: true,
+                            caption: "功能按钮",
+                            rowNum: "1000",
+                            rownumbers: true,
+                            shrinkToFit: false,
+                            gridview: true,
+                            hidegrid: false,
+                            loadComplete: function (data) {
+                                if (parameter.baseInfo.ObjectFormId != undefined && parameter.baseInfo.ObjectFormId != null && parameter.baseInfo.ObjectFormId != "") {
+                                    $.each(data.rows, function (i, item) {
+                                        if (parameter.baseInfo.ObjectFormId.indexOf(item.ModuleButtonId) != -1) {
+                                            $gridTable.jqGrid('setSelection', i + 1);
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                        if (!!isEdit) {
+                            $("#FrmId2").comboBoxTreeSetValue(parameter.baseInfo.FrmId);
+                            $("#ObjectId").comboBoxTreeSetValue(parameter.baseInfo.ObjectId);
+
+                            parameter.baseInfo.ObjectName = $('#FrmId2 .ui-select-text').text();
+                        }
+                        break;
+                }
+                $('#createPanel').hide();
+            },
+            loadData: function () {
+                parameter.keyValue = learun.request('keyValue');
+                //获取表单
+                if (!!parameter.keyValue) {
+                    //获取表单
+                    learun.setForm({
+                        url: "../../FlowManage/FormModule/GetRelationEntityJson",
+                        param: { keyValue: parameter.keyValue },
+                        success: function (data) {
+                            //alert(data);
+                            parameter.baseInfo = data.baseInfo;
+                            parameter.moduleInfo = data.moduleInfo;
+                            $.formJs.initialType(data.baseInfo.FrmKind, true);
+                        }
+                    });
+                }
+            },
+            bindEvent: function () {
+                $('#btn_finish').unbind();
+                $('.selectIcon').unbind();
+                $('.previewBtn').unbind();
+
+                $('#btn_finish').on('click', $.formJs.event.save);
+                $('.selectIcon').on('click', $.formJs.event.selectIcon);
+                $('.previewBtn').on('click', $.formJs.event.preview);
+            },
+            event: {
+                save: function () {
+                    if (parameter.baseInfo.FrmKind == 0) {//自定义表单
+                        if (!$('#custmerForm').Validform()) {
+                            return false;
+                        }
+                        parameter.moduleInfo = $("#custmerForm").GetWebControls();
+                        parameter.moduleInfo["Target"] = "iframe";
+                        parameter.moduleInfo["UrlAddress"] = "/FlowManage/FormModule/CustmerFormIndex";
+                    }
+                    else {
+                        if (!$('#attrExForm').Validform()) {
+                            return false;
+                        }
+                        parameter.baseInfo.ObjectFormId = $("#gridTable").jqGridRowValue("ModuleButtonId");
+                        parameter.baseInfo.ObjectName += '/' + $("#gridTable").jqGridRowValue("FullName");
+                    }
+                    learun.saveForm({
+                        url: "../../FlowManage/FormModule/SaveRelationForm?keyValue=" + (parameter.keyValue ? parameter.keyValue : ""),
+                        param: { baseInfo: JSON.stringify(parameter.baseInfo), moduleInfo: JSON.stringify(parameter.moduleInfo) },
+                        loading: "正在保存数据...",
+                        success: function () {
+                            $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                        }
+                    });
+                },
+                preview: function () {
+                    if (parameter.baseInfo.FrmId != "") {
+                        dialogOpen({
+                            id: "previewForm",
+                            title: '预览表单【' + parameter.baseInfo.FrmName + "】",
+                            url: '/FlowManage/FormModule/FormPreview?keyValue=' + parameter.baseInfo.FrmId,
+                            width: "1100px",
+                            height: "700px",
+                            btn: false
+                        });
+                    }
+                    else {
+                        learun.dialogTop({ msg: "请选择表单", type: "error" });
+                    }
+                },
+                selectIcon: function () {
+                    dialogOpen({
+                        id: "SelectIcon",
+                        title: '选取图标',
+                        url: '/AuthorizeManage/Module/Icon?ControlId=Icon',
+                        width: "1000px",
+                        height: "600px",
+                        btn: false
+                    });
+                },
+                selectForm: function (item) {
+                    if (item.Sort == "form") {
+                        $(".tip_container").remove();
+                        parameter.baseInfo.FrmId = item.id;
+                        parameter.baseInfo.FrmVersion = item.version;
+                        parameter.baseInfo.FrmName = item.text;
+                    }
+                    else {
+                        learun.dialogTop({ msg: "请选择表单而不是表单分类", type: "error" });
+                        return "false";
+                    }
+                }
+            }
+        };
+
+        $(function () {
+            $.formJs.loadData();
+            $.formJs.bindEvent();
+        });
+    })(window.jQuery);
+</script>
+
+

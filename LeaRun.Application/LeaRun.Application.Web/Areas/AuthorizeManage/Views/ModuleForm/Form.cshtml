@@ -1,0 +1,256 @@
+﻿@{
+    ViewBag.Title = "表单创建";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link href="~/Content/styles/learun-ckbox-radio.css" rel="stylesheet" />
+<script src="~/Content/scripts/utils/learun-applayout.js"></script>
+<link href="~/Content/styles/learun-applayout.css" rel="stylesheet" />
+<script>
+    var keyValue = request('keyValue');
+    var postData = {};//提交数据
+    var frmdatabase = "";
+    var frmapp = "";
+    $(function () {
+        initialPage();
+    })
+    //初始化页面
+    function initialPage() {
+        initBaseInfo();
+        //加载导向
+        $('#wizard').wizard().on('change', function (e, data) {
+            var $finish = $("#btn_finish");
+            var $next = $("#btn_next");
+            if (data.direction == "next") {
+                switch (data.step) {
+                    case 1:
+                        return bindingBase();
+                        break;
+                    case 2://绑定表单
+                        if (!bindingFrm()) {
+                            return false;
+                        }
+                        $finish.removeAttr('disabled');
+                        $next.attr('disabled', 'disabled');
+                        $('#btn_caogao').attr('disabled', 'disabled');
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                $finish.attr('disabled', 'disabled');
+                $next.removeAttr('disabled');
+                $('#btn_caogao').removeAttr('disabled');
+            }
+        });
+        //获取表单
+        if (!!keyValue) {
+            //获取表单
+            $.SetForm({
+                url: "../../AuthorizeManage/ModuleForm/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#step-1").SetWebControls(data);
+                    setFrmInfo(data);
+                }
+            });
+        }
+        //保存为草稿
+        $('#btn_caogao').click(function () {
+            if (!$('#step-1').Validform()) {
+                return false;
+            }
+            var _data = $("#step-1").GetWebControls(keyValue);
+            postData = $.extend(postData, _data);
+            postData["EnabledMark"] = 3;
+            var frmcotentls = frmapp.getData(true);
+            postData.FormJson = JSON.stringify(frmcotentls);
+            $.SaveForm({
+                url: "../../AuthorizeManage/ModuleForm/SaveForm?keyValue=" + keyValue,
+                param: postData,
+                loading: "正在保存数据...",
+                success: function () {
+                    $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                }
+            })
+        });
+    }
+    /*=========基本配置（begin）==================================================================*/
+    function initBaseInfo()
+    {
+        //模块功能
+        $("#ModuleId").ComboBoxTree({
+            description: "==请选择==",
+            height: "301px",
+            url: "../../AuthorizeManage/Module/GetTreeJson",
+            allowSearch: true
+        });
+    }
+    function bindingBase()
+    {
+        if (!$('#step-1').Validform()) {
+            return false;
+        }
+        var _postData = $("#step-1").GetWebControls(keyValue);
+        var a = false;
+        $.SetForm({
+            url: "../../AuthorizeManage/ModuleForm/IsExistModuleId",
+            param: { keyValue: keyValue,moduleId: _postData.ModuleId},
+            success: function (data) {
+                a = data;
+            }
+        });
+        if (a)
+        {
+            dialogTop("该模块已经有系统表单", "error");
+            return false;
+        }
+        postData = $.extend(postData, _postData);
+        setFrmInfo(postData);
+        return true;
+       
+    }
+    /*=========基本配置（end）====================================================================*/
+
+    /*=========表单选择（begin）==================================================================*/
+
+    function setFrmInfo(data)
+    {
+        postData.FormJson = data.FormJson;
+        frmapp = $('#frmdesign').frmDesign({
+            Height: 572,
+            frmContent: postData.FormJson
+        });
+    }
+    function bindingFrm() {
+        var frmcotentls = frmapp.getData();
+        if (!frmcotentls) {
+            return false;
+        }
+        postData.FormJson = JSON.stringify(frmcotentls);
+        return true;
+    }
+    /*=========表单选择（end）====================================================================*/
+
+    /*=========创建完成（begin）==================================================================*/
+    function finishbtn() {
+        postData["EnabledMark"] = 1;
+        $.SaveForm({
+            url: "../../AuthorizeManage/ModuleForm/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+    /*=========创建完成（end）====================================================================*/
+
+
+</script>
+
+<div class="widget-body">
+    <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>基本配置<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>表单设计<span class="chevron"></span></li>
+            <li data-target="#step-4"><span class="step">3</span>创建完成<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content" id="wizard-steps" style="border-left: none; border-bottom: none; border-right: none;">
+        <div class="step-pane active" id="step-1" style="margin: 10px; margin-bottom: 0px;">
+            <div class="alert alert-danger" style="text-align: left; margin-bottom: 10px;">
+                <i class="fa fa-warning alert-dismissible" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+                请你填写系统表单信息，用于创建或修改系统表单！
+            </div>
+            <div class="panel panel-default" style="margin-bottom: 10px;">
+                <div class="panel-heading">
+                    <h3 class="panel-title">表单基本信息配置</h3>
+                </div>
+                <div class="panel-body" style="width: 99%;height: 460px;">
+                    <table class="form">
+                        <tr>
+                            <td class="formTitle">表单编码<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <input id="EnCode" type="text" class="form-control" placeholder="请输入编码" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="formTitle">表单名称<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <input id="FullName" type="text" class="form-control" placeholder="请输入名称" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="formTitle">所属功能<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <div id="ModuleId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="formTitle">排序<font face="宋体">*</font></td>
+                            <td class="formValue">
+                                <input id="SortCode" type="text" class="form-control" isvalid="yes" checkexpession="Num" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle" valign="top" style="padding-top: 4px;">
+                                备注
+                            </th>
+                            <td class="formValue">
+                                <textarea id="Description" class="form-control" style="height: 180px;"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="step-pane" id="step-2">
+            <div class="tab-content" style="height:572px;overflow-y:auto;overflow-x:hidden;position: relative;">
+                <div id="frmdesign"></div>
+                <div class="app_layout app_preview" id="frmpreview" style="display:none;"></div>
+            </div>
+        </div>
+        <div class="step-pane" id="step-4">
+            <div class="drag-tip" style="text-align: center; padding-top: 100px;">
+                <i class="fa fa-check-circle" style="font-size: 204px; color: #0FA74F;"></i>
+                <div id="finish-msg" style="font-weight: bold; font-size: 24px; color: #0FA74F; margin-top: 20px;">
+                </div>
+                <p style="color: #666; font-size: 12px; margin-top: 10px;">
+                    <h5 href="#">设计完成,请点击保存</h5>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="form-button" id="wizard-actions">
+        <a id="btn_last" disabled class="btn btn-default btn-prev">上一步</a>
+        <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+        <a id="btn_caogao" class="btn btn-info">保存草稿</a>
+        <a id="btn_finish" disabled class="btn btn-success" onclick="finishbtn();">保存</a>
+    </div>
+</div>
+
+<style>
+    .app_layout .item_table {
+        overflow: hidden;
+        border-top: 1px solid #eeecec;
+        border-bottom: none;
+        min-height: 400px;
+    }
+
+    .app_layout .item_row {
+        cursor: default;
+        position: relative;
+    }
+
+    .app_layout .item_row .item_field_label {
+        cursor: move;
+    }
+
+    .app_layout .item_row:last-child {
+        border-bottom: 1px solid #eeecec;
+    }
+
+    .app_layout .ui-state-highlight {
+        border: none;
+    }
+</style>

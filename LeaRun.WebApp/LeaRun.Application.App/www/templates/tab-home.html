@@ -1,0 +1,25 @@
+﻿<ion-view hide-nav-bar="true" view-title="首页">
+    <ion-content>
+        <!--首页图片轮询-->
+        <div class="banner" >
+            <img src="/img/desk.jpg" />
+        </div>
+
+        <div class="list" style="height:230px;">
+            <ion-item class=" item-icon-left applist" ng-repeat="homeApp in homeApps" type="item-text-wrap" ng-click="openPageModel(homeApp.viewid)">
+                <i class="icon {{homeApp.icon}} {{homeApp.color}}"></i>
+                <span>{{homeApp.name}}</span>
+            </ion-item>
+        </div>
+
+        <div class="list bulletin">
+            <div class="item item-divider">
+                <i class="icon ion-ios-bell-outline"></i>公告
+            </div>
+            <ion-item class="item-icon-right" type="item-text-wrap" ng-repeat="announce in announces" href="#/tab/home/{{announce.viewid}}">
+                <span>{{announce.name}}</span>
+                <i class="icon ion-ios-arrow-right icon-accessory "></i>
+            </ion-item>
+        </div>
+    </ion-content>
+</ion-view>

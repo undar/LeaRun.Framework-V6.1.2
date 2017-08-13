@@ -1,0 +1,128 @@
+﻿@{
+    ViewBag.Title = "编号规则详细";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<!--jqgrid表格组件start-->
+<link href="~/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="~/Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
+<!--表格组件end-->
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+        GetGrid();
+        $("#form1").find('.form-control,.ui-select,input').attr('readonly', 'readonly');
+    })
+    //初始化控件
+    function initControl() {
+        //规则方式
+        $("#Mode").ComboBox({
+            description: "==请选择==",
+        });
+        //系统功能
+        $("#ModuleId").ComboBoxTree({
+            url: "../../AuthorizeManage/Module/GetTreeJson",
+            description: "==请选择==",
+            height: "240px",
+            allowSearch: true
+        });
+    }
+    function GetGrid() {
+        var $gridTable = $("#gridTable");
+        $gridTable.jqGrid({
+            datatype: "json",
+            height: 187,
+            width: $(window).width() - 11,
+            unwritten: false,
+            colModel: [
+                { label: "ItemType", name: "ItemType", hidden: true },
+                { label: "前缀", name: "ItemTypeName", width: 120, align: "left", sortable: false },
+                { label: "格式", name: "FormatStr", width: 120, align: "left", sortable: false },
+                { label: "步长", name: "StepValue", width: 100, align: "left", sortable: false },
+                { label: "初始值", name: "InitValue", width: 120, align: "left", sortable: false },
+                { label: "说明", name: "Description", width: 200, align: "left", sortable: false }
+            ],            caption: "规则设计",            rowNum: "1000",
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            hidegrid: false
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../SystemManage/CodeRule/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    $gridTable[0].addJSONData(JSON.parse(data.RuleFormatJson));
+                }
+            });
+        }
+    }
+</script>
+<div class="border-left border-right border-top" style="margin: 5px; margin-bottom: 0px; padding-bottom: 2px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">对象编号：</th>
+            <td class="formValue">
+                <input id="EnCode"  type="text" class="form-control input-underline" />
+            </td>
+            <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">对象名称：</th>
+            <td class="formValue">
+                <input id="FullName" type="text" class="form-control input-underline" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">规则方式：</th>
+            <td class="formValue">
+                <div id="Mode" type="select" class="ui-select ui-underline">
+                    <ul>
+                        <li data-value="1">自动</li>
+                        <li data-value="0">可更改</li>
+                    </ul>
+                </div>
+            </td>
+            <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">系统功能：</th>
+            <td class="formValue">
+                <div id="ModuleId" type="selectTree" class="ui-select ui-underline"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">说明</th>
+            <td class="formValue" colspan="3">
+                <input id="Description" type="text" class="form-control input-underline" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">创建用户</td>
+            <td class="formValue">
+                <input id="CreateDate" type="text" class="form-control input-underline" />
+            </td>
+            <td class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">创建时间</td>
+            <td class="formValue">
+                <input id="CreateUserName" type="text" class="form-control input-underline" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">修改用户</td>
+            <td class="formValue">
+                <input id="ModifyDate" type="text" class="form-control input-underline" />
+            </td>
+            <td class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">修改时间</td>
+            <td class="formValue">
+                <input id="ModifyUserName" type="text" class="form-control input-underline" />
+            </td>
+        </tr>
+    </table>
+</div>
+<div style="margin: 5px; margin-top: 0px; margin-bottom: 0px;">
+    <table id="gridTable"></table>
+    <style>
+        .ui-jqgrid .ui-jqgrid-caption {
+            text-align: left;
+            padding-right: 5px;
+            background-color: #F5F5F5;
+        }
+    </style>
+</div>

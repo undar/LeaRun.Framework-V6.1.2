@@ -1,0 +1,311 @@
+﻿@{
+    ViewBag.Title = "时段过滤";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var objectId = request('objectId');
+    var objectType = request('objectType');
+    $(function () {
+        initControl();
+    })
+    //初始化控件
+    function initControl() {
+        $(".tab-content li").click(function () {
+            if (!!$(this).hasClass("active")) {
+                $(this).removeClass("active");
+            } else {
+                $(this).addClass("active").siblings("li");
+            }
+        });
+        $.SetForm({
+            url: "../../AuthorizeManage/FilterTime/GetFormJson",
+            param: { keyValue: objectId },
+            success: function (data) {
+                if (data == null) {
+                    return false;
+                }
+                $("#form1").SetWebControls(data);
+                var WeekDay1 = data.WeekDay1.split(',');
+                for (var i = 0; i < WeekDay1.length; i++) {
+                    var value = WeekDay1[i];
+                    $("#WeekDay1").find('li').find('[data-value="' + value + '"]').parent().addClass('active');
+                }
+                var WeekDay2 = data.WeekDay2.split(',');
+                for (var i = 0; i < WeekDay2.length; i++) {
+                    var value = WeekDay2[i];
+                    $("#WeekDay2").find('li').find('[data-value="' + value + '"]').parent().addClass('active');
+                }
+                var WeekDay3 = data.WeekDay3.split(',');
+                for (var i = 0; i < WeekDay3.length; i++) {
+                    var value = WeekDay3[i];
+                    $("#WeekDay2").find('li').find('[data-value="' + value + '"]').parent().addClass('active');
+                }
+                var WeekDay4 = data.WeekDay4.split(',');
+                for (var i = 0; i < WeekDay4.length; i++) {
+                    var value = WeekDay4[i];
+                    $("#WeekDay4").find('li').find('[data-value="' + value + '"]').parent().addClass('active');
+                }
+                var WeekDay5 = data.WeekDay5.split(',');
+                for (var i = 0; i < WeekDay5.length; i++) {
+                    var value = WeekDay5[i];
+                    $("#WeekDay5").find('li').find('[data-value="' + value + '"]').parent().addClass('active');
+                }
+                var WeekDay6 = data.WeekDay6.split(',');
+                for (var i = 0; i < WeekDay6.length; i++) {
+                    var value = WeekDay6[i];
+                    $("#WeekDay6").find('li').find('[data-value="' + value + '"]').parent().addClass('active');
+                }
+                var WeekDay7 = data.WeekDay7.split(',');
+                for (var i = 0; i < WeekDay7.length; i++) {
+                    var value = WeekDay7[i];
+                    $("#WeekDay7").find('li').find('[data-value="' + value + '"]').parent().addClass('active');
+                }
+            }
+        });
+        $("#ObjectId").val(objectId);
+        $("#ObjectType").val(objectType);
+    }
+    //保存表单
+    function AcceptClick() {
+        var selectedTime = [];
+        $('.tab-pane').each(function () {
+            var time = [];
+            $(this).find('ul li.active').each(function () {
+                var value = $(this).find('a').html();
+                time.push(value);
+            });
+            selectedTime.push(String(time))
+        });
+        var postData = $("#form1").GetWebControls();
+        postData["WeekDay1"] = selectedTime[0];
+        postData["WeekDay2"] = selectedTime[1];
+        postData["WeekDay3"] = selectedTime[2];
+        postData["WeekDay4"] = selectedTime[3];
+        postData["WeekDay5"] = selectedTime[4];
+        postData["WeekDay6"] = selectedTime[5];
+        postData["WeekDay7"] = selectedTime[6];
+        $.SaveForm({
+            url: "../../AuthorizeManage/FilterTime/SaveForm",
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div class="alert alert-danger" style="text-align: left; margin: 0px; border-radius: 0px; border-left: none; border-top: none; border-right: none;">
+    <i class="fa fa-question-circle" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+    声明：已勾选的时段不允许访问!
+</div>
+<div style="margin-left: 10px; margin-right: 10px;">
+    <input id="ObjectId" type="hidden" />
+    <input id="ObjectType" type="hidden" />
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#WeekDay1" data-toggle="tab">星期一</a></li>
+        <li><a href="#WeekDay2" data-toggle="tab">星期二</a></li>
+        <li><a href="#WeekDay3" data-toggle="tab">星期三</a></li>
+        <li><a href="#WeekDay4" data-toggle="tab">星期四</a></li>
+        <li><a href="#WeekDay5" data-toggle="tab">星期五</a></li>
+        <li><a href="#WeekDay6" data-toggle="tab">星期六</a></li>
+        <li><a href="#WeekDay7" data-toggle="tab">星期日</a></li>
+    </ul>
+    <div class="tab-content">
+        <div id="WeekDay1" class="tab-pane active" style="margin-left: 15px; margin-top: 15px;">
+            <ul class="sys_spec_text">
+                <li><a data-value="00:00">00:00</a></li>
+                <li><a data-value="01:00">01:00</a></li>
+                <li><a data-value="02:00">02:00</a></li>
+                <li><a data-value="03:00">03:00</a></li>
+                <li><a data-value="04:00">04:00</a></li>
+                <li><a data-value="05:00">05:00</a></li>
+                <li><a data-value="06:00">06:00</a></li>
+                <li><a data-value="07:00">07:00</a></li>
+                <li><a data-value="08:00">08:00</a></li>
+                <li><a data-value="09:00">09:00</a></li>
+                <li><a data-value="10:00">10:00</a></li>
+                <li><a data-value="11:00">11:00</a></li>
+                <li><a data-value="12:00">12:00</a></li>
+                <li><a data-value="13:00">13:00</a></li>
+                <li><a data-value="14:00">14:00</a></li>
+                <li><a data-value="15:00">15:00</a></li>
+                <li><a data-value="16:00">16:00</a></li>
+                <li><a data-value="17:00">17:00</a></li>
+                <li><a data-value="18:00">18:00</a></li>
+                <li><a data-value="19:00">19:00</a></li>
+                <li><a data-value="20:00">20:00</a></li>
+                <li><a data-value="21:00">21:00</a></li>
+                <li><a data-value="22:00">22:00</a></li>
+                <li><a data-value="23:00">23:00</a></li>
+            </ul>
+        </div>
+        <div id="WeekDay2" class="tab-pane" style="margin-left: 15px; margin-top: 15px;">
+            <ul class="sys_spec_text">
+                <li><a data-value="00:00">00:00</a></li>
+                <li><a data-value="01:00">01:00</a></li>
+                <li><a data-value="02:00">02:00</a></li>
+                <li><a data-value="03:00">03:00</a></li>
+                <li><a data-value="04:00">04:00</a></li>
+                <li><a data-value="05:00">05:00</a></li>
+                <li><a data-value="06:00">06:00</a></li>
+                <li><a data-value="07:00">07:00</a></li>
+                <li><a data-value="08:00">08:00</a></li>
+                <li><a data-value="09:00">09:00</a></li>
+                <li><a data-value="10:00">10:00</a></li>
+                <li><a data-value="11:00">11:00</a></li>
+                <li><a data-value="12:00">12:00</a></li>
+                <li><a data-value="13:00">13:00</a></li>
+                <li><a data-value="14:00">14:00</a></li>
+                <li><a data-value="15:00">15:00</a></li>
+                <li><a data-value="16:00">16:00</a></li>
+                <li><a data-value="17:00">17:00</a></li>
+                <li><a data-value="18:00">18:00</a></li>
+                <li><a data-value="19:00">19:00</a></li>
+                <li><a data-value="20:00">20:00</a></li>
+                <li><a data-value="21:00">21:00</a></li>
+                <li><a data-value="22:00">22:00</a></li>
+                <li><a data-value="23:00">23:00</a></li>
+            </ul>
+        </div>
+        <div id="WeekDay3" class="tab-pane" style="margin-left: 15px; margin-top: 15px;">
+            <ul class="sys_spec_text">
+                <li><a data-value="00:00">00:00</a></li>
+                <li><a data-value="01:00">01:00</a></li>
+                <li><a data-value="02:00">02:00</a></li>
+                <li><a data-value="03:00">03:00</a></li>
+                <li><a data-value="04:00">04:00</a></li>
+                <li><a data-value="05:00">05:00</a></li>
+                <li><a data-value="06:00">06:00</a></li>
+                <li><a data-value="07:00">07:00</a></li>
+                <li><a data-value="08:00">08:00</a></li>
+                <li><a data-value="09:00">09:00</a></li>
+                <li><a data-value="10:00">10:00</a></li>
+                <li><a data-value="11:00">11:00</a></li>
+                <li><a data-value="12:00">12:00</a></li>
+                <li><a data-value="13:00">13:00</a></li>
+                <li><a data-value="14:00">14:00</a></li>
+                <li><a data-value="15:00">15:00</a></li>
+                <li><a data-value="16:00">16:00</a></li>
+                <li><a data-value="17:00">17:00</a></li>
+                <li><a data-value="18:00">18:00</a></li>
+                <li><a data-value="19:00">19:00</a></li>
+                <li><a data-value="20:00">20:00</a></li>
+                <li><a data-value="21:00">21:00</a></li>
+                <li><a data-value="22:00">22:00</a></li>
+                <li><a data-value="23:00">23:00</a></li>
+            </ul>
+        </div>
+        <div id="WeekDay4" class="tab-pane" style="margin-left: 15px; margin-top: 15px;">
+            <ul class="sys_spec_text">
+                <li><a data-value="00:00">00:00</a></li>
+                <li><a data-value="01:00">01:00</a></li>
+                <li><a data-value="02:00">02:00</a></li>
+                <li><a data-value="03:00">03:00</a></li>
+                <li><a data-value="04:00">04:00</a></li>
+                <li><a data-value="05:00">05:00</a></li>
+                <li><a data-value="06:00">06:00</a></li>
+                <li><a data-value="07:00">07:00</a></li>
+                <li><a data-value="08:00">08:00</a></li>
+                <li><a data-value="09:00">09:00</a></li>
+                <li><a data-value="10:00">10:00</a></li>
+                <li><a data-value="11:00">11:00</a></li>
+                <li><a data-value="12:00">12:00</a></li>
+                <li><a data-value="13:00">13:00</a></li>
+                <li><a data-value="14:00">14:00</a></li>
+                <li><a data-value="15:00">15:00</a></li>
+                <li><a data-value="16:00">16:00</a></li>
+                <li><a data-value="17:00">17:00</a></li>
+                <li><a data-value="18:00">18:00</a></li>
+                <li><a data-value="19:00">19:00</a></li>
+                <li><a data-value="20:00">20:00</a></li>
+                <li><a data-value="21:00">21:00</a></li>
+                <li><a data-value="22:00">22:00</a></li>
+                <li><a data-value="23:00">23:00</a></li>
+            </ul>
+        </div>
+        <div id="WeekDay5" class="tab-pane" style="margin-left: 15px; margin-top: 15px;">
+            <ul class="sys_spec_text">
+                <li><a data-value="00:00">00:00</a></li>
+                <li><a data-value="01:00">01:00</a></li>
+                <li><a data-value="02:00">02:00</a></li>
+                <li><a data-value="03:00">03:00</a></li>
+                <li><a data-value="04:00">04:00</a></li>
+                <li><a data-value="05:00">05:00</a></li>
+                <li><a data-value="06:00">06:00</a></li>
+                <li><a data-value="07:00">07:00</a></li>
+                <li><a data-value="08:00">08:00</a></li>
+                <li><a data-value="09:00">09:00</a></li>
+                <li><a data-value="10:00">10:00</a></li>
+                <li><a data-value="11:00">11:00</a></li>
+                <li><a data-value="12:00">12:00</a></li>
+                <li><a data-value="13:00">13:00</a></li>
+                <li><a data-value="14:00">14:00</a></li>
+                <li><a data-value="15:00">15:00</a></li>
+                <li><a data-value="16:00">16:00</a></li>
+                <li><a data-value="17:00">17:00</a></li>
+                <li><a data-value="18:00">18:00</a></li>
+                <li><a data-value="19:00">19:00</a></li>
+                <li><a data-value="20:00">20:00</a></li>
+                <li><a data-value="21:00">21:00</a></li>
+                <li><a data-value="22:00">22:00</a></li>
+                <li><a data-value="23:00">23:00</a></li>
+            </ul>
+        </div>
+        <div id="WeekDay6" class="tab-pane" style="margin-left: 15px; margin-top: 15px;">
+            <ul class="sys_spec_text">
+                <li><a data-value="00:00">00:00</a></li>
+                <li><a data-value="01:00">01:00</a></li>
+                <li><a data-value="02:00">02:00</a></li>
+                <li><a data-value="03:00">03:00</a></li>
+                <li><a data-value="04:00">04:00</a></li>
+                <li><a data-value="05:00">05:00</a></li>
+                <li><a data-value="06:00">06:00</a></li>
+                <li><a data-value="07:00">07:00</a></li>
+                <li><a data-value="08:00">08:00</a></li>
+                <li><a data-value="09:00">09:00</a></li>
+                <li><a data-value="10:00">10:00</a></li>
+                <li><a data-value="11:00">11:00</a></li>
+                <li><a data-value="12:00">12:00</a></li>
+                <li><a data-value="13:00">13:00</a></li>
+                <li><a data-value="14:00">14:00</a></li>
+                <li><a data-value="15:00">15:00</a></li>
+                <li><a data-value="16:00">16:00</a></li>
+                <li><a data-value="17:00">17:00</a></li>
+                <li><a data-value="18:00">18:00</a></li>
+                <li><a data-value="19:00">19:00</a></li>
+                <li><a data-value="20:00">20:00</a></li>
+                <li><a data-value="21:00">21:00</a></li>
+                <li><a data-value="22:00">22:00</a></li>
+                <li><a data-value="23:00">23:00</a></li>
+            </ul>
+        </div>
+        <div id="WeekDay7" class="tab-pane" style="margin-left: 15px; margin-top: 15px;">
+            <ul class="sys_spec_text">
+                <li><a data-value="00:00">00:00</a></li>
+                <li><a data-value="01:00">01:00</a></li>
+                <li><a data-value="02:00">02:00</a></li>
+                <li><a data-value="03:00">03:00</a></li>
+                <li><a data-value="04:00">04:00</a></li>
+                <li><a data-value="05:00">05:00</a></li>
+                <li><a data-value="06:00">06:00</a></li>
+                <li><a data-value="07:00">07:00</a></li>
+                <li><a data-value="08:00">08:00</a></li>
+                <li><a data-value="09:00">09:00</a></li>
+                <li><a data-value="10:00">10:00</a></li>
+                <li><a data-value="11:00">11:00</a></li>
+                <li><a data-value="12:00">12:00</a></li>
+                <li><a data-value="13:00">13:00</a></li>
+                <li><a data-value="14:00">14:00</a></li>
+                <li><a data-value="15:00">15:00</a></li>
+                <li><a data-value="16:00">16:00</a></li>
+                <li><a data-value="17:00">17:00</a></li>
+                <li><a data-value="18:00">18:00</a></li>
+                <li><a data-value="19:00">19:00</a></li>
+                <li><a data-value="20:00">20:00</a></li>
+                <li><a data-value="21:00">21:00</a></li>
+                <li><a data-value="22:00">22:00</a></li>
+                <li><a data-value="23:00">23:00</a></li>
+            </ul>
+        </div>
+    </div>
+</div>

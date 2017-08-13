@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A610B831-7B6A-4E53-8C5D-9B3F0707E349}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LeaRun.Util.WeChat</RootNamespace>
+    <AssemblyName>LeaRun.Util.WeChat</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Comm\Cryptography.cs" />
+    <Compile Include="Comm\HttpHelper.cs" />
+    <Compile Include="Comm\Program.cs" />
+    <Compile Include="Comm\Sample.cs" />
+    <Compile Include="Comm\WXBizMsgCrypt.cs" />
+    <Compile Include="Model\Attribute\IAttribute.cs" />
+    <Compile Include="Model\Attribute\IsNotNullAttribute.cs" />
+    <Compile Include="Model\Attribute\LengthAttribute.cs" />
+    <Compile Include="Model\HttpGetFileRequest.cs" />
+    <Compile Include="Model\HttpGetRequest.cs" />
+    <Compile Include="Model\HttpPostFileRequest.cs" />
+    <Compile Include="Model\HttpPostRequest.cs" />
+    <Compile Include="Model\IHttpSend.cs" />
+    <Compile Include="Model\ISend.cs" />
+    <Compile Include="Model\OperationRequestBase.cs" />
+    <Compile Include="Model\OperationResultsBase.cs" />
+    <Compile Include="Model\Request\DepartmentCreate.cs" />
+    <Compile Include="Model\Request\DepartmentDelete.cs" />
+    <Compile Include="Model\Request\DepartmentList.cs" />
+    <Compile Include="Model\Request\DepartmentResult.cs" />
+    <Compile Include="Model\Request\DepartmentListResult.cs" />
+    <Compile Include="Model\Request\DepartmentUpdate.cs" />
+    <Compile Include="Model\Request\MediaGet.cs" />
+    <Compile Include="Model\Request\MediaGetResult.cs" />
+    <Compile Include="Model\Request\MediaUpload.cs" />
+    <Compile Include="Model\Request\MediaUploadResult.cs" />
+    <Compile Include="Model\Request\MenuCreate.cs" />
+    <Compile Include="Model\Request\MenuDelete.cs" />
+    <Compile Include="Model\Request\MenuGet.cs" />
+    <Compile Include="Model\Request\MenuGetResult.cs" />
+    <Compile Include="Model\Request\MenuItem.cs" />
+    <Compile Include="Model\Request\Oauth2Authorize.cs" />
+    <Compile Include="Model\Request\SendMessage\MessageSend.cs" />
+    <Compile Include="Model\Request\SendMessage\MessageSendResult.cs" />
+    <Compile Include="Model\Request\SendMessage\SendFile.cs" />
+    <Compile Include="Model\Request\SendMessage\SendImage.cs" />
+    <Compile Include="Model\Request\SendMessage\SendMpnews.cs" />
+    <Compile Include="Model\Request\SendMessage\SendNews.cs" />
+    <Compile Include="Model\Request\SendMessage\SendText.cs" />
+    <Compile Include="Model\Request\SendMessage\SendVideo.cs" />
+    <Compile Include="Model\Request\SendMessage\SendVoice.cs" />
+    <Compile Include="Model\Request\TagAddtagusers.cs" />
+    <Compile Include="Model\Request\TagAddtagusersResult.cs" />
+    <Compile Include="Model\Request\TagCreate.cs" />
+    <Compile Include="Model\Request\TagCreateResult.cs" />
+    <Compile Include="Model\Request\TagDelete.cs" />
+    <Compile Include="Model\Request\TagDeltagusers.cs" />
+    <Compile Include="Model\Request\TagDeltagusersResult.cs" />
+    <Compile Include="Model\Request\TagGet.cs" />
+    <Compile Include="Model\Request\TagUpdate.cs" />
+    <Compile Include="Model\Request\UserAuthsucc.cs" />
+    <Compile Include="Model\Request\UserCreate.cs" />
+    <Compile Include="Model\Request\UserDelete.cs" />
+    <Compile Include="Model\Request\UserInvite.cs" />
+    <Compile Include="Model\Request\UserGet.cs" />
+    <Compile Include="Model\Request\UserGetResult.cs" />
+    <Compile Include="Model\Request\UserGetuserinfo.cs" />
+    <Compile Include="Model\Request\UserGetuserinfoResult.cs" />
+    <Compile Include="Model\Request\UserSimplelist.cs" />
+    <Compile Include="Model\Request\UserSimplelistResult.cs" />
+    <Compile Include="Model\Request\UserUpdate.cs" />
+    <Compile Include="Model\Token.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LeaRun.Util\LeaRun.Util.csproj">
+      <Project>{07aa2566-d0e5-47af-a17d-3b1c6aee598d}</Project>
+      <Name>LeaRun.Util</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

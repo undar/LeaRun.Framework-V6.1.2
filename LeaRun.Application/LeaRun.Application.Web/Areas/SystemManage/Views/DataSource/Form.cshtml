@@ -1,0 +1,221 @@
+﻿@{
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_FormNew.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+        //加载导向
+        $('#wizard').wizard().on('change', function (e, data) {
+            var $finish = $("#btn_finish");
+            var $next = $("#btn_next");
+            if (data.direction == "next") {
+                switch (data.step) {
+                    case 1:
+                        if (!$('#baseInfo').Validform()) {
+                            return false;
+                        }
+                        break;
+                    case 2:
+                        if (!$('#sqlStrInfo').Validform()) {
+                            return false;
+                        }
+
+                        var _sqlStrInfo = $('#sqlStrInfo').GetWebControls();
+                        var _parametersHtml = "";
+                        var _parametersHasFlag = {};
+                        var _regParameters = new RegExp("&.*\\b", "g");
+                        var _regResult = null;
+                        do {
+                            _regResult = _regParameters.exec(_sqlStrInfo.Strsql);
+                            if (_regResult != null && _parametersHasFlag[_regResult[0]] == undefined) {
+                                _parametersHasFlag[_regResult[0]] = 1;
+                                _parametersHtml += '<tr><td class="formTitle">' + _regResult[0] + '</td></tr>';
+                                _parametersHtml += '<tr><td class="formValue"><input id="' + _regResult[0].replace('&', '') + '" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" /></td></tr>';
+                            }
+
+                        }
+                        while (_regResult != null)
+                        if (_parametersHtml != "") {
+                            $('#parametersDiv').show();
+                            $('#parametersDiv').width(160);
+                            $('#showDataDiv').width(450);
+                            var _html = '<div style="color:#9f9f9f;padding-bottom:10px;"><i style="padding-right:5px;" class="fa fa-info-circle"></i><span>填写参数</span></div>';
+                            $('#parametersDiv').html(_html + '<table>' + _parametersHtml + "</table>");
+                        }
+                        else {
+                            $('#parametersDiv').hide();
+
+                        }
+                        break;
+                    case 3:
+                        $finish.removeAttr('disabled');
+                        $next.attr('disabled', 'disabled');
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                $finish.attr('disabled', 'disabled');
+                $next.removeAttr('disabled');
+            }
+        });
+        //完成，保存事件
+        $("#btn_finish").click(function () {
+            var _baseInfo = $('#baseInfo').GetWebControls();
+            var _sqlStrInfo = $('#sqlStrInfo').GetWebControls();
+            _baseInfo.Strsql = _sqlStrInfo.Strsql;
+            $.SaveForm({
+                url: "../../SystemManage/DataSource/SaveForm?keyValue=" + keyValue,
+                param: _baseInfo,
+                loading: "正在保存数据...",
+                success: function () {
+                    $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                }
+            })
+        });
+    });
+    //初始化控件
+    function initControl() {
+        $("#DbId").ComboBoxTree({
+            description: "==请选择==",
+            height: "160px",
+            url: "../../SystemManage/DataBaseLink/GetTreeJson",
+            allowSearch: true
+        }).bind("change", function (item) {
+            var text = $(this).attr('data-text');
+            $('#DbName').val(text);
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../SystemManage/DataSource/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#baseInfo").SetWebControls(data);
+                    $('#Strsql').val(data.Strsql);
+                }
+            });
+        }
+
+        $('#btn_search').on('click', function () {
+
+            if (!$('#parametersDiv').Validform()) {
+                return false;
+            }
+
+            var _baseInfo = $('#baseInfo').GetWebControls();
+            var _sqlStrInfo = $('#sqlStrInfo').GetWebControls();
+            var _queryJson = $('#parametersDiv').GetWebControls();
+            _baseInfo.Strsql = _sqlStrInfo.Strsql;
+            var postData = {
+                "strEntity": JSON.stringify(_baseInfo),
+                "queryJson": JSON.stringify(_queryJson)
+            };
+            $.getDataForm({
+                url: "../../SystemManage/DataSource/TestData",
+                param: postData,
+                type: "post",
+                success: function (data) {
+                    var strJson = JSON.stringify(data, null, "\t");
+                    $('#showData').val(strJson);
+                }
+            });
+        });
+    }
+</script>
+<div class="widget-body" id="tempbody">
+    <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>基础设置<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>源数据设置<span class="chevron"></span></li>
+            <li data-target="#step-3"><span class="step">3</span>源数据测试<span class="chevron"></span></li>
+            <li data-target="#step-4"><span class="step">4</span>创建完成<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content" id="wizard-steps" style="border-left: none; border-bottom: none; border-right: none;">
+        <div class="step-pane active" id="step-1" style="margin-left: 0px; margin-top: 15px; margin-right: 30px;">
+            <table id="baseInfo" class="form">
+                <tr>
+                    <th class="formTitle">数据编号<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input id="Code" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">数据名称<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input id="Name" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="formTitle">数据库名<font face="宋体">*</font></td>
+                    <td class="formValue">
+                        <div id="DbId" type="selectTree" class="ui-select"></div>
+                        <input id="DbName" type="text" class="form-control" style="display:none;" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">备注信息</th>
+                    <td class="formValue">
+                        <textarea id="Description" class="form-control" style="height: 170px;"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="step-pane" id="step-2" style="margin: 15px 15px  0px 15px;">
+            <div class="alert alert-danger" style="text-align: left; margin: 5px;">
+                注：请填写SQL语句,参数请前缀&。例子：SELECT * FROM TABLE WHERE a = &a;
+            </div>
+            <table id="sqlStrInfo" class="form">
+                <tr>
+                    <td class="formValue">
+                        <textarea id="Strsql" class="form-control" style="height: 230px;" isvalid="yes" checkexpession="NotNull"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="step-pane" id="step-3" style="margin: 0px 15px  0px 15px;">
+            <div id="parametersDiv" style="float:left;border-right: #ccc 1px solid;height: 324px;overflow-y:auto;padding-top:15px;">
+
+            </div>
+            <div id="showDataDiv" style="float:right;margin-top:15px;">
+                <table id="tempGraphform" class="form">
+                    <tr>
+                        <td class="formValue">
+                            <a id="btn_search" class="btn btn-danger">查询</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="formValue">
+                            <textarea id="showData" class="form-control" style="height: 250px;"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="step-pane" id="step-4" style="margin-top: 15px; margin-right: 30px;">
+            <div style="height: 400px;">
+                <div class="drag-tip" style="text-align: center; padding-top: 50px;">
+                    <i class="fa fa-check-circle" style="font-size: 204px; color: #0FA74F;"></i>
+                    <div id="finish-msg" style="font-weight: bold; font-size: 24px; color: #0FA74F; margin-top: 20px;">
+                    </div>
+                    <p style="color: #666; font-size: 12px; margin-top: 10px;">
+                        创建完成,请点击保存
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="form-button" id="wizard-actions">
+    <a id="btn_last" disabled class="btn btn-default btn-prev">上一步</a>
+    <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+    <a id="btn_finish" disabled class="btn btn-success">完成</a>
+</div>
+<style>
+    body {
+        overflow: hidden;
+    }
+</style>

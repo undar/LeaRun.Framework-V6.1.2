@@ -1,0 +1,70 @@
+<ion-modal-view>
+  <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+    <button class="button button-clear " ng-click="closeDetailsModal()"><i class="icon ion-ios-arrow-left"></i></button>
+    <h1 class="title">{{detailsData.fullName}}</h1>
+    <div class="buttons">
+    </div>
+  </ion-header-bar>
+  <ion-content delegate-handle="orderDetailHandle">
+    <ion-list>
+      <ion-item style="color: rgba(0, 0, 0, 0.5);font-size: 12px;padding: 2px 10px;">
+        <div><span class="balanced">{{detailsData.createUserName}}</span> 创建于 {{detailsData.createDate}}</div>
+        <div ng-hide="!detailsData.ModifyUserName"><span class="balanced">{{detailsData.modifyUserName}}</span> 修改于 {{detailsData.modifyDate}}</div>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>客户名称</span>
+        </div>
+        <span>{{detailsData.customerName}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>销售人员</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.sellerName}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>单据日期</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.orderDate}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>单据编号</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.orderCode}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>优惠金额</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.discountSum}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>应收金额</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.accounts}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>已收金额</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.receivedAmount}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>收款日期</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.paymentDate}}</span>
+      </ion-item>
+      <ion-item class="lr-details-item">
+        <div class="lr-item-htitle">
+          <span>收款方式</span>
+        </div>
+        <span class="lr-label royal-bg">{{detailsData.paymentMode}}</span>
+      </ion-item>
+    </ion-list>
+  </ion-content>
+</ion-modal-view>

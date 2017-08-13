@@ -1,0 +1,56 @@
+<ion-modal-view ng-controller="IMCtrl">
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear " ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+        <div class="title">即时通讯</div>
+        <div class="buttons">
+            <!--<button ng-hide="!vm.isConnected" class="button button-clear no-animation button-icon icon ion-android-search"></button>-->
+        </div>
+    </ion-header-bar>
+    <ion-tabs class="tabs-icon-top tabs-color-active-positive" ng-hide="!vm.isConnected">
+        <ion-tab title="通讯" icon-on="ion-ios-chatbubble" icon-off="ion-ios-chatbubble-outline" ui-sref="tab.message">
+            <ion-nav-view animation="slide-left-right" name="tab-message">
+                <ion-content>
+                    <ion-list>
+                        <ion-item class="item-avatar" ng-repeat="lastOneUser in imServer.lastUserArray | orderBy:'IMCreateTime':'DESC' " ng-click="openPageModel('',lastOneUser.OtherId)">
+                            <img src="{{vm.getHeadImg(imServer.userAllList[lastOneUser.OtherId].UserOnLine)}}">
+                            <span class="lr-sm-red-icon" ng-show="lastOneUser.UnReadNum > 0">
+                                <p ng-bind="lastOneUser.UnReadNum"></p>
+                            </span>
+                            <h2 ng-bind="imServer.userAllList[lastOneUser.OtherId].RealName"></h2>
+                            <p class="lr-list-p" ng-bind="lastOneUser.IMContent"></p>
+                            <span class="lr-push-right" ng-bind="lastOneUser.IMCreateTime"></span>
+                        </ion-item>
+                    </ion-list>
+                </ion-content>
+            </ion-nav-view>
+        </ion-tab>
+        <ion-tab title="通讯录" icon-on="ion-ios-people" icon-off="ion-ios-people-outline" ui-sref="tab.friends">
+            <ion-nav-view animation="slide-left-right" name="tab-friends">
+                <ion-content>
+                    <ion-list>
+                        <ion-item ng-repeat="userGroup in imServer.userAllListByDepartment" class="lr-contacts-item">
+                            <div class="item item-divider">
+                                {{userGroup.DepartmentName}}
+                            </div>
+                            <ion-list class="lr-list">
+                                <ion-item ng-repeat="oneUser in userGroup.UserList" class="lr-item" ng-click="openPageModel('',oneUser.UserId)">
+                                    <div class="lr-contacts-pic">
+                                        <img src="{{vm.getHeadImg(oneUser.UserOnLine)}}">
+                                    </div>
+                                    <h2>{{oneUser.RealName}}</h2>
+                                </ion-item>
+                            </ion-list>
+                        </ion-item>
+                    </ion-list>
+                </ion-content>
+            </ion-nav-view>
+        </ion-tab>
+    </ion-tabs>
+    <ion-content ng-hide="vm.isConnected" style="background-color:#886AEA">
+        <div style="margin:50% auto; width:100%;text-align:center;color:#fff;font-size:24px;">
+            <div><i class="icon ion-ios-chatboxes-outline" style="font-size:80px;"></i></div>
+            <div style="margin-top:10px;">{{vm.connectText}}</div>
+        </div>
+    </ion-content>
+</ion-modal-view>
+

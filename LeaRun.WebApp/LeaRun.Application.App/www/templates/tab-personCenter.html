@@ -1,0 +1,41 @@
+﻿<ion-view view-title="我的">
+    <ion-content >
+        <ion-list>
+            <ion-item class="item-remove-animate item-avatar item-icon-right lr-account-item mt5"  type="item-text-wrap" ng-click="openPageModel('personBaseInfo.html')">
+                <img ng-src="{{userinfo.headicon}}" />
+                <h2>{{userinfo.realname}}</h2>
+                <p>账号:{{userinfo.account}}</p>
+                <i class="icon ion-chevron-right icon-accessory"></i>
+            </ion-item>
+
+            <ion-item class="item-remove-animate item-icon-left item-icon-right mt20" type="item-text-wrap" ng-click="openPageModel('contactInfo.html')">
+                <i class="icon ion-ios-telephone-outline positive"></i>
+                <span>联系方式</span>
+                <i class="icon ion-chevron-right icon-accessory"></i>
+            </ion-item>
+            <ion-item class="item-remove-animate item-icon-left  item-icon-right" type="item-text-wrap" ng-click="openPageModel('modifypassword.html')">
+                <i class="icon ion-ios-compose-outline positive"></i>
+                <span>修改密码</span>
+                <i class="icon ion-chevron-right icon-accessory"></i>
+            </ion-item>
+            <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="openPageModel('feedBackProblem.html')">
+                <i class="icon ion-ios-chatbubble-outline positive"></i>
+                <span>反馈问题</span>
+                <i class="icon ion-chevron-right icon-accessory"></i>
+            </ion-item>
+            <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" ng-click="openPageModel('aboutUs.html')">
+                <i class="icon ion-ios-people-outline positive"></i>
+                <span>关于我们</span>
+                <i class="icon ion-chevron-right icon-accessory"></i>
+            </ion-item>
+          <ion-item class="item-remove-animate item-icon-left item-icon-right" type="item-text-wrap" >
+            <i class="icon ion-ios-chatbubble-outline positive"></i>
+            <span>当前版本</span>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </ion-item>
+            <ion-item class="lr-listbutton mt20" ng-click="outLogin()">
+                <span>退出</span>
+            </ion-item>
+        </ion-list>
+</ion-content>
+</ion-view>

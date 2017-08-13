@@ -1,0 +1,199 @@
+@{;
+  ViewBag.Title = "表单页面";
+  Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var startDate = request('startDate');
+    var startTime = request('startTime');
+    
+    $(function () {
+        initControl();
+        $("#StartDate").val(startDate);
+        $("#StartTime").ComboBoxSetValue(startTime);
+    });
+    //初始化控件
+    function initControl() {
+        //开始时间
+        $("#StartTime").ComboBox({
+            description: "==请选择==",
+            height: "200px",     
+        });
+        //结束时间
+        $("#EndTime").ComboBox({
+            description: "==请选择==",
+            height: "160px",
+        });
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls("");
+        $.SaveForm({
+            url: "../../PublicInfoManage/Schedule/SaveForm",
+            param: postData,
+            loading: "正在保存数据...",
+            success: function() {
+                $.currentIframe().callback();
+            }
+        });
+    }
+</script>
+<div style="margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <td class="formTitle">开始日期<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="StartDate" type="text" class="form-control input-wdatepicker" onfocus="var endDate=$dp.$('EndTime');WdatePicker({onpicked:function(){EndTime.focus();},maxDate:'#F{$dp.$D(\'EndTime\')}'})" isvalid="yes" checkexpession="NotNull">
+            </td>
+            <td class="formTitle" style="width: 30px; text-align: center; padding-right: 0px;">时间</td>
+            <td class="formValue">
+                <div id="StartTime" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                    <ul>
+                        <li data-value="0000">00:00</li>
+                        <li data-value="0030">00:30</li>
+                        <li data-value="0100">01:00</li>
+                        <li data-value="0130">01:30</li>
+                        <li data-value="0200">02:00</li>
+                        <li data-value="0230">02:30</li>
+                        <li data-value="0300">03:00</li>
+                        <li data-value="0330">03:30</li>
+                        <li data-value="0400">04:00</li>
+                        <li data-value="0430">04:30</li>
+                        <li data-value="0500">05:00</li>
+                        <li data-value="0530">05:30</li>
+                        <li data-value="0600">06:00</li>
+                        <li data-value="0630">06:30</li>
+                        <li data-value="0700">07:00</li>
+                        <li data-value="0730">07:30</li>
+                        <li data-value="0800">08:00</li>
+                        <li data-value="0830">08:30</li>
+                        <li data-value="0900">09:00</li>
+                        <li data-value="0930">09:30</li>
+                        <li data-value="1000">10:00</li>
+                        <li data-value="1030">10:30</li>
+                        <li data-value="1100">11:00</li>
+                        <li data-value="1130">11:30</li>
+                        <li data-value="1200">12:00</li>
+                        <li data-value="1230">12:30</li>
+                        <li data-value="1300">13:00</li>
+                        <li data-value="1330">13:30</li>
+                        <li data-value="1400">14:00</li>
+                        <li data-value="1430">14:30</li>
+                        <li data-value="1500">15:00</li>
+                        <li data-value="1530">15:30</li>
+                        <li data-value="1600">16:00</li>
+                        <li data-value="1630">16:30</li>
+                        <li data-value="1700">17:00</li>
+                        <li data-value="1730">17:30</li>
+                        <li data-value="1800">18:00</li>
+                        <li data-value="1830">18:30</li>
+                        <li data-value="1900">19:00</li>
+                        <li data-value="1930">19:30</li>
+                        <li data-value="2000">20:00</li>
+                        <li data-value="2030">20:30</li>
+                        <li data-value="2100">21:00</li>
+                        <li data-value="2130">21:30</li>
+                        <li data-value="2200">22:00</li>
+                        <li data-value="2230">22:30</li>
+                        <li data-value="2300">23:00</li>
+                        <li data-value="2330">23:30</li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">结束日期<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="EndDate" type="text" class="form-control input-wdatepicker" onfocus="WdatePicker({minDate:'#F{$dp.$D(\'StartDate\')}'})" isvalid="yes" checkexpession="NotNull">
+            </td>
+            <td class="formTitle" style="width: 30px; text-align: center; padding-right: 0px;">时间</td>
+            <td class="formValue">
+                <div id="EndTime" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                    <ul>
+                        <li data-value="0000">00:00</li>
+                        <li data-value="0030">00:30</li>
+                        <li data-value="0100">01:00</li>
+                        <li data-value="0130">01:30</li>
+                        <li data-value="0200">02:00</li>
+                        <li data-value="0230">02:30</li>
+                        <li data-value="0300">03:00</li>
+                        <li data-value="0330">03:30</li>
+                        <li data-value="0400">04:00</li>
+                        <li data-value="0430">04:30</li>
+                        <li data-value="0500">05:00</li>
+                        <li data-value="0530">05:30</li>
+                        <li data-value="0600">06:00</li>
+                        <li data-value="0630">06:30</li>
+                        <li data-value="0700">07:00</li>
+                        <li data-value="0730">07:30</li>
+                        <li data-value="0800">08:00</li>
+                        <li data-value="0830">08:30</li>
+                        <li data-value="0900">09:00</li>
+                        <li data-value="0930">09:30</li>
+                        <li data-value="1000">10:00</li>
+                        <li data-value="1030">10:30</li>
+                        <li data-value="1100">11:00</li>
+                        <li data-value="1130">11:30</li>
+                        <li data-value="1200">12:00</li>
+                        <li data-value="1230">12:30</li>
+                        <li data-value="1300">13:00</li>
+                        <li data-value="1330">13:30</li>
+                        <li data-value="1400">14:00</li>
+                        <li data-value="1430">14:30</li>
+                        <li data-value="1500">15:00</li>
+                        <li data-value="1530">15:30</li>
+                        <li data-value="1600">16:00</li>
+                        <li data-value="1630">16:30</li>
+                        <li data-value="1700">17:00</li>
+                        <li data-value="1730">17:30</li>
+                        <li data-value="1800">18:00</li>
+                        <li data-value="1830">18:30</li>
+                        <li data-value="1900">19:00</li>
+                        <li data-value="1930">19:30</li>
+                        <li data-value="2000">20:00</li>
+                        <li data-value="2030">20:30</li>
+                        <li data-value="2100">21:00</li>
+                        <li data-value="2130">21:30</li>
+                        <li data-value="2200">22:00</li>
+                        <li data-value="2230">22:30</li>
+                        <li data-value="2300">23:00</li>
+                        <li data-value="2330">23:30</li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">提前提醒<font face="宋体">*</font></td>
+            <td class="formValue" colspan="3">
+                <input id="Early" type="text" class="form-control" value="2" placeholder="小时提醒我" isvalid="yes" checkexpession="Num" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" valign="top" style="padding-top: 10px;">日程内容<font face="宋体">*</font></th>
+            <td class="formValue" colspan="3">
+                <textarea id="ScheduleContent" class="form-control" placeholder="记录你将要做的一件事..." style="height: 70px;" isvalid="yes" checkexpession="NotNull"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle"></td>
+            <td class="formValue" colspan="3">
+                <div class="checkbox">
+                    <label>
+                        <input id="IsMailAlert" type="checkbox" checked="checked" />
+                        邮件提醒
+                    </label>
+                    <label>
+                        <input id="IsWeChatAlert" type="checkbox" checked="checked" />
+                        微信提醒
+                    </label>
+                    <label>
+                        <input id="IsMobileAlert" type="checkbox" checked="checked" />
+                        手机提醒
+                    </label>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>

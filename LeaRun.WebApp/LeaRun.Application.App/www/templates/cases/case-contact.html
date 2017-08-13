@@ -1,0 +1,135 @@
+﻿<ion-modal-view ng-controller="CasesContactCtrl">
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+        <h1 class="title">实例-通讯录</h1>
+    </ion-header-bar>
+    <ion-content>
+        <div class="list list-inset">
+            <button class="button button-block button-positive" ng-click="getAllContacts()">加载通讯录</button>
+        </div>
+        <!--<div ng-repeat="contact in contacts">
+          Id: {{contact.id}}&nbsp;&nbsp;&nbsp;名称: {{contact.displayName}} &nbsp;&nbsp;&nbsp;号码{{contact.value}}
+        </div>-->
+        <ion-list ng-repeat="contact in contacts">
+            <ion-item class="lr-contacts-item">
+              <ion-list class="lr-list">
+                <ion-item class="lr-item">
+                  <div class="lr-contacts-pic">
+                    <img src="img/logo.png">
+                  </div>
+                  <div>
+                    <h2>{{contact.displayName}}</h2>
+                    <p class="lr-list-p" style=" float: right;">号码:{{contact.phoneNumbers[0].value}}</p>
+                  </div>
+                </ion-item>
+              </ion-list>
+            </ion-item>
+        </ion-list>
+
+      <!--<ion-list>
+        <ion-item class="lr-contacts-item">
+          <div class="lr-contacts-index-bar">A</div>
+          <ion-list class="lr-list">
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>安乃</h2>
+            </ion-item>
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>安星</h2>
+            </ion-item>
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>安婷</h2>
+            </ion-item>
+          </ion-list>
+        </ion-item>
+        <ion-item class="lr-contacts-item">
+          <div class="lr-contacts-index-bar">B</div>
+          <ion-list class="lr-list">
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>把俊</h2>
+            </ion-item>
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>把琴</h2>
+            </ion-item>
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>把明</h2>
+            </ion-item>
+          </ion-list>
+        </ion-item>
+        <ion-item class="lr-contacts-item">
+          <div class="lr-contacts-index-bar">C</div>
+          <ion-list class="lr-list">
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>陈彬</h2>
+            </ion-item>
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>成龙</h2>
+            </ion-item>
+            <ion-item class="lr-item">
+              <div class="lr-contacts-pic">
+                <img src="img/logo.png">
+              </div>
+              <h2>成功</h2>
+            </ion-item>
+          </ion-list>
+        </ion-item>
+      </ion-list>-->
+    </ion-content>
+    <!--<div class="lr-contacts-right-bar" style="top: 79px;">
+        <div>&uarr;</div>
+        <div>☆</div>
+        <div>A</div>
+        <div>B</div>
+        <div>C</div>
+        <div>D</div>
+        <div>E</div>
+        <div>F</div>
+        <div>G</div>
+        <div>H</div>
+        <div>I</div>
+        <div>J</div>
+        <div>K</div>
+        <div>L</div>
+        <div>M</div>
+        <div>N</div>
+        <div>O</div>
+        <div>P</div>
+        <div>Q</div>
+        <div>R</div>
+        <div>S</div>
+        <div>T</div>
+        <div>U</div>
+        <div>V</div>
+        <div>W</div>
+        <div>X</div>
+        <div>Y</div>
+        <div>Z</div>
+        <div>#</div>
+    </div>
+    <div class="lr-contacts-middle-bar">
+        B
+    </div>-->
+</ion-modal-view>

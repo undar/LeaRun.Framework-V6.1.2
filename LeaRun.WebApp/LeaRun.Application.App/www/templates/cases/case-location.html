@@ -1,0 +1,14 @@
+﻿<ion-modal-view ng-controller="CasesGeolocationCtrl">
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+        <h1 class="title">实例-地理位置</h1>
+    </ion-header-bar>
+    <ion-content>
+        <div class="list list-inset">
+            <button class="button button-block button-positive" ng-click="geoFindMe()">显示我的位置</button>
+        </div>
+        <div class="list list-inset" id="out">
+
+        </div>
+    </ion-content>
+</ion-modal-view>

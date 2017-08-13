@@ -1,0 +1,57 @@
+﻿body,button,input,select,textarea{font:12px/1.5 Lucida Grande,Lucida Sans Unicode,Helvetica Neue,Hiragino Sans GB,Microsoft Yahei,sans-serif;color:#4b4b4b}
+input::-webkit-input-placeholder { /* WebKit browsers */color:#999;}
+input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */color:#999;}
+input::-moz-placeholder { /* Mozilla Firefox 19+ */color:#999;}
+input:-ms-input-placeholder { /* Internet Explorer 10+ */color:#999;}
+a {color: #3b65a7;text-decoration: none;outline: none;}
+button:focus {outline: -webkit-focus-ring-color auto 0px;}
+button[disabled],button[disabled] button{color:#ccc;opacity:1;cursor:default}
+.lr-login-top {height:40px;margin-bottom:16px;}
+.lr-login-top .lr-login-title {margin:auto;width:1024px;height:100%}
+.lr-login-logo {background: url('../images/login/logo.png') no-repeat;height:40px;}
+.lr-login-center {height:524px;}
+.lr-login-center table {border-spacing: 0;border-collapse: collapse;margin:0px;padding:0px;}
+.lr-login-center table td{margin: 0px;padding: 0px;}
+.lr-login-center .lr-bg-left {height: 524px;background: url('../images/login/bg_01.png') top right no-repeat #6895F0;background-size:100% 100%;}
+.lr-login-center .lr-bg-md {width: 1024px;height: 524px;background:url('../images/login/bg_02.png');}
+.lr-login-center .lr-bg-right {height: 524px;background: url('../images/login/bg_03.png') top left no-repeat #378ABC;background-size:100% 100%;}
+.lr-input-form {float:right;margin-top:50px;margin-right:57px;height:357px;width:360px;background:#fff;padding-top:53px;box-shadow: 5px 10px 20px 2px rgba(0,0,0,.27);}
+.lr-input-form  > div {height:43px;border-bottom:solid #e0dcdc 1px;margin:auto 27px;}
+.lr-input-form .ipt,
+.lr-input-form select {width:100%;padding:0px;height:43px;border:0;border-radius:10px;background-color:rgba(0, 0, 0, 0.00);font-size:16px;line-height:43px;padding-left:10px;color:#757575;}
+.lr-input-form select {width: 100%;appearance: none;-moz-appearance: none;-webkit-appearance: none;background:url('../images/icon1.png') no-repeat scroll right center transparent;padding-right: 14px;}
+select::-ms-expand { display: none; }
+.lr-input-form select:focus,
+.lr-input-form input:focus {outline: -webkit-focus-ring-color auto 0px;}
+.lr-input-form .btn {height:40px;border-bottom:solid #e0dcdc 0px;margin:auto 27px;margin-top:20px;}
+.lr-input-form .btn button {background-color:#397FC4;width:100%;border-radius:10px;height:40px;font-size:16px;color:#fff;border:0;cursor:pointer;}
+.lr-input-form .btn button[disabled] {border: 1px solid #eeecec;background: #eeecec;color: #9f9f9f;text-shadow: 0 1px 0 #fff;cursor: default;}
+.lr-input-form .btn button.active{background-image: url(../images/loading1.gif);background-repeat: no-repeat;background-position: center 10px;z-index:10;}
+#register_getcode {background-color:#B7B7B5;border-radius:5px;height:35px;font-size:16px;color:#707070;border:0;cursor:pointer;margin-top:4px;}
+.lr-input-form .login_tips {position:absolute;text-indent: 3px;height: 30px;line-height: 33px;border: 1px solid #ebccd1;color: #a94442;background-color: #f2dede;border-radius: 5px;width: 306px;margin-top: -35px;}
+.login_tips i {position: relative;top: 1px;font-size: 14px;padding-right: 5px;}
+.lr-input-form .login_tips-succeed{position:absolute;text-indent:3px;height:30px;line-height:33px;border:1px solid #5e8800;color: #fff;background-color: #62b600 ;border-radius:5px;width: 306px;margin-top: -35px;}
+.login_tips-succeed i{position: relative;top: 1px;font-size: 14px;padding-right: 5px;}
+.lr-login-bottom {width:1024px;margin:auto;text-align:right;margin-top:20px;color:#828282;}
+
+/*我是悬浮菜单*/
+.menu{position: fixed;z-index: 999;right:20px;}
+.menu .item{margin: 0 0 0 5px;position:relative;}
+.menu .item .popover{ min-width:180px; min-height:100px;background-color:#FFF;position: absolute;left:-192px;top:0px;border-radius: 8px;box-shadow: 0 0 10px 2px rgba(0,0,0,.27);display:none;}
+.popover-bd {padding:5px;font-size: 13px;padding-left:10px;padding-right:10px;padding-bottom:10px;}
+.popover-bd h3{line-height:10px;padding: 0px;text-align: center;}
+.popover-bd hr{background-color:#ccc;}
+.popover-bd ul{padding: 0px;}
+.popover-bd ul li{list-style-type:none;line-height: 45px;height: 45px;border-bottom: 1px solid #E6E4E4;text-align: left;overflow:hidden;font-size: 12px;padding-left:10px;font-family: 'Microsoft YaHei', 'Helvetica Neue', 'Hiragino Sans GB', 'Segoe UI', Tahoma, Arial, STHeiti, sans-serif;}
+.menu .item .popover .arrow{ position:absolute; width:20px; height:20px; top:20px; right:-20px; }
+.menu .item .popover .arrow *{ display:block; border-width:10px; position:absolute; border-style:dashed dashed dashed solid; font-size:0; line-height:0; }
+.menu .item .popover .arrow em{border-color:transparent transparent transparent #ccc;}
+.menu .item .popover .arrow span{border-color:transparent transparent transparent #FFF; left:-1px;}
+
+.gwDarger {
+    position: fixed;z-index: 999;top:0;
+}
+
+
+
+

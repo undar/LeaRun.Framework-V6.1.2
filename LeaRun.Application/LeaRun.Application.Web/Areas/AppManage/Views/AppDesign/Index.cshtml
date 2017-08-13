@@ -1,0 +1,91 @@
+﻿@{
+    ViewBag.Title = "移动端设计";
+    Layout = "~/Views/Shared/_WebAppIndex.cshtml";
+}
+<div ng-app="webAppDesign" ng-controller="lrAppCtrl" id="webAppDesign">
+    <div class="lr-app-tool-bar" style="width:{{$root.windowWidth}}">
+        <div class="leftToolbar">
+            <input ng-model="designer.projectName" type="text" class="form-control" placeholder="请输入App项目名称" style="width: 200px;" />
+        </div>
+        <div class="rightToolbar">
+            <div class="btn-group">
+                <a id="lr-save" class="btn btn-default" ng-click="btnSaveProject()"><i class="fa fa-save"></i>&nbsp;保存</a>
+                <a id="lr-download" class="btn btn-default" ng-click="btnDownProject()"><i class="fa fa-download"></i>&nbsp;下载</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="lr-app-left-bar" style="height:{{$root.windowHeight-50}}px;">
+        <div class="lr-app-pageDirectory">
+            <div class="lr-app-pageTool">
+                <span>页面模板</span>
+                <div class="dropdown lrbtnAddPage">
+                    <div id="addPhonePage" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><span class="fa fa-plus-square-o"></span>添加</div>
+                    <ul class="dropdown-menu" aria-labelledby="addPhonePage">
+                        <li ng-repeat="pageTemplate in pageTemplates">
+                            <a ng-click="addPage(pageTemplate)"><img src="{{pageTemplate.png}}" style="width: 110px; height: 90px"><span>{{pageTemplate.text}}</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="lr-app-pageContent">
+                <lrapp-pagetree ng-model="$root.designer.templates.fnPageTree.init"></lrapp-pagetree>
+            </div>
+        </div>
+        <div class="lr-app-tabctrl">
+            <div class="lr-app-tabTool">
+                <span>Tabs页面</span>
+                <lrapp-toggleb ng-model="$root.designer.isTabsAdded"></lrapp-toggleb>
+            </div>
+            <div class="lr-app-tabContent" ng-hide="!$root.designer.isTabsAdded">
+                <lrapp-pagetree ng-model="$root.designer.templates.fnTabsTree.init"></lrapp-pagetree>
+            </div>
+        </div>
+        <div class="lr-app-component">
+            <div class="lr-app-componentTool">
+                <span>组件</span>
+            </div>
+            <div class="lr-app-componentContent" style="height:{{$root.windowHeight-($root.designer.isTabsAdded?496:396)}}px;">
+                <lrapp-components></lrapp-components>
+            </div>
+        </div>
+    </div>
+
+    <div class="lr-app-mid-bar" ng-controller="lrAppMidbarCtrl" style="height:{{$root.windowHeight-50}}px;width:{{$root.windowWidth-600}}px;">
+        <div class="lr-app-phoneTool">
+            <select ng-change="changePhoneScale()" ng-model="phoneScale">
+                <option value="1">100%</option>
+                <option value="0.9">90%</option>
+                <option value="0.8">80%</option>
+                <option value="0.7">70%</option>
+                <option value="0.6">60%</option>
+                <option value="0.5">50%</option>
+            </select>
+        </div>
+        <div style="height:{{$root.windowHeight-82}}px;overflow-y:auto;">
+            <div class="lr-app-phone" style="margin-top:{{marginTop}};height:{{phoneHeight }};background-size: {{phoneWidth}} {{phoneHeight}};">
+                <div class="lr-app-iframe" style="height:{{phoneIframeH}};width: {{phoneIframeW }};transform: scale3d(1, 1, 1);transition: out 0s ease;transform-origin: center top 0px;margin-top: {{phoneIframeMT}};">
+                    <div class="app-status" style="transition:0s ease-out;">
+                        <div style="height:20px;padding:5px;transition:0s ease-out;">
+                            <img src="~/Content/webApp/img/ios-statusbar-left.png" style="float:left;height:10px;transition:0s ease-out;margin-top:-1px;">
+                            <img src="~/Content/webApp/img/ios-statusbar-center.png" style="float:none;height:10px;transition:0s ease-out;margin-top:-7px;">
+                            <img src="~/Content/webApp/img/ios-statusbar-right.png" style="float:right;height:10px;transition:0s ease-out;">
+                        </div>
+                    </div>
+                    <iframe class="iframe-content" src="/AppManage/AppDesign/phoneDIndex" id="phoneDIndex" style="height:100%;width: 100%;"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lr-app-right-bar" style="height:{{$root.windowHeight-50}}px;">
+       
+    </div>
+
+    <div class="lr-app-splash" ng-hide="$root.designer.vm.isBeginView" style="height:{{$root.windowHeight}}px;width:{{$root.windowWidth}}px;">
+        <img src="~/Content/images/icon-webApp.png" style="margin-top:{{$root.windowHeight/2-150}}px;" />
+        <div><span>数据加载中...</span></div>
+    </div>
+
+    
+</div>

@@ -1,0 +1,28 @@
+﻿<ion-modal-view ng-controller="CasesTelCtrl">
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+        <h1 class="title">实例-打电话</h1>
+    </ion-header-bar>
+    <ion-content overflow-scroll="true">
+        <div class="list card mt5" style="height:300px;">
+            <div class="list list-inset">
+                <span>电话拨打功能</span>
+                <br />
+                <p style="text-align: center;margin: 5px auto;">
+                  <a href="tel:10010" style=" border: 0; text-decoration:none;">10010</a>
+                </p>
+                <a href="tel:10010" style=" border: 0; text-decoration:none;">
+                    <button class="button button-block button-stable" ng-click="doCallPhone10010()">打10010电话</button>
+                </a>
+                <br />
+                <p style="text-align: center;margin: 5px auto;">
+                    <a href="tel:10086" style=" border: 0; text-decoration:none;">10086</a>
+                </p>
+                <a href="tel:10010" style=" border: 0; text-decoration:none;">
+                    <button class="button button-block button-stable" ng-click="doCallPhone10086()">打10086电话</button>
+                </a>
+                <br />
+            </div>
+        </div>
+    </ion-content>
+</ion-modal-view>

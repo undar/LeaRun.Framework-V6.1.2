@@ -1,0 +1,11 @@
+﻿<ion-modal-view ng-controller="CasesBarcodeCtrl">
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear" ng-click="closePageModel()"><i class="icon ion-ios-arrow-left"></i></button>
+        <h1 class="title">实例-{{caseItem.name}}</h1>
+    </ion-header-bar>
+    <ion-content>
+        <div class="list list-inset">
+            <button class="button button-block button-positive"  ng-click="doBarcode()">扫描条码</button>
+        </div>
+</ion-content>
+</ion-modal-view>

@@ -1,0 +1,50 @@
+﻿@{
+    ViewBag.Title = "编辑控件";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var controlId = request('controlId');
+    var dataJson = top.Form.bindingFormJson;
+    $(function () {
+        $.each(dataJson, function (i) {
+            if (dataJson[i].column == controlId) {
+                var data = dataJson[i];
+                $("#ControlId").val(data.column);
+                $("#ControlName").val(data.remark);
+                return false;
+            }
+        });
+    })
+    //保存表单
+    function AcceptClick(callBack) {
+        var data = {
+            ControlId: $("#ControlId").val(),
+            ControlName: $("#ControlName").val()
+        }
+        if (data.ControlName == "") {
+            dialogTop("请填写字段名称", "error");
+        }
+        else {
+            callBack(data);
+            dialogClose();
+        }
+    }
+</script>
+
+<div style="margin-left: 10px; margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">字段标识</th>
+            <td class="formValue">
+                <input id="ControlId" disabled type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">字段名称</th>
+            <td class="formValue">
+                <input id="ControlName" type="text" class="form-control" />
+            </td>
+        </tr>
+    </table>
+</div>
+

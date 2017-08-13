@@ -1,0 +1,41 @@
+﻿@{
+    ViewBag.Title = "表单预览";
+    Layout = "~/Views/Shared/_FlowFormNew.cshtml";
+}
+
+<div id="show" style="padding-right:20px;overflow-y:auto;">
+</div>
+<script>
+    (function ($) {
+        "use strict";
+
+        var formJs = {
+            loadData: function () {
+                $('#show').height($(window).height());
+
+                var keyValue = request('keyValue');
+                $.SetForm({
+                    url: "../../FlowManage/FormModule/GetEntityJson",
+                    param: { keyValue: keyValue },
+                    success: function (data) {
+                        var dataJson = JSON.parse(data.FrmContent);
+                        if (data.FrmType != 2) {
+                            $('#show').formRendering('init', { formData: dataJson.data });
+
+                        } else {
+                            $('body').html('<iframe id="sysFormIframe" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no" style="height:100%;width:100%;"></iframe>');
+                            $('#sysFormIframe').height($(window).height());
+                            learun.loadSystemForm('sysFormIframe', dataJson.data.url);
+                        }
+                    }
+                });
+            }
+        };
+        $(function () {
+            formJs.loadData();
+        });
+    })(window.jQuery);
+
+
+
+</script>

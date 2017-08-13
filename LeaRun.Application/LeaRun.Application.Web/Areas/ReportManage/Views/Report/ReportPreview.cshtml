@@ -1,0 +1,60 @@
+﻿@{
+    ViewBag.Title = "报表预览";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script src="~/Content/scripts/plugins/echarts/charts_comm.js"></script>
+<script src="~/Content/scripts/plugins/echarts/charts_helper.js"></script>
+<script src="~/Content/scripts/plugins/echarts/china.js" type="text/javascript"></script>
+<script src="~/Content/scripts/plugins/echarts/echarts.min.js" type="text/javascript"></script>
+<!--jqgrid表格组件start-->
+<link href="~/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="~/Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
+<!--表格组件end-->
+<link href="~/Content/styles/learun-report.css" rel="stylesheet" />
+<script>
+    var reportId = request('keyValue');
+    var TempType = request('TempType');
+    
+  
+    $(document).ready(function () {
+        if (TempType == "" || TempType == "none") {
+            $("#echart").css('display', 'none');
+        }
+        $.Report({
+            picDiv: "echart",
+            reportId: reportId,
+            listDiv: "gridTable"
+        });
+        
+    });
+  
+    //导出
+    function btn_export() {
+        dialogOpen({
+            id: "ExcelIExportDialog",
+            title: '导出Excel数据',
+            url: '/Utility/ExcelExportForm?gridId=gridTable',
+            width: "500px",
+            height: "380px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }, btn: ['导出Excel', '关闭']
+        });
+    }
+</script>
+
+<div id="formAreas" style="padding: 30px; margin: 25px;border-radius:5px; border: 1px solid rgb(204, 204, 204); box-shadow: rgb(189, 189, 189) 0px 0px 10px; background: #fff;">
+    <div id="echart" style="width: 100%; height: 400px;"></div>
+    <div style="margin-left: 10px; margin-right: 20px;">
+            <div class="toolbar">
+            <div class="btn-group">
+                 <a id="lr-export" class="btn btn-default" onclick="btn_export()"><i class="fa fa-sign-out"></i>&nbsp;导出</a>
+          </div>
+         </div>
+        <div class="ui-report">
+            <table id="gridTable"></table>
+            <div id="gridPager"></div>
+        </div>
+    </div>
+</div>

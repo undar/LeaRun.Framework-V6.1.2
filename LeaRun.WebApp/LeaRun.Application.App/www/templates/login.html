@@ -1,0 +1,30 @@
+﻿<ion-view hide-nav-bar="true">
+    <ion-content>
+        <div class="list login">
+            <div class="head">
+                <img src="img/logo.png">
+            </div>
+            <div class="list list-inset lr-list-radius">
+                <label class="item item-input">
+                    <input type="text" ng-model="data.username" placeholder="账号"><!--<i class="icon ion-alert-circled error"></i>-->
+                </label>
+                <label class="item item-input mt10">
+                    <input type="password" ng-model="data.password" placeholder="密码">
+                    <!--<input type="password" ng-model="data.password" name="password" ng-keydown="usernameKeydown" ng-blur="showClear() =false" ng-focus="showClear() = true" placeholder="密码">-->
+                    <!--<i class="icon ion-close-circled assertive" ng-show="data.password.$dirty && data.password.$invalid" ng-cilck="showClear()"></i>-->
+                </label>
+                <button class="button button-block button-positive" ng-click="doLogin()"  ng-disabled="logining"><ion-spinner ng-hide="!logining" icon="bubbles"></ion-spinner><span ng-hide="logining">登录</span></button>
+                <!--<label class="fp mt10">
+                    <span><a>忘记密码了？</a></span>
+                </label>-->
+            </div>
+            <!--<div class="register">
+                <span>还没有聚久框架帐号？</span>
+                <a style="cursor: pointer;">立即注册</a>
+            </div>-->
+        </div>
+    </ion-content>
+  <div class="hide-on-keyboard-open loginfooter">
+    <span>copyright © beijing lnc</span>
+  </div>
+</ion-view>

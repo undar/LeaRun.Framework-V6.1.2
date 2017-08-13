@@ -1,0 +1,156 @@
+﻿@{
+    ViewBag.Title = "联系人列表";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>    ;
+    var customerId = request('customerId');
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设布局;
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 108.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            autowidth: true,
+            height: $(window).height() - 108.5,
+            url: "../../CustomerManage/Customer/GetContactListJson",
+            postData: { queryJson: JSON.stringify({ customerId: customerId }) },
+            datatype: "json",
+            colModel: [
+                { label: '主键', name: 'CustomerContactId', hidden: true },
+                { label: '联系人', name: 'Contact', index: 'Contact', width: 100, align: 'left', sortable: true },
+                { label: '手机', name: 'Mobile', index: 'Mobile', width: 120, align: 'left', sortable: true },
+                { label: '电话', name: 'Tel', index: 'Tel', width: 120, align: 'left', sortable: true },
+                { label: 'QQ', name: 'QQ', index: 'QQ', width: 120, align: 'left', sortable: true },
+                { label: '微信', name: 'Wechat', index: 'Wechat', width: 120, align: 'left', sortable: true },
+                { label: '职位', name: 'PostId', index: 'PostId', width: 100, align: 'left', sortable: true },
+                { label: '备注', name: 'Description', index: 'Description', width: 200, align: 'left', sortable: true }
+            ],
+            rownumbers: true,
+            onSelectRow: function () {
+                selectedRowIndex = $('#' + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $('#' + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        $gridTable.authorizeColModel();
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val(),
+                customerId: customerId,
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: 'ContactForm',
+            title: '添加联系人',
+            url: '/CustomerManage/Customer/ContactForm?customerId=' + customerId,
+            width: '600px',
+            height: '350px',
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var keyValue = $("#gridTable").jqGridRowValue('CustomerContactId');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'ContactForm',
+                title: '编辑联系人',
+                url: '/CustomerManage/Customer/ContactForm?keyValue=' + keyValue + '&customerId=' + customerId,
+                width: '600px',
+                height: '350px',
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            })
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue('CustomerContactId');
+        if (keyValue) {
+            $.RemoveForm({
+                url: '../../CustomerManage/Customer/RemoveContactForm',
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的联系人！', 0);
+        }
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>
+                    <div id="queryCondition" class="btn-group">
+                        <a class="btn btn-default dropdown-text" data-toggle="dropdown">选择条件</a>
+                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a data-value="Contact">联系人</a></li>
+                            <li><a data-value="Mobile">手机</a></li>
+                            <li><a data-value="Tel">电话</a></li>
+                            <li><a data-value="QQ">QQ</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td style="padding-left: 2px;">
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload()"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+        </div>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+</div>

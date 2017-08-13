@@ -1,0 +1,137 @@
+﻿@{
+    ViewBag.Title = "规则设计项目表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        $("#ItemType").ComboBox({
+            description: "==请选择==",
+        }).bind("change", function () {
+            var value = $(this).attr('data-value');
+            var $formValue = $("#FormatStr").parents('.formValue');
+            $("#StepValue").attr("readonly", "readonly").attr('[isvalid=no]');            $("#InitValue").attr("readonly", "readonly").attr('[isvalid=no]');
+            switch (value) {
+                case "0":
+                    $formValue.html('<input id="FormatStr" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />');
+                    break;
+                case "1":
+                    $formValue.html('<div id="FormatStr" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"><ul>'
+                        + '<li data-value="mmdd">mmdd</li>'
+                        + '<li data-value="ddmm">ddmm</li>'
+                        + '<li data-value="mmyy">mmyy</li>'
+                        + '<li data-value="yymm">yymm</li>'
+                        + '<li data-value="yyyymm">yyyymm</li>'
+                        + '<li data-value="yymmdd">yymmdd</li>'
+                        + '<li data-value="yyyymmdd">yyyymmdd</li>'
+                        + '</ul></div>');                    $("#FormatStr").ComboBox({
+                        height: "130px",
+                    }).ComboBoxSetValue('mmdd');                    break;
+                case "2":
+                    $formValue.html('<div id="FormatStr" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"><ul>'
+                       + '<li data-value="000">000</li>'
+                       + '<li data-value="0000">0000</li>'
+                       + '<li data-value="00000">00000</li>'
+                       + '<li data-value="000000">000000</li>'
+                       + '</ul></div>');                    $("#FormatStr").ComboBox({
+                    }).ComboBoxSetValue('000');
+                    $("#StepValue").removeAttr("readonly").attr('isvalid','yes');                    $("#InitValue").removeAttr("readonly").attr('isvalid', 'yes');
+                    break;
+                case "3":
+                    $formValue.html('<div id="FormatStr" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"><ul>'
+                       + '<li data-value="code">公司编号</li>'
+                       + '<li data-value="name">公司名称</li>'
+                       + '</ul></div>');                    $("#FormatStr").ComboBox({
+                    }).ComboBoxSetValue('code');                    break;
+                case "4":
+                    $formValue.html('<div id="FormatStr" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"><ul>'
+                       + '<li data-value="code">部门编号</li>'
+                       + '<li data-value="name">部门名称</li>'
+                       + '</ul></div>');                    $("#FormatStr").ComboBox({
+                    }).ComboBoxSetValue('code');
+                    break;
+                case "5":
+                    $formValue.html('<div id="FormatStr" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"><ul>'
+                       + '<li data-value="code">用户编号</li>'
+                       + '<li data-value="name">用户名称</li>'
+                       + '</ul></div>');                    $("#FormatStr").ComboBox({
+                    }).ComboBoxSetValue('code');
+                    break;
+                default:
+                    break;
+            }
+        }).ComboBoxSetValue(0);
+
+        //获取表单
+        if (!!keyValue) {
+            var rowdata = top.Form.$("#gridTable").jqGridRow()[0];
+            $("#form1").SetWebControls(rowdata);
+            if (rowdata.ItemType == 2) {
+                $("#StepValue").removeAttr("readonly").attr('isvalid', 'yes');                $("#InitValue").removeAttr("readonly").attr('isvalid', 'yes');
+            }
+        }
+    })
+
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var $gridTable = top.Form.$("#gridTable");
+        var postData = $("#form1").GetWebControls("");
+        postData["ItemTypeName"] = $("#ItemType").attr('data-text');
+        if (!!keyValue) {
+            $gridTable.setRowData(keyValue, postData);
+        } else {
+            $gridTable.addRowData(($gridTable.jqGrid("getRowData").length + 1), postData);
+        }
+        dialogMsg("操作成功。", 1);
+        dialogClose();
+    }
+</script>
+<div style="margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">前缀<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="ItemType" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                    <ul>
+                        <li data-value="0">自定义</li>
+                        <li data-value="1">日期</li>
+                        <li data-value="2">流水号</li>
+                        <li data-value="3">公司</li>
+                        <li data-value="4">部门</li>
+                        <li data-value="5">用户</li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">格式<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="FormatStr" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">步长</th>
+            <td class="formValue">
+                <input id="StepValue" readonly type="text" class="form-control" isvalid="no" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">初始</th>
+            <td class="formValue">
+                <input id="InitValue" readonly type="text" class="form-control" isvalid="no" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">说明
+            </th>
+            <td class="formValue">
+                <input id="Description" type="text" class="form-control" />
+            </td>
+        </tr>
+    </table>
+</div>
+
+

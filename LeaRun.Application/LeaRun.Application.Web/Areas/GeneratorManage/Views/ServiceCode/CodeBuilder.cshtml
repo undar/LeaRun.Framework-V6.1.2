@@ -1,0 +1,222 @@
+﻿
+@{
+    ViewBag.Title = "服务类生成";
+    Layout = "~/Views/Shared/_FormNew.cshtml";
+}
+
+<link href="~/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="~/Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
+<script src="~/Content/scripts/plugins/layout/jquery.layout.js"></script>
+<link href="~/Content/styles/learun-applayout.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/syntaxhighlighter/scripts/shCore.js"></script>
+<script src="~/Content/scripts/plugins/syntaxhighlighter/scripts/shBrushCSharp.js"></script>
+<script type="text/javascript" src="~/Content/scripts/plugins/syntaxhighlighter/scripts/shBrushJScript.js"></script>
+<link type="text/css" rel="stylesheet" href="~/Content/scripts/plugins/syntaxhighlighter/styles/shCoreDefault.css" />
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    .ui-select.ui-select-radius .ui-select-text {
+        border-radius: 4px !important;
+    }
+
+    .tableListOne {
+        margin-bottom: 2px !important;
+    }
+
+        .tableListOne > i {
+            vertical-align: middle;
+            margin-top: -2px;
+            margin-right: 8px;
+            font-size: 14px;
+            color: #666666;
+            opacity: 0.9;
+        }
+</style>
+
+<div class="widget-body">
+    <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>选择数据表<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>基本配置<span class="chevron"></span></li>
+            <li data-target="#step-3"><span class="step">3</span>查看代码<span class="chevron"></span></li>
+            <li data-target="#step-4"><span class="step">4</span>自动创建<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content" id="wizard-steps" style="border-left: none; border-bottom: none; border-right: none;">
+        <div class="step-pane active" id="step-1" style="margin: 10px; margin-bottom: 0px;">
+            <div class="titlePanel">
+                <div class="title-search">
+                    <table>
+                        <tr>
+                            <th style="white-space: nowrap; font-weight: normal;">数据库：</th>
+                            <td>
+                                <div id="txt_DataBase" type="select" class="ui-select ui-select-radius" style="width: 150px"></div>
+                            </td>
+                            <td style="padding-left: 1px;">
+                                <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                            </td>
+                            <td style="padding-left: 5px;">
+                                <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="gridPanel">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+        <div class="step-pane" id="step-2" style="padding: 0px;margin:0px;">
+            <div style="float:left;width:260px;border-right:1px solid #ccc;">
+                <div style="height:43px;line-height:43px;padding-left:10px;color:#666;border-bottom:1px solid #ccc;">数据表列表</div>
+                <div class="profile-nav">
+                    <ul id="tableList" style="padding-top: 10px;overflow-y:auto;"></ul>
+                </div>
+            </div>
+            <div style="position:absolute;width:840px;right:0px;padding:10px 10px 0px 10px;">
+                <div class="panel panel-default" style="margin-bottom: 10px;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">文件名配置</h3>
+                    </div>
+                    <div class="panel-body" style="width: 99%;">
+                        <table class="form">
+                            <tr>
+                                <th class="formTitle">创建人员</th>
+                                <td class="formValue">
+                                    <input id="CreateUser" readonly type="text" class="form-control" value="超级管理员" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                                <th class="formTitle">创建日期</th>
+                                <td class="formValue">
+                                    <input id="CreateDate" readonly type="text" class="form-control" value="2017-05-04 13:25" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                                <th class="formTitle">类名描述</th>
+                                <td class="formValue">
+                                    <input id="Description" readonly type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="formTitle">表主键名</th>
+                                <td class="formValue">
+                                    <input id="DataBaseTablePK" readonly type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                                <th class="formTitle">实体类名</th>
+                                <td class="formValue">
+                                    <input id="EntityClassName" readonly type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                                <th class="formTitle">映射类名</th>
+                                <td class="formValue">
+                                    <input id="MapClassName" readonly type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                            </tr>
+                            <tr>
+
+                                <th class="formTitle">服务类名</th>
+                                <td class="formValue">
+                                    <input id="ServiceClassName" readonly type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                                <th class="formTitle">接口类名</th>
+                                <td class="formValue">
+                                    <input id="IServiceClassName" readonly type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                                <th class="formTitle">业务类名</th>
+                                <td class="formValue">
+                                    <input id="BusinesClassName" readonly type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div id="baseconfig" class="panel panel-default" style="margin-bottom:0px;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">输出目录</h3>
+                    </div>
+                    <div class="panel-body" style="width: 99%;">
+                        <table class="form">
+                            <tr>
+                                <th class="formTitle">输出到所在区域<font face="宋体">*</font></th>
+                                <td class="formValue">
+                                    <div id="OutputAreas" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="formTitle">实体层输出目录</th>
+                                <td class="formValue">
+                                    <input id="OutputEntity" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Entity" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="formTitle">映射层输出目录</th>
+                                <td class="formValue">
+                                    <input id="OutputMap" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Mapping" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="formTitle">服务层输出目录</th>
+                                <td class="formValue">
+                                    <input id="OutputService" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Service" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="formTitle">接口层输出目录</th>
+                                <td class="formValue">
+                                    <input id="OutputIService" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.IService" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="formTitle">业务层输出目录</th>
+                                <td class="formValue">
+                                    <input id="OutputBusines" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Busines" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <th class="formTitle">应用层输出目录</th>
+                                <td class="formValue">
+                                    <input id="OutputController" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Web" />
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="step-pane" id="step-3">
+            <div style="float:left;width:260px;border-right:1px solid #ccc;height:100%;overflow-y:auto;">
+                <div style="height:43px;line-height:43px;padding-left:10px;color:#666;border-bottom:1px solid #ccc;">数据表列表</div>
+                <div class="profile-nav">
+                    <ul id="tableList2" style="padding-top: 10px;"></ul>
+                </div>
+            </div>
+            <div style="position:absolute;width:840px;right:0px;">
+                <ul class="nav nav-tabs">
+                    <li class="active" id="Tab_entityCode" title="Entity"><a href="#" data-toggle="tab">实体类</a></li>
+                    <li id="Tab_entitymapCode" title="Mapping"><a href="#" data-toggle="tab">实体映射类</a></li>
+                    <li id="Tab_serviceCode" title="Service"><a href="#" data-toggle="tab">服务类</a></li>
+                    <li id="Tab_iserviceCode" title="IService"><a href="#" data-toggle="tab">服务接口类</a></li>
+                    <li id="Tab_businesCode" title="Busines"><a href="#" data-toggle="tab">业务类</a></li>
+                </ul>
+                <div id="showCodeAreas" class="tab-content" style="height: 525px; padding-left: 5px; padding-right: 5px; overflow: auto;">
+                </div>
+            </div>
+
+        </div>
+        <div class="step-pane" id="step-4" style="margin: 5px; overflow: hidden; height: 600px;">
+            <div class="drag-tip" style="text-align: center; padding-top: 100px; display: none;">
+                <i class="fa fa-check-circle" style="font-size: 204px; color: #0FA74F;"></i>
+                <div id="finish-msg" style="font-weight: bold; font-size: 24px; color: #0FA74F; margin-top: 20px;"></div>
+                <p style="color: #666; font-size: 12px; margin-top: 10px;">
+                    <a id="publish_btn" href="#">创建完成</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="form-button" id="wizard-actions">
+        <a id="btn_last" disabled class="btn btn-default btn-prev">上一步</a>
+        <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+        <a id="btn_finish" disabled class="btn btn-success">完成</a>
+    </div>
+</div>
+<script src="/Content/scripts/utils/learun-sc.js?v=@Guid.NewGuid()"></script>
+

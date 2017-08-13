@@ -1,0 +1,226 @@
+﻿@{
+    ViewBag.Title = "对账报表";
+    Layout = "~/Views/Shared/_ReportIndex.cshtml";
+}
+<script src="~/Content/scripts/plugins/echarts/charts_comm.js"></script>
+<script src="~/Content/scripts/plugins/echarts/charts_helper.js"></script>
+<script src="~/Content/scripts/plugins/echarts/china.js" type="text/javascript"></script>
+<script src="~/Content/scripts/plugins/echarts/echarts.min.js" type="text/javascript"></script>
+<script>
+    $(function () {
+        GetGrid();
+        loadmain();
+        loadmain1();
+    });
+    function loadmain() {
+        var myChart = echarts.init(document.getElementById('main'));
+        option = {
+            title: {
+                text: '各项支出分析图',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                data: ['代发工资', '代扣水电费', '贷款利息', '客户贷款']
+            },
+            series: [
+                {
+                    name: '访问来源',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: [
+                        { value: 335, name: '代发工资' },
+                        { value: 310, name: '代扣水电费' },
+                        { value: 234, name: '贷款利息' },
+                        { value: 135, name: '客户贷款' }
+                    ],
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        myChart.setOption(option);
+    }
+    function loadmain1() {
+        var myChart = echarts.init(document.getElementById('main1'));
+        option = {
+            title: {
+                text: '公司收支趋势图',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'axis'
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+            },
+            yAxis: {
+                type: 'value'
+            },
+            series: [
+                {
+                    name: '收入',
+                    type: 'line',
+                    stack: '总量',
+                    data: [120, 132, 101, 134, 90, 230, 210]
+                },
+                {
+                    name: '支付',
+                    type: 'line',
+                    stack: '总量',
+                    data: [220, 182, 191, 234, 290, 330, 310]
+                }
+            ]
+        };
+
+        myChart.setOption(option);
+    }
+    function GetGrid() {
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            url: "../../ReportManage/ReportDemo/GetReconciliationJson",
+            datatype: "json",
+            height: "100%",
+            autowidth: false,
+            colModel: [
+                { name: "month", label: "月份", width: 120, align: "center" },
+                { name: "business", label: "业务摘要", width: 200, align: "left" },
+                { name: "tradedate", label: "交易日期", width: 120, align: "center", formatter: "date", formatoptions: { newformat: 'Y-m-d' } },
+                { name: "incomeMoney", label: "收入金额", width: 120, align: "left", formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                { name: "expenditureMoney", label: "支出金额", width: 120, align: "left", formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                { name: "balance", label: "余额", width: 120, align: "left", formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                { name: "description", label: "备注", width: 180, align: "left" }
+            ],
+            viewrecords: true,
+            rowNum: 1000,
+            footerrow: true,
+            gridComplete: function () {
+                var totalincomeMoney = $(this).getCol("incomeMoney", false, "sum");
+                var totalexpenditureMoney = $(this).getCol("expenditureMoney", false, "sum");
+                //合计
+                $(this).footerData("set", {
+                    "tradedate": "合计：",
+                    "incomeMoney": totalincomeMoney,
+                    "expenditureMoney": totalexpenditureMoney,
+                });
+                $('table.ui-jqgrid-ftable td').prevUntil().css("border-right-color", "#fff");
+            }
+        });
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+</script>
+<div class="ui-report">
+    <div class="titlePanel">
+        <div class="title-search">
+            <table>
+                <tr>
+                    <td>查询条件</td>
+                    <td style="padding-left: 10px;">
+                        <div class="ui-filter" style="width: 200px;">
+                            <div class="ui-filter-text">
+                                <strong id="SelectedStartTime">@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")</strong> 至 <strong id="SelectedEndTime">@DateTime.Now.ToString("yyyy-MM-dd")</strong>
+                            </div>
+                            <div class="ui-filter-list" style="width: 350px;">
+                                <table class="form" id="filter-form">
+                                    <tr>
+                                        <th class="formTitle">交易日期：</th>
+                                        <td class="formValue">
+                                            <input id="Category" type="hidden" value="1" />
+                                            <div style="float: left; width: 45%;">
+                                                <input id="StartTime" readonly type="text" value="@LeaRun.Util.Time.GetDate(-7)" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})">
+                                            </div>
+                                            <div style="float: left; width: 10%; text-align: center;">至</div>
+                                            <div style="float: left; width: 45%;">
+                                                <input id="EndTime" readonly type="text" value="@LeaRun.Util.Time.GetToday()" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="formTitle">业务摘要：</td>
+                                        <td class="formValue">
+                                            <input id="CustomerName" type="text" class="form-control">
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="ui-filter-list-bottom">
+                                    <a id="btn_Reset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>
+                                    <a id="btn_Search" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding-left: 10px;">
+                        <div id="time_horizon" class="btn-group">
+                            <a class="btn btn-default" data-value="1">今天</a>
+                            <a class="btn btn-default active" data-value="2">近7天</a>
+                            <a class="btn btn-default" data-value="3">近1个月</a>
+                            <a class="btn btn-default" data-value="4">近3个月</a>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="toolbar">
+            <div class="btn-group">
+                <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            </div>
+            <script>$('.toolbar').authorizeButton()</script>
+        </div>
+    </div>
+    <div class="gridPanel">
+        <div class="printArea">
+            <div class="grid-title">
+                <div style="overflow: hidden; padding-bottom: 20px; text-align: center; margin-left: auto; margin-right: auto;">
+                    <div id="main" class="border" style="float: left; margin-right: 20px; width: 500px; height: 350px;">
+                    </div>
+                    <div id="main1" class="border" style="float: left; margin-right: 20px; width: 500px; height: 350px;">
+                    </div>
+                </div>
+            </div>
+            <div id="gridPanel">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+    </div>
+</div>

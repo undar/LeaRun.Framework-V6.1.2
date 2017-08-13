@@ -1,0 +1,101 @@
+﻿
+@{
+    ViewBag.Title = "导入Excel数据";
+    Layout = "~/Views/Shared/_FlowInstance.cshtml";
+}
+
+<link href="/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    .ui-widget-content {
+        border: 0;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .fromtoolPanel {
+        height: 60px;
+        line-height: 60px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .fromtoolbar {
+        height: 56px;
+        line-height: 56px;
+        padding-top: 15px;
+        padding-right: 14px;
+        float: right;
+        width: 200px;
+    }
+
+    .fromtoolPanel .fromtoolbar i {
+        font-size: 14px;
+        margin-top: -1px;
+        vertical-align: middle;
+        color: #666;
+    }
+
+    .uploadify-queue {
+        position: absolute;
+        left: 15px;
+        top: 46px;
+        width: 700px;
+        border: 0;
+    }
+
+        .uploadify-queue .succeed {
+            display: none;
+        }
+
+        .uploadify-queue .cancel {
+            display: none;
+        }
+
+        .uploadify-queue .error {
+            display: none;
+        }
+
+    #girdPager {
+        width: 100%;
+        height: 40px;
+        line-height: 40px;
+        padding: 0px 15px;
+    }
+
+    .num-fail {
+        color: red;
+    }
+</style>
+<ul class="nav nav-tabs"></ul>
+<div id="tableContent">
+    <div class="fromtoolPanel">
+        <div class="fromtoolbar">
+            <div id="lr-upfile"></div>
+            <div style="float:right;margin-top: -14px;">
+                <div class="btn-group">
+                    <a id="lr-download" class="btn btn-default"><i class="fa fa-download"></i>&nbsp;下载模板</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="gridPanel">
+        <table id="gridTable"></table>
+    </div>
+    <div id="girdPager">
+        <div style="float:left;">总共<span class="num-all">0</span>条数据,成功<span class="num-success">0</span>条,失败<span class="num-fail">0</span>条&nbsp;|&nbsp;当前页<span class="num-index">1</span>,总共<span class="num-total">1</span>页</div>
+        <div class="btn-group" style="float:right;margin-top:5px;">
+            <a class="btn btn-default prev">&nbsp;上一页</a>
+            <a class="btn btn-default next">&nbsp;下一页</a>
+        </div>
+    </div>
+</div>
+<div class="form-button" id="wizard-actions">
+    <a id="btn_close" class="btn btn-success">关闭</a>
+</div>
+<script src="/Content/scripts/plugins/jqgrid/js?v=@Guid.NewGuid()"></script>
+
+<script src="/Content/scripts/utils/learun-elif.js?v=@Guid.NewGuid()"></script>
+

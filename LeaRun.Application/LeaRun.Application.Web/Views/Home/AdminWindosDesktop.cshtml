@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>敏捷开发</title>
+    <link href="~/Content/styles/font-awesome.min.css" rel="stylesheet" />
+    <link href="~/Content/adminWindos/css/index.css" rel="stylesheet" />
+    <script src="~/Content/scripts/jquery/jquery-1.10.2.min.js"></script>
+    <script src="~/Content/adminWindos/index.js"></script>
+    <script>
+        $(function () {
+            $.learunindex.loadDesktop();
+            $.learuntab.init();
+            $(".slidebox-slider ul").css('left', ($(window).width() - $(".slidebox-slider ul").width()) / 2);
+        })
+    </script>
+</head>
+<body style="overflow: hidden;">
+    <div class="slidebox-slider">
+        <ul>
+            <li><i class="fa fa-reorder"></i></li>
+        </ul>
+    </div>
+    <div class="slidebox">
+        <ul>
+        </ul>
+    </div>
+</body>
+</html>

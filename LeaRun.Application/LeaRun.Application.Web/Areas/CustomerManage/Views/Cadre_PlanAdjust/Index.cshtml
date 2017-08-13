@@ -1,0 +1,254 @@
+﻿@{;
+    ViewBag.Title = "列表页面";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>;
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设布局;
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            autowidth: true,
+            height: $(window).height() - 136.5,
+            url: "../../CustomerManage/Cadre_PlanAdjust/GetListJson",
+            datatype: "json",
+            colModel: [
+                { label: '干部编号', name: 'cadreid', index: 'cadreid', width: 100, align: 'left',sortable: true ,hidden: true },
+                { label: '编号', name: 'id', index: 'id', width: 100, align: 'left',sortable: true ,hidden: true },
+                {
+                    label: '拟调整', name: 'planchangestatus', index: 'planchangestatus', width: 80, align: 'left', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                {
+                    label: '建议调整', name: 'suggestchangestatus', index: 'suggestchangestatus', width: 80, align: 'left', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                {
+                    label: '任免票', name: 'appointticketstatus', index: 'appointticketstatus', width: 80, align: 'left', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                {
+                    label: '任免表决', name: 'appointresultstatus', index: 'appointresultstatus', width: 80, align: 'left', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue == 1 ? "<i class=\"fa fa-toggle-on\"></i>" : "<i class=\"fa fa-toggle-off\"></i>";
+                    }
+                },
+                { label: '干部姓名', name: 'cadrename', index: 'cadrename', width: 100, align: 'left', sortable: true },
+                { label: '现任职务', name: 'currentduty', index: 'currentduty', width: 100, align: 'left',sortable: true  },
+                { label: '现任职级', name: 'currentrank', index: 'currentrank', width: 100, align: 'left',sortable: true  },
+                { label: '拟任职务', name: 'aspiringduty', index: 'aspiringduty', width: 100, align: 'left',sortable: true  },
+                { label: '拟免职务', name: 'avoidduty', index: 'avoidduty', width: 100, align: 'left',sortable: true  },
+                { label: '事项分类', name: 'itemtype', index: 'itemtype', width: 100, align: 'left',sortable: true  },
+                { label: '民主推荐', name: 'democracy', index: 'democracy', width: 100, align: 'left',sortable: true  },
+                { label: '得票数', name: 'getticketnum', index: 'getticketnum', width: 100, align: 'left',sortable: true  },
+                { label: '总人数', name: 'totalpersonnum', index: 'totalpersonnum', width: 100, align: 'left',sortable: true  },
+                {
+                    label: '有无举报', name: 'accuseletter', index: 'accuseletter', width: 100, align: 'left', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == '有') {
+                            return "<span class=\"label label-danger\">有</span>";
+                        } else {
+                            return "<span class=\"label label-success\">无</span>";
+                        }
+                    }
+                },
+               // { label: '呈报单位', name: 'reportcom', index: 'reportcom', width: 100, align: 'left',sortable: true  },
+                { label: '呈报时间', name: 'reportdate', index: 'reportdate', width: 100, align: 'left',sortable: true  },
+                //{ label: '任免建议备注', name: 'appointdemo', index: 'appointdemo', width: 100, align: 'left',sortable: true  },
+                { label: '表决意见', name: 'decideidea', index: 'decideidea', width: 100, align: 'left',sortable: true  },
+                { label: '任免理由', name: 'appointreason', index: 'appointreason', width: 100, align: 'left', sortable: true },
+                { label: '审批机关意见', name: 'approveidea', index: 'approveidea', width: 150, align: 'left', sortable: true },
+                { label: '行政机关意见', name: 'appointidea', index: 'appointidea', width: 150, align: 'left', sortable: true },
+                { label: '任免时间', name: 'appointdate', index: 'appointdate', width: 100, align: 'left', sortable: true },
+                { label: '备注', name: 'demo', index: 'demo', width: 100, align: 'left',sortable: true  },
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'cadrename',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $('#' + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $('#' + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: 'Form',
+            title: '添加干部拟调整',
+            url: '/CustomerManage/Cadre_PlanAdjust/Form',
+            width: '800px',
+            height: '800px',
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var keyValue = $('#gridTable').jqGridRowValue('id');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'Form',
+                title: '编辑干部拟调整',
+                url: '/CustomerManage/Cadre_PlanAdjust/Form?keyValue=' + keyValue,
+                width: '800px',
+                height: '800px',
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            })
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $('#gridTable').jqGridRowValue('id');
+        if (keyValue) {
+            $.RemoveForm({
+                url: '../../CustomerManage/Cadre_PlanAdjust/RemoveForm',
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的干部拟调整！', 0);
+        }
+    }
+    //转换干部人员——任免
+    function btn_tocustomer() {
+        var keyValue = $("#gridTable").jqGridRowValue('id');
+        var cadrename = $("#gridTable").jqGridRowValue('cadrename');
+        var appointreason = $("#gridTable").jqGridRowValue('appointreason');
+        var approveidea = $("#gridTable").jqGridRowValue('approveidea');
+        var appointidea = $("#gridTable").jqGridRowValue('appointidea');
+        var appointdate = $("#gridTable").jqGridRowValue('appointdate');
+        var appointresultstatus = $("#gridTable").jqGridRowValue('appointresultstatus');
+
+        if (appointresultstatus == "<i class=\"fa fa-toggle-on\"></i>") {
+            dialogMsg("【"+cadrename+"】已经任免！", 0);
+        } else {
+            //可以任免
+            if (appointreason == "" || approveidea == "" || appointidea == "" || appointdate == "") {
+                dialogMsg("请维护任免信息！", 0);
+            }else{
+            if (checkedRow(keyValue)) {
+                $.ConfirmAjax({
+                    msg: "注：您确定要把人员【" + cadrename + "】任免吗？",
+                    url: "../../CustomerManage/Cadre_PlanAdjust/ToCustomer",
+                    param: { keyValue: keyValue },
+                    success: function (data) {
+                        $('#gridTable').trigger('reloadGrid');
+                    }
+                });
+             }
+            }
+        }
+    }
+    //导出
+    function btn_export() {
+        dialogOpen({
+            id: "ExcelIExportDialog",
+            title: '导出Excel数据',
+            url: '/Utility/ExcelExportForm?gridId=gridTable',
+            width: "500px",
+            height: "380px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }, btn: ['导出Excel', '关闭']
+        });
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>
+                    <div id="queryCondition" class="btn-group">
+                        <a class="btn btn-default dropdown-text" data-toggle="dropdown">选择条件</a>
+                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a data-value="cadrename">干部姓名</a></li>
+                            <li><a data-value="currentduty">现任职务</a></li>
+                            <li><a data-value="currentrank">现任职级</a></li>
+                        </ul>
+                     </div>
+                </td>
+                <td>
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload()"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+        </div>
+        <div class="btn-group">
+            <a id="lr-tocustomer" class="btn btn-default" onclick="btn_tocustomer()"><i class="fa fa-random"></i>&nbsp;干部任免</a>
+            <a id="lr-export" class="btn btn-default" onclick="btn_export()"><i class="fa fa-sign-out"></i>&nbsp;导出</a>
+        </div>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+     <div id="gridPager"></div>
+</div>

@@ -1,0 +1,197 @@
+﻿@{
+    ViewBag.Title = "销售报表";
+    Layout = "~/Views/Shared/_ReportIndex.cshtml";
+}
+<script>
+    $(function () {
+        GetGrid();
+    })
+    function GetGrid() {
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            url: "../../ReportManage/ReportDemo/GetSalesJson",
+            datatype: "json",
+            height: $(window).height() - 230.5,
+            autowidth: true,
+            colModel: [
+                { name: "date", label: "销售日期", width: 80, align: "center" },
+                { name: "billNo", label: "销售单据号", width: 110, align: "center" },
+                { name: "salesName", label: "销售人员", width: 80 },
+                { name: "buName", label: "客户", width: 150, align: "left" },
+                { name: "invNo", label: "商品编号", width: 100, align: "left" },
+                { name: "invName", label: "商品名称", width: 200, align: "left" },
+                { name: "unit", label: "单位", width: 80, align: "center" },
+                { name: "location", label: "仓库", width: 80 },
+                { name: "qty", label: "数量", width: 80, align: "left" },
+                { name: "unitPrice", label: "单价", width: 80, align: "left", formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                { name: "amount", label: "金额", width: 80, align: "left", formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                { name: "description", label: "备注", width: 150, align: "left" }
+            ],
+            viewrecords: true,
+            rowNum: 1000,
+            footerrow: true,
+            gridComplete: function () {
+                var totalamount = $(this).getCol("amount", false, "sum");
+                //合计
+                $(this).footerData("set", {
+                    "location": "合计：",
+                    "amount": totalamount,
+                });
+                $('table.ui-jqgrid-ftable td').prevUntil().css("border-right-color", "#fff");
+            }
+        });
+        //点击时间范围（今天、近7天、近一个月、近三个月）
+        $("#time_horizon a.btn-default").click(function () {
+            $("#time_horizon a.btn-default").removeClass("active");
+            $(this).addClass("active");
+            switch ($(this).attr('data-value')) {
+                case "1"://今天
+                    $("#StartTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "2"://近7天
+                    $("#StartTime").val("@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "3"://近一个月
+                    $("#StartTime").val("@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "4"://近三个月
+                    $("#StartTime").val("@DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                default:
+                    break;
+            }
+            $("#SelectedStartTime").html($("#StartTime").val());
+            $("#SelectedEndTime").html($("#EndTime").val());
+        });
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //打印
+    function btn_print() {
+        $("#gridPanel").printTable();
+    }
+    //导出
+    function btn_export() {
+        dialogOpen({
+            id: "ExcelIExportDialog",
+            title: '导出销售报表',
+            url: '/Utility/ExcelExportForm?gridId=gridTable',
+            width: "500px",
+            height: "380px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }, btn: ['导出Excel', '关闭']
+        });
+    }
+</script>
+<div class="ui-report">
+    <div class="titlePanel">
+        <div class="title-search">
+            <table>
+                <tr>
+                    <td>查询条件</td>
+                    <td style="padding-left: 10px;">
+                        <div class="ui-filter" style="width: 200px;">
+                            <div class="ui-filter-text">
+                                <strong id="SelectedStartTime">@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")</strong> 至 <strong id="SelectedEndTime">@DateTime.Now.ToString("yyyy-MM-dd")</strong>
+                            </div>
+                            <div class="ui-filter-list" style="width: 350px;">
+                                <table class="form" id="filter-form">
+                                    <tr>
+                                        <th class="formTitle">单据日期：</th>
+                                        <td class="formValue">
+                                            <input id="Category" type="hidden" value="1" />
+                                            <div style="float: left; width: 45%;">
+                                                <input id="StartTime" readonly type="text" value="@LeaRun.Util.Time.GetDate(-7)" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})">
+                                            </div>
+                                            <div style="float: left; width: 10%; text-align: center;">至</div>
+                                            <div style="float: left; width: 45%;">
+                                                <input id="EndTime" readonly type="text" value="@LeaRun.Util.Time.GetToday()" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="formTitle">单据编号：</td>
+                                        <td class="formValue">
+                                            <input id="OrderCode" type="text" class="form-control">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="formTitle">客户名称：</td>
+                                        <td class="formValue">
+                                            <input id="CustomerName" type="text" class="form-control">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="formTitle">商品编号：</td>
+                                        <td class="formValue">
+                                            <input id="GoodsCode" type="text" class="form-control">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="formTitle">商品名称：</td>
+                                        <td class="formValue">
+                                            <input id="GoodsName" type="text" class="form-control">
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div class="ui-filter-list-bottom">
+                                    <a id="btn_Reset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>
+                                    <a id="btn_Search" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding-left: 10px;">
+                        <div id="time_horizon" class="btn-group">
+                            <a class="btn btn-default" data-value="1">今天</a>
+                            <a class="btn btn-default active" data-value="2">近7天</a>
+                            <a class="btn btn-default" data-value="3">近1个月</a>
+                            <a class="btn btn-default" data-value="4">近3个月</a>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="toolbar">
+            <div class="btn-group">
+                <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                <a id="lr-print" class="btn btn-default" onclick="btn_print()"><i class="fa fa-print"></i>&nbsp;打印</a>
+                <a id="lr-export" class="btn btn-default" onclick="btn_export()"><i class="fa fa-sign-out"></i>&nbsp;导出</a>
+            </div>
+            <script>$('.toolbar').authorizeButton()</script>
+        </div>
+    </div>
+    <div class="gridPanel" id="gridPanel">
+        <div class="printArea">
+            <div class="grid-title">销售明细表</div>
+            <div class="grid-subtitle">日期: 2012-03-05 至 2016-03-28</div>
+            <table id="gridTable"></table>
+        </div>
+    </div>
+</div>

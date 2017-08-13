@@ -1,0 +1,94 @@
+﻿<ion-modal-view>
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear " ng-click="closeEditModal()"><i class="icon ion-ios-close-empty"></i></button>
+        <h1 class="title">{{editTitle}}</h1>
+        <button class="button button-clear" ng-click="doSubmit()">提交</button>
+    </ion-header-bar>
+    <ion-content>
+      <ion-list class="lr-list-form">
+        <div class="item item-divider">
+          商机名称<span>*</span>
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon ion-ios-pricetag-outline"></i>添加商机名称</div>
+          <input type="text" ng-model="editData.fullName" ng-class="{'active' : isInputActive('fullName')}"/>
+
+        </ion-item >
+        <div class="item item-divider">
+          预计金额<span>*</span>
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon iconfont">&#xe616;</i>添加预计金额</div>
+          <input type="text"  ng-model="editData.amount"  ng-class="{'active' : isInputActive('amount')}"/>
+        </ion-item >
+        <!--<div class="item item-divider">
+          商机类别<span>*</span>
+        </div>
+        <ion-item  ng-click="openChanceSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.chanceTypeId != null" ><i class="icon ion-ios-drag"></i>添加商机类别</div>
+          <div class="item-icon-right" ng-hide="editData.chanceTypeId == null">
+            <div class="lr-form-label positive-bg" >{{editData.chanceTypeName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >-->
+        <div class="item item-divider">
+          商机来源<span>*</span>
+        </div>
+        <ion-item  ng-click="openSourceSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.sourceId != null" ><i class="icon ion-ios-drag"></i>添加商机来源</div>
+          <div class="item-icon-right" ng-hide="editData.sourceId == null">
+            <div class="lr-form-label royal-bg" >{{editData.sourceName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >
+        <div class="item item-divider">
+          商机阶段<span>*</span>
+        </div>
+        <ion-item  ng-click="openStageSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.stageId != null" ><i class="icon ion-ios-drag"></i>添加商机阶段</div>
+          <div class="item-icon-right" ng-hide="editData.stageId == null">
+            <div class="lr-form-label {{editData.bgStageColor}}" >{{editData.stageName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >
+        <div class="item item-divider">
+          公司名称<span>*</span>
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon ion-ios-pricetag-outline"></i>添加公司名称</div>
+          <input type="text"  ng-model="editData.companyName" ng-class="{'active' : isInputActive('companyName')}" />
+        </ion-item >
+        <div class="item item-divider">
+          跟进人员<span>*</span>
+        </div>
+        <ion-item  ng-click="openTraceUserSelectModal()">
+          <div class="lr-form-select" ng-hide="editData.traceUserId != null" ><i class="icon ion-ios-personadd-outline"></i>添加跟进人员</div>
+          <div class="item-icon-right" ng-hide="editData.traceUserId == null">
+            <div class="lr-form-label calm-bg" >{{editData.taceUserName}}</div>
+            <i class="icon ion-chevron-right icon-accessory"></i>
+          </div>
+        </ion-item >
+        <div class="item item-divider">
+          联系人<span>*</span>
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon ion-ios-personadd-outline"></i>添加联系人</div>
+          <input type="text"  ng-model="editData.contacts"  ng-class="{'active' : isInputActive('contacts')}" />
+        </ion-item >
+        <div class="item item-divider">
+          手机
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon ion-ios-telephone-outline"></i>添加手机</div>
+          <input type="text"  ng-model="editData.mobile"  ng-class="{'active' : isInputActive('mobile')}"/>
+        </ion-item >
+        <div class="item item-divider">
+          QQ
+        </div>
+        <ion-item class="item-input">
+          <div class="lr-form-input" ><i class="icon iconfont">&#xe67c;</i>添加QQ</div>
+          <input type="text"  ng-model="editData.qQ"  ng-class="{'active' : isInputActive('qQ')}" />
+        </ion-item >
+      </ion-list>
+    </ion-content>
+</ion-modal-view>

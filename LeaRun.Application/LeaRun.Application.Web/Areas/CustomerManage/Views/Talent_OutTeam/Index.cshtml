@@ -1,0 +1,239 @@
+﻿@{;
+    ViewBag.Title = "列表页面";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>;
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设布局;
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            autowidth: true,
+            height: $(window).height() - 136.5,
+            url: "../../CustomerManage/Talent_OutTeam/GetPageListJson",
+            datatype: "json",
+            colModel: [
+                { label: '编号', name: 'id', index: 'id', width: 80, align: '',sortable: true ,hidden: true },
+                { label: '姓名', name: 'name', index: 'name', width: 80, align: '',sortable: true  },
+                { label: '性别', name: 'sex', index: 'sex', width: 80, align: '',sortable: true  },
+                { label: '民族', name: 'nation', index: 'nation', width: 120, align: '',sortable: true  },
+                { label: '出生年月', name: 'birth', index: 'birth', width: 80, align: '',sortable: true  },
+                { label: '现工作地', name: 'domicile', index: 'domicile', width: 200, align: '',sortable: true  },
+                { label: '工作单位', name: 'workcom', index: 'workcom', width: 200, align: '', sortable: true },
+                { label: '职务', name: 'duty', index: 'duty', width: 80, align: '',sortable: true  },
+                { label: '职称', name: 'professionaltitle', index: 'professionaltitle', width: 80, align: '',sortable: true  },
+                { label: '编制类型', name: 'authtype', index: 'authtype', width: 80, align: '',sortable: true  },
+                { label: '工作时间', name: 'workingtime', index: 'workingtime', width: 80, align: '',sortable: true  },
+                { label: '政治面貌', name: 'politicsstatus', index: 'politicsstatus', width: 80, align: '',sortable: true  },
+                { label: '入党时间', name: 'joinpartytiem', index: 'joinpartytiem', width: 80, align: '',sortable: true  },
+                { label: '最高学历', name: 'highestedu', index: 'highestedu', width: 200, align: '', sortable: true },
+                { label: '毕业院校', name: 'graduateschool', index: 'graduateschool', width: 200, align: '', sortable: true },
+                { label: '专业', name: 'specialty', index: 'specialty', width: 80, align: '',sortable: true  },
+                { label: '人才类型', name: 'talenttype', index: 'talenttype', width: 80, align: '',sortable: true  },
+                { label: '研究方向', name: 'researchorientation', index: 'researchorientation', width: 200, align: '', sortable: true },
+                { label: '联系方式1', name: 'contactway1', index: 'contactway1', width: 80, align: '',sortable: true  },
+                { label: '备注', name: 'memo', index: 'memo', width: 80, align: '',sortable: true  },
+                { label: '报送单位', name: 'submissioncom', index: 'submissioncom', width: 200, align: '', sortable: true },
+                { label: '报送人', name: 'submissionperson', index: 'submissionperson', width: 80, align: '',sortable: true  },
+                { label: '联系方式2', name: 'contactway2', index: 'contactway2', width: 80, align: '',sortable: true  },
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'id',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $('#' + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $('#' + this.id).setSelection(selectedRowIndex, false);
+            },
+            subGrid: true,
+            subGridRowExpanded: function (subgrid_id, row_id) {
+                var keyValue = $gridTable.jqGrid('getRowData', row_id)['id'];
+                var subgrid_table_id = subgrid_id + "_t";
+                $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "'></table>");
+                $("#" + subgrid_table_id).jqGrid({
+                    url: "../../CustomerManage/Talent_OutTeam/GetDetailsJson",
+                    postData: { keyValue: keyValue },
+                    datatype: "json",
+                    height: "100%",
+                    colModel: [
+                { label: '编号', name: 'id', index: 'id', width: 80, align: '',sortable: true ,hidden: true },
+                { label: '人才编号', name: 'talentid', index: 'talentid', width: 80, align: '',sortable: true ,hidden: true },
+                { label: '姓名', name: 'f_name', index: 'f_name', width: 80, align: '',sortable: true  },
+                { label: '称谓', name: 'f_appellation', index: 'f_appellation', width: 80, align: '',sortable: true  },
+                { label: '工作地点', name: 'f_workaddress', index: 'f_workaddress', width: 280, align: '',sortable: true  },
+                { label: '联系方式', name: 'f_contactway', index: 'f_contactway', width: 80, align: '',sortable: true  },
+                    ],
+                    caption: "家庭成员",
+                    rowNum: "1000",
+                    rownumbers: true,
+                    shrinkToFit: false,
+                    gridview: true,
+                    hidegrid: false
+                });
+            }
+        });
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: 'Form',
+            title: '添加域外人才',
+            url: '/CustomerManage/Talent_OutTeam/Form',
+            width: '1000px',
+            height: '750px',
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var keyValue = $('#gridTable').jqGridRowValue('id');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'Form',
+                title: '编辑域外人才',
+                url: '/CustomerManage/Talent_OutTeam/Form?keyValue=' + keyValue,
+                width: '1000px',
+                height: '750px',
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            })
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $('#gridTable').jqGridRowValue( 'id');
+        if (keyValue) {
+            $.RemoveForm({
+                url: '../../CustomerManage/Talent_OutTeam/RemoveForm',
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的域外人才！', 0);
+        }
+    }
+    //详细
+    function btn_details() {
+        var keyValue = $('#gridTable').jqGridRowValue('id');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'Form',
+                title: '详细域外人才',
+                url: '/CustomerManage/Talent_OutTeam/Form?keyValue=' + keyValue+'&isDeltail=true',
+                width: '1000px',
+                height: '750px',
+                btn:null,
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            })
+        }
+    }
+    //导出
+    function btn_export() {
+        dialogOpen({
+            id: "ExcelIExportDialog",
+            title: '导出Excel数据',
+            url: '/Utility/ExcelExportForm?gridId=gridTable',
+            width: "500px",
+            height: "380px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }, btn: ['导出Excel', '关闭']
+        });
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>
+                    <div id="queryCondition" class="btn-group">
+                        <a class="btn btn-default dropdown-text" data-toggle="dropdown">选择条件</a>
+                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a data-value="name">姓名</a></li>
+                            <li><a data-value="domicile">现工作地</a></li>
+                            <li><a data-value="politicsstatus">政治面貌</a></li>
+                            <li><a data-value="highestedu">最高学历</a></li>
+                            <li><a data-value="talenttype">人才类型</a></li>
+                            <li><a data-value="submissioncom">报送单位</a></li>
+                        </ul>
+                     </div>
+                </td>
+                <td>
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload()"><i class="fa fa-refresh"></i>刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>删除</a>
+            <a id="lr-details" class="btn btn-default" onclick="btn_details()"><i class="fa fa-list-alt"></i>详细</a>
+        </div>
+            <div class="btn-group">
+                        <a id="lr-export" class="btn btn-default" onclick="btn_export()"><i class="fa fa-sign-out"></i>&nbsp;导出</a>
+          </div>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>

@@ -1,0 +1,191 @@
+﻿@{
+    ViewBag.Title = "移动端开发";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        $("#taskblock").height($(window).height() - 33);
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $("#taskblock").height($(window).height() - 33);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        $.SetForm({
+            url: "../../AppManage/AppProjects/GetListJson",
+            success: function (data) {
+                $('#taskblock').html('');
+                $.each(data, function (id, item) {
+                    var row = '<div class="col-sm-4 col-md-3 col-lg-2">';
+                    row += '<div class="appCtrl">';
+                    row += '<span class="fa fa-remove" title="删除" onclick="btnRemoveProject(\'' + item.F_Id + '\')"></span>';
+                    row += '</div>';
+
+                    row += '<div class="item" onclick="btnEditProject(\'' + item.F_Id + '\')">';
+                    row += '<div class="appIcon">';
+                    row += '<img src="../../Content/images/icon-webApp.png" /></div>';
+                    row += '<div class="title">' + item.F_Name + '</div>';
+                    row += '<div class="info">by.' + item.F_CreateUserName + ' ' + item.F_CreateDate + '</div>';
+                    row += '</div>';
+                    row += '</div>';
+
+
+                    $('#taskblock').append(row);
+                });
+                $('#taskblock').append('<div class="col-sm-4 col-md-3 col-lg-2"><div class="appAdd" onclick="btnAddProject()"><span class="fa fa-plus">添加项目</span></div></div>');
+            }
+        })
+    }
+    //新建项目
+    function btnAddProject() {
+        var _width = top.$.windowWidth() - 20;
+        var _height = top.$.windowHeight() - 20;
+        dialogOpen({
+            id: "WebAppDesignBuider",
+            title: '移动端设计(预览版)',
+            url: '/AppManage/AppDesign/Index?windowHeight=' + _height + '&windowWidth=' + _width,
+            width: _width + "px",
+            height: _height + "px",
+            btn: null,
+            callBack: function () {},
+            cancel: function () { reload(); }
+        });
+    }
+    //编辑项目
+    function btnEditProject(Id) {
+        var _width = top.$.windowWidth() -20;
+        var _height = top.$.windowHeight()-20;
+        dialogOpen({
+            id: "WebAppDesignBuider",
+            title: '移动端设计(预览版)',
+            url: '/AppManage/AppDesign/Index?projectId=' + Id + '&windowHeight=' + _height + '&windowWidth=' + _width,
+            width: _width + "px",
+            height: _height + "px",
+            btn:null,
+            callBack: function (iframeId) {},
+            cancel: function () { reload(); }
+        });
+    }
+    //删除项目
+    function btnRemoveProject(Id) {
+        if (Id != undefined && Id != "") {
+            $.RemoveForm({
+                url: "../../AppManage/AppProjects/RemoveForm",
+                param: { keyValue: Id },
+                success: function (data) {
+                    GetGrid();
+                }
+            })
+        }
+    }
+</script>
+<div class="taskblockPanel webAppList">
+    <div id="taskblock" class="taskblock row">
+        <div class="col-sm-4 col-md-3 col-lg-2">
+            <div class="appAdd" onclick="btnAddProject()">
+                <span class="fa fa-plus">添加项目</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style class="">
+    .webAppList {
+     
+    }
+    .webAppList .row {
+        padding:10px 5px 0px 5px;
+        background-color:#F5F6F9 !important;
+    }
+    .webAppList .col-sm-4,.webAppList .col-md-3, .webAppList .col-lg-2 {
+        padding:15px 5px 10px 5px;
+        min-width:230px;
+    }
+    .webAppList .item {
+        cursor: pointer;
+        height:93px;
+        border-radius:4px;
+        background-color:#fff;
+        box-sizing: border-box;
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+        transition: box-shadow 140ms linear;
+    }
+    .webAppList .item:hover,.webAppList .appAdd:hover {
+        box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    .webAppList  .appCtrl {
+        position: absolute;
+        top:20px;
+        right: 10px;
+        
+    }
+    .webAppList  .appCtrl span {
+      color: #929BA4;
+      cursor: pointer;
+      font-size: 16px;
+      vertical-align: middle;
+      opacity: 0.4;
+      transition: 0.1s linear;
+      -webkit-transition: 0.1s linear;
+      -moz-transition: 0.1s linear;
+      z-index:1000;
+    }
+    .webAppList  .appCtrl span:hover {
+        opacity: 1;
+        transition: 0.1s linear;
+        -webkit-transition: 0.1s linear;
+        -moz-transition: 0.1s linear;
+    }
+   
+    .webAppList .item .appIcon img {
+        width:60px;
+        height:60px;
+        background-color:#fff;
+        border-radius:10px;
+        position:absolute;
+        top:0px;
+        left:20px;
+        box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .webAppList .item .title {
+        height: 60px;
+        font-size: 16px;
+        padding: 12px 0px 0px 90px;
+    }
+     .webAppList .item .info {
+        border-top: 1px solid #e8ebef;
+        height: 33px;
+        padding: 6px 0px 0px 15px;
+        color: #929BA4;
+    }
+    .webAppList .appAdd {
+        cursor: pointer;
+        height:93px;
+        border-radius:4px;
+        box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+        transition: box-shadow 140ms linear;
+        text-align: center;
+        padding: 33px;
+    }
+    .webAppList .appAdd span {
+       font-size:30px;
+        opacity: 0.4;
+        transition: 0.1s linear;
+        -webkit-transition: 0.1s linear;
+        -moz-transition: 0.1s linear;
+        color: #929BA4;
+    }
+        .webAppList .appAdd:hover span {
+            opacity:.8;
+        }
+</style>

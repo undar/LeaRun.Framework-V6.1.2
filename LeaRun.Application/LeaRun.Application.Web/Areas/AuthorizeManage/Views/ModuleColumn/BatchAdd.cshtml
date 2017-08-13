@@ -1,0 +1,46 @@
+﻿@{
+    ViewBag.Title = "批量添加视图";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script type="text/javascript">
+    var moduleId = request('moduleId');
+    $(function () {
+        initControl();
+    })
+    //初始化控件
+    function initControl() {
+        $("#ModuleId").val(moduleId);
+    }
+    //保存表单
+    function AcceptClick(callback) {
+        try {
+            var data = [];
+            var JsonText = eval($("#JSONText").val());
+            $.each(JsonText, function (i) {
+                var row = JsonText[i];
+                data.push({
+                    EnCode: row.name,
+                    FullName: row.label,
+                    SortCode: i + 1,
+                    ModuleId: moduleId,
+                    ModuleColumnId: newGuid(),
+                    ParentId: "0"
+                })
+            });
+            callback(data);
+            dialogClose();
+        } catch (e) {
+            alert(e)
+        }
+    }
+</script>
+<div style="margin-top: 10px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">JSON</th>
+            <td class="formValue">
+                <textarea id="JSONText" class="form-control" style="height: 190px;"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>

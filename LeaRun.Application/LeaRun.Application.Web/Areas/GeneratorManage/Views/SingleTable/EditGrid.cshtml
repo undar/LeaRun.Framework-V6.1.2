@@ -1,0 +1,247 @@
+﻿@{
+    ViewBag.Title = "编辑表格";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    var dataBaseLinkId = request('dataBaseLinkId');
+    var tableName = request('tableName');
+    $(function () {
+        var dataJson = top.Form.bindingTableJson;
+        InitialPage();
+        GetTreeField();
+        if (dataJson != "") {
+            colModelJson = dataJson.colModel;
+            if (dataJson.pager == true) {
+                $("#Ispager").attr("checked", 'true')
+            }
+        }
+
+    });
+    //初始化页面
+    function InitialPage() {
+        $('#TableField').layout({
+            applyDemoStyles: true,
+            west__size: 280,
+            spacing_open: 0,
+            onresize: function () {
+                $(window).resize()
+            }
+        });
+        $("#TableField").height($(window).height() - 43)
+        $(".center-Panel").height($(window).height() - 44);
+        $("#align").ComboBox({
+            description: "请选择",
+        });
+        $("#hidden").ComboBox({
+            description: "请选择",
+        });
+        $("#sortable").ComboBox({
+            description: "请选择",
+        });
+        $("#formatter").ComboBox({
+            description: "请选择",
+        });
+        $("#query").ComboBox({
+            description: "请选择",
+        });
+    }
+    //加载表格字段
+    var colModelJson = [];
+    function GetTreeField() {
+        var nameArray = [];
+        if (colModelJson) {
+            $.each(colModelJson, function (i) {
+                nameArray.push(colModelJson[i].name)
+            });
+        }
+        $("#itemTree").treeview({
+            height: $(window).height() - 44,
+            showcheck: true,
+            url: "../../SystemManage/DataBaseTable/GetTableFiledTreeJson",
+            param: { dataBaseLinkId: dataBaseLinkId, tableName: tableName, nameId: String(nameArray) },
+            onnodeclick: function (item) {
+                $.each(colModelJson, function (i) {
+                    var row = colModelJson[i];
+                    if (row.name == item.id) {
+                        $("#field_form").SetWebControls(row);
+                        $("#btn_save_field").removeAttr('disabled');
+                        return false;
+                    } else {
+                        $("#btn_save_field").attr('disabled', 'disabled');
+                        $("#field_form").SetWebControls({ label: "", name: "", width: "", align: "", hidden: "", sortable: "", formatter: "", query: "" });
+                    }
+                });
+            },
+            oncheckboxclick: function (item, status) {
+                if (status == 1) {
+                    //添加字段
+                    var row = {
+                        label: item.value,
+                        name: item.id,
+                        width: 100,
+                        align: 'left',
+                        sortable: true,
+                        formatter: 'string',
+                        query: false,
+                    }
+                    colModelJson.push(row);
+                    $("#field_form").SetWebControls(row);
+                } else if (status == 0) {
+                    //删除字段
+                    $.each(colModelJson, function (i) {
+                        if (colModelJson[i].name == item.id) {
+                            colModelJson.splice(i, 1);
+                            return false;
+                        }
+                    });
+                }
+            }
+        });
+        //保存字段
+        $("#btn_save_field").click(function () {
+            if (!$('#field_form').Validform()) {
+                return false;
+            }
+            var postData = {
+                label: $("#label").val(),
+                name: $("#name").val(),
+                width: $("#width").val(),
+                align: $("#align").attr('data-value'),
+                sortable: $("#sortable").attr('data-value'),
+                formatter: $("#formatter").attr('data-value'),
+            }
+            if ($("#hidden").attr('data-value') == "true") {
+                postData["hidden"] = true;
+            }
+            if ($("#query").attr('data-value') == "true") {
+                postData["query"] = true;
+            }
+            else {
+                postData["query"] = false;
+            }
+            $.each(colModelJson, function (i) {
+                if (colModelJson[i].name == postData.name) {
+                    colModelJson[i] = postData;
+                    return false;
+                }
+            });
+        })
+    }
+    //保存表单
+    function AcceptClick(callBack) {
+        var dataJson = {
+            pager: $("#Ispager").is(":checked"),
+            colModel: colModelJson
+        }
+        callBack(dataJson);
+        dialogClose();
+    }
+</script>
+<div style="position: absolute; right: 10px; top: 12px;">
+    <div class="checkbox user-select">
+        <label>
+            <input id="Ispager" type="checkbox" />
+            是否分页
+        </label>
+    </div>
+</div>
+<div style="margin-left: 10px; margin-right: 10px;">
+    <ul class="nav nav-tabs">
+        <li id="tab_TableField" class="active"><a href="#" data-toggle="tab">表格字段</a></li>
+    </ul>
+</div>
+<div id="TableField" class="ui-layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel" style="margin: 0px; border-top: none; border-left: none; border-bottom: none;">
+            <div id="itemTree"></div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="center-Panel" style="margin: 0px; border: none; background-color: #fff; overflow: auto;">
+            <div class="alert alert-danger" style="text-align: left; margin: 10px;">
+                <i class="fa fa-question-circle alert-dismissible" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+                注：请在左侧勾选需要在列表中显示的字段。
+            </div>
+            <div style="margin-left: 0px; margin-top: 20px; margin-right: 15px;">
+                <table id="field_form" class="form">
+                    <tr>
+                        <th class="formTitle" style="width: 60px;">题头</th>
+                        <td class="formValue">
+                            <input id="name" type="hidden" />
+                            <input id="label" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                        </td>
+                        <th class="formTitle" style="width: 60px;">宽度</th>
+                        <td class="formValue">
+                            <input id="width" type="text" class="form-control" isvalid="yes" checkexpession="Num" />
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <th class="formTitle" style="width: 60px;">隐藏</th>
+                        <td class="formValue">
+                            <div id="hidden" type="select" class="ui-select">
+                                <ul>
+                                    <li data-value="">请选择</li>
+                                    <li data-value="true">是</li>
+                                    <li data-value="false">否</li>
+                                </ul>
+                            </div>
+                        </td>
+                        <th class="formTitle" style="width: 60px;">对齐</th>
+                        <td class="formValue">
+                            <div id="align" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                                <ul>
+                                    <li data-value="left">左边</li>
+                                    <li data-value="center">居中</li>
+                                    <li data-value="right">右边</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="formTitle" style="width: 60px;">排序</th>
+                        <td class="formValue">
+                            <div id="sortable" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                                <ul>
+                                    <li data-value="true">是</li>
+                                    <li data-value="false">否</li>
+                                </ul>
+                            </div>
+                        </td>
+                        <th class="formTitle" style="width: 60px;">格式</th>
+                        <td class="formValue">
+                            <div id="formatter" type="select" class="ui-select">
+                                <ul>
+                                    <li data-value="">请选择</li>
+                                    <li data-value="string">字符</li>
+                                    <li data-value="date">日期</li>
+                                    <li data-value="int">数字</li>
+                                    <li data-value="money">金额</li>
+                                </ul>
+                            </div>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <th class="formTitle" style="width: 60px;">查询</th>
+                        <td class="formValue">
+                            <div id="query" type="select" class="ui-select">
+                                <ul>
+                                    <li data-value="">请选择</li>
+                                    <li data-value="true">是</li>
+                                    <li data-value="false">否</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="formTitle"></td>
+                        <td class="formValue">
+                            <a id="btn_save_field" disabled="" class="btn btn-primary"><i class="fa fa-save"></i>&nbsp;保&nbsp;存</a>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

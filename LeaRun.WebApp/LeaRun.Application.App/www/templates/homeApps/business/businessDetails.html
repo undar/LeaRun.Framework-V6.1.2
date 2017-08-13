@@ -1,0 +1,177 @@
+﻿<ion-modal-view>
+    <ion-header-bar class="bar-stable nav-bar-block nav-title-slide-ios7">
+        <button class="button button-clear " ng-click="closeDetailsModal()"><i class="icon ion-ios-arrow-left"></i></button>
+        <h1 class="title">{{detailsData.fullName}}</h1>
+        <div class="buttons">
+            <button class="button button-clear" ng-click="openEditModal(detailsData)"><i class="icon ion-ios-compose-outline"></i></button>
+            <button class="button button-clear" style="margin-left:5px;" ng-click="doDelete(detailsData)"><i class="icon ion-ios-trash-outline"></i></button>
+        </div>
+    </ion-header-bar>
+    <ion-content delegate-handle="businessDetailHandle">
+        <ion-list>
+            <ion-item style="color: rgba(0, 0, 0, 0.5);font-size: 12px;padding: 2px 10px;">
+                <div><span class="balanced">{{detailsData.createUserName}}</span> 创建于 {{detailsData.createDate}}</div>
+                <div ng-hide="!detailsData.modifyUserName"><span class="balanced">{{detailsData.modifyUserName}}</span> 修改于 {{detailsData.modifyDate}}</div>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>商机编号</span>
+                </div>
+                <span>{{detailsData.enCode}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>商机名称</span>
+                </div>
+                <span>{{detailsData.fullName}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>跟进人员</span>
+                </div>
+                <span>{{detailsData.traceUserName}}</span>
+            </ion-item>
+            <!--<ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>商机类别</span>
+                </div>
+                <span class="lr-label positive-bg">{{detailsData.chanceTypeId}}</span>
+            </ion-item>-->
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>商机来源</span>
+                </div>
+                <span class="lr-label royal-bg">{{detailsData.sourceId}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>商机阶段</span>
+                </div>
+                <span class="lr-label {{detailsData.bgStageColor}}">{{detailsData.stageId}}</span>
+            </ion-item>
+
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>预计金额</span>
+                </div>
+                <span>{{detailsData.amount}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>预计利润</span>
+                </div>
+                <span>{{detailsData.profit}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>预计成交</span>
+                </div>
+                <span>{{detailsData.dealDate}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>销售费用</span>
+                </div>
+                <span>{{detailsData.saleCost}}</span>
+            </ion-item>
+
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>成功率%</span>
+                </div>
+                <span>{{detailsData.successRate}}%</span>
+            </ion-item>
+
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>公司名称</span>
+                </div>
+                <span>{{detailsData.companyName}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>公司情况</span>
+                </div>
+                <span>{{detailsData.companyDesc}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>公司行业</span>
+                </div>
+                <span>{{detailsData.companyNatureId}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>公司网站</span>
+                </div>
+                <span>{{detailsData.companySite}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>所在省份</span>
+                </div>
+                <span>{{detailsData.province}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>所在城市</span>
+                </div>
+                <span>{{detailsData.city}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>联系人</span>
+                </div>
+                <span class="positive">{{detailsData.contacts}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>手机</span>
+                </div>
+                <span class="positive">{{detailsData.mobile}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>电话</span>
+                </div>
+                <span class="positive">{{detailsData.tel}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>传真</span>
+                </div>
+                <span class="positive">{{detailsData.fax}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>QQ</span>
+                </div>
+                <span class="positive">{{detailsData.qQ}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>Email</span>
+                </div>
+                <span class="positive">{{detailsData.email}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>微信</span>
+                </div>
+                <span class="positive">{{detailsData.wechat}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>爱好</span>
+                </div>
+                <span>{{detailsData.hobby}}</span>
+            </ion-item>
+            <ion-item class="lr-details-item">
+                <div class="lr-item-htitle">
+                    <span>备注</span>
+                </div>
+                <span>{{detailsData.description}}</span>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-modal-view>

@@ -1,0 +1,380 @@
+﻿@{;
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_OrderForm.cshtml";
+}
+<link href="~/Content/scripts/plugins/simditor/css/simditor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/simditor/js/module.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/uploader.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/hotkeys.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/simditor.min.js"></script>
+<script src="~/Content/scripts/plugins/jquery.md5.js"></script>
+<script src="~/Content/scripts/plugins/uploadify/ajaxfileupload.js"></script>
+<script>
+    var keyValue = request('keyValue');
+    var OrganizeId = request('OrganizeId');
+    var editor1 = null;
+    var editor2 = null;
+    var editor3 = null;
+    var cur_id = null;
+    $(function () {
+        InitialPage();
+        GetOrderEntryGrid();
+        editor1 = new Simditor({
+            textarea: $('#yearexamres'),
+            placeholder: '年度考核...',
+            toolbar: ['title', 'bold', 'italic', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent']
+        });
+        editor2 = new Simditor({
+            textarea: $('#vita'),
+            placeholder: '个人简历...',
+            toolbar: ['title', 'bold', 'italic', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent']
+        });
+        editor3 = new Simditor({
+            textarea: $('#rewardspunishments'),
+            placeholder: '奖惩情况...',
+            toolbar: ['title', 'bold', 'italic', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent']
+        });
+        
+        
+        initControl();
+    });
+    //初始化页面
+    function InitialPage() {;
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 240.5);
+            }, 200);
+            e.stopPropagation();
+        });
+
+        $('#uploadFile').change(function () {
+            var f = document.getElementById('uploadFile').files[0]
+            var src = window.URL.createObjectURL(f);
+            document.getElementById('uploadPreview').src = src;
+             
+            //上传应用图标
+            $.ajaxFileUpload({
+                url: "../../CustomerManage/Cadre_Base/UploadFile?keyValue=" + cur_id,
+                //param: { keyValue:cur_id },
+                secureuri: false,
+                fileElementId: 'uploadFile',
+                dataType: 'json',
+                success: function (data) {
+                    dialogMsg(data.message, 1);
+                }
+            });
+        });
+    }
+    //加载明细表
+    function GetOrderEntryGrid() {
+        var $grid = $('#gridTable');
+        $grid.jqGrid({
+            unwritten: false,
+            datatype: 'local',
+            height: $(window).height() - 240.5,
+            autowidth: true,
+            colModel: [
+{ label: '编号', name: 'id', width: 80, align: '', sortable: false, resizable: false ,hidden: true },
+{ label: '人员ID', name: 'PID', width: 80, align: '', sortable: false, resizable: false ,hidden: true },
+{ label: '称谓', name: 'appellation', width: 80, align: '', sortable: false, resizable: false  },
+{ label: '姓名', name: 'name', width: 80, align: '', sortable: false, resizable: false  },
+{ label: '年龄', name: 'age', width: 80, align: '', sortable: false, resizable: false  },
+{ label: '政治面貌', name: 'politicsstatus', width: 80, align: '', sortable: false, resizable: false  },
+{ label: '工作单位', name: 'workcom', width: 200, align: '', sortable: false, resizable: false  },
+{ label: '职务', name: 'duty', width: 80, align: '', sortable: false, resizable: false  },
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: false,
+            gridComplete: function () {
+            }
+        });
+        //默认添加13行 空行
+        for (var i = 1; i < 13; i++) {
+            var rowdata = {
+id: '<input name="id" type="text" class="editable center" />',
+PID: '<input name="PID" type="text" class="editable center" />',
+appellation: '<input name="appellation" type="text" class="editable center" />',
+name: '<input name="name" type="text" class="editable center" />',
+age: '<input name="age" type="text" class="editable center" />',
+politicsstatus: '<input name="politicsstatus" type="text" class="editable center" />',
+workcom: '<input name="workcom" type="text" class="editable center" />',
+duty: '<input name="duty" type="text" class="editable center" />',
+            }
+            $grid.jqGrid('addRowData', i, rowdata);
+        };
+    }
+    //初始化控件
+    function initControl() {
+        //公司
+        $("#reportcom").ComboBoxTree({
+            url: "../../BaseManage/Organize/GetTreeJson",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true,
+        }).bind("change", function () {
+
+        });
+        //性别
+        $("#sex").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "sex" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //健康状况
+        $("#healthcondition").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "healthcondition" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //最高学历
+        $("#highestedu").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "highestedu" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //原始学历
+        $("#originaledu").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "highestedu" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../CustomerManage/Cadre_Base/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data.entity);
+                    
+                    cur_id = data.entity.id;
+                    editor1.setValue(data.entity.yearexamres);
+                    editor2.setValue(data.entity.rewardspunishments);
+                    editor3.setValue(data.entity.vita);
+                    
+                    if (data.entity.cadrephoto) {
+                        document.getElementById('uploadPreview').src = top.contentPath +  data.entity.cadrephoto;
+                    }
+                    
+                    //明细
+                    var childEntity = data.childEntity;
+                    $('#gridTable').find('[role=row]').each(function (i) {
+                        var row = childEntity[i - 1];
+                        if (row != undefined) {
+$(this).find('input[name="id"]').val(row.id);
+$(this).find('input[name="PID"]').val(row.PID);
+$(this).find('input[name="appellation"]').val(row.appellation);
+$(this).find('input[name="name"]').val(row.name);
+$(this).find('input[name="age"]').val(row.age);
+$(this).find('input[name="politicsstatus"]').val(row.politicsstatus);
+$(this).find('input[name="workcom"]').val(row.workcom);
+$(this).find('input[name="duty"]').val(row.duty);
+                        }
+                    });
+                }
+            })
+        }
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        
+        var childEntryJson = [];
+        $('#gridTable').find('[role=row]').each(function (i) {
+        if (!!$(this).find('input[name="appellation"]').val()) {
+            childEntryJson.push({
+                id: $(this).find('input[name="id"]').val(),
+                PID: $(this).find('input[name="PID"]').val(),
+                appellation: $(this).find('input[name="appellation"]').val(),
+                name: $(this).find('input[name="name"]').val(),
+                age: $(this).find('input[name="age"]').val(),
+                politicsstatus: $(this).find('input[name="politicsstatus"]').val(),
+                workcom: $(this).find('input[name="workcom"]').val(),
+                duty: $(this).find('input[name="duty"]').val(),
+                 });
+            }
+        });
+        $.SaveForm({
+            url: "../../CustomerManage/Cadre_Base/SaveForm?keyValue=" + keyValue,
+            param: { "strEntity": JSON.stringify(postData), "strChildEntitys": JSON.stringify(childEntryJson) },
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-left: 10px; margin-right: 10px;">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#BaseInfo" data-toggle="tab">基本信息</a></li>
+        <li><a href="#PersonInfo" data-toggle="tab">个人简历</a></li>
+        <li><a href="#ExpandInfo" data-toggle="tab">家庭成员</a></li>
+    </ul>
+    <div class="tab-content" style="padding-top: 15px;">
+        <div id="BaseInfo" class="tab-pane active" style="padding-right: 30px;">
+    <table class="form" style="width: 100%;">
+        <tr>
+<th class="formTitle" style="width: 60px;">姓名</th>
+<td class="formValue"><input id="name" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">性别</th>
+<td class="formValue"><div id="sex"  type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div></td>
+ <th class="formTitle" style="width: 60px;">民族</th>
+<td class="formValue"><input id="nation" type="text"  class="form-control" ></td>
+<td class="formValue" rowspan="4"><!--<input id="cadrephoto" type="text"  class="form-control" >-->
+            <div style="width: 300px;">
+                        <div style="margin-top: 40px; text-align: center;">
+                            <div class="file" style="width: 100px; height: 120px;">
+                                <img id="uploadPreview" style="width: 100px; height: 120px; " src="~/Content/images/logo-headere47d5.png" />
+                                <input type="file" name="uploadFile" id="uploadFile">
+                            </div>                           
+                        </div>
+            </div>
+</td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;" >出生地</th>
+<td class="formValue" colspan="3"><input id="birthplace" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">出生年月</th>
+<td class="formValue"><input id="birth" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+    <th class="formTitle" style="width: 60px;">籍贯</th>
+<td class="formValue"><input id="nativeplace" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">入党时间</th>
+<td class="formValue"><input id="joinpartytiem" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">工作时间</th>
+<td class="formValue"><input id="workingtime" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">专业类别</th>
+<td class="formValue"><input id="majortype" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">专业职务</th>
+<td class="formValue"><input id="duty" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">专业特长</th>
+<td class="formValue"><input id="specialitystrong" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">原始学历</th>
+<td class="formValue"> 
+    <div id="originaledu"  type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div></td>
+<th class="formTitle" style="width: 60px;">全日制院校 </th>
+<td class="formValue"><input id="originalschool" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">全日制专业</th>
+<td class="formValue"><input id="originalspeciality" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">在职院校</th>
+<td class="formValue"><input id="highestschool" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">在职专业</th>
+<td class="formValue"><input id="highestspecialty" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">最高学历</th>
+<td class="formValue">
+     <div id="highestedu"  type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">现任职务</th>
+<td class="formValue" colspan="3"><input id="currentduty" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">任职务时间</th>
+<td class="formValue"><input id="currentdutydate" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">现任职级</th>
+<td class="formValue" colspan="3"><input id="currentrank" type="text"  class="form-control" ></td>
+    <th class="formTitle" style="width: 60px;">任职级时间</th>
+<td class="formValue"><input id="currentrankdate" type="text"  class="form-control" ></td>
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">干部身份</th>
+<td class="formValue"><input id="cadrestatus" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">党派</th>
+<td class="formValue"><input id="party" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">编制</th>
+<td class="formValue"><input id="currentcompile" type="text"  class="form-control" ></td>
+
+</tr>
+<tr>
+<th class="formTitle" style="width: 60px;">健康状况</th>
+<td class="formValue">
+    <div id="healthcondition"  type="select" class="ui-select"></div></td>
+<th class="formTitle" style="width: 60px;">联系电话</th>
+<td class="formValue"><input id="telephone" type="text"  class="form-control" ></td>
+<th class="formTitle" style="width: 60px;">呈报单位</th>
+<td class="formValue">
+ <div id="reportcom" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+</td>
+     </tr>
+    </table>
+ </div>
+        <div id="PersonInfo" class="tab-pane">
+            <table style="width: 100%;" class="form">
+                 <tr>
+                    <th class="formTitle" style="width: 110px;">个人简历</th>
+                    <td class="formValue" colspan="5">
+                        <textarea id="vita" class="form-control" rows="15"></textarea>
+                    </td>
+                </tr>
+                
+                <tr>
+                    <td class="formTitle" style="width: 110px;">奖惩情况</td>
+                    <td class="formValue" colspan="5">
+                         <textarea id="rewardspunishments" class="form-control" rows="10"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                     <td class="formTitle" style="width: 110px;">年度考核结果</td>
+                    <td class="formValue" colspan="5">
+                        <textarea id="yearexamres" class="form-control" rows="10"></textarea>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        <div id="ExpandInfo" class="tab-pane ">
+              <div class="gridPanel" style="border-top: 1px solid #ccc;">
+                <table id="gridTable"  style="width: 100%;"></table>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    body {
+        margin:0px;
+    }
+    .bills {
+        overflow: hidden;
+        border-radius: 0px;
+        position: relative;
+        background: #FFFFFF;
+        border: 0px solid rgb(204, 204, 204);
+        box-shadow:none;
+        padding: 0px;
+    }
+    .ui-widget-content {
+        border-left: 0px;
+        border-right: 0px;
+        border-bottom: 0px;
+    }
+</style>

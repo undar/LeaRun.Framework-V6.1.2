@@ -1,0 +1,71 @@
+﻿@{
+    ViewBag.Title = "企业号设置";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    $(function () {
+        resize();
+    })
+    function resize() {
+        $('#pageayout').height($(window).height() - 20);
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#pageayout').height($(window).height() - 20);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls("");
+        dialogConfirm("注：您确定要修改企业号信息吗？", function (r) {
+            if (r) {
+                $.SaveForm({
+                    url: "../../WeChatManage/Token/SaveForm",
+                    param: postData,
+                    loading: "正在保存数据...",
+                    success: function () {
+                        reload();
+                    }
+                })
+            }
+        });
+    }
+</script>
+<style>
+    body {
+        margin: 10px;
+        margin-bottom: 0px;
+    }
+</style>
+<div id="pageayout" class="border" style="background: #fff; overflow: auto;">
+    <div class="alert alert-danger" style="text-align: left; margin: 20px;">
+        <i class="fa fa-question-circle" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+        注：CorpID和管理组密钥关系企业号安全，请不要告诉不信任的人!
+    </div>
+    <table class="form" style="margin-top: 20px; width: 600px; margin-left: 25px;">
+        <tr>
+            <td class="formTitle" style="width: 100px;">企业号CorpID<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="CorpId" type="text" class="form-control"  placeholder="请输入CorpID" isvalid="yes" checkexpession="NotNull" value="@ViewBag.CorpId" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle" style="width: 100px;">管理组凭证密钥<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="CorpSecret" type="text" class="form-control" placeholder="请输入凭证密钥" isvalid="yes" checkexpession="NotNull" value="@ViewBag.CorpSecret"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle"></td>
+            <td class="formValue">
+                <br />
+                <a id="btn_RevisePassword" class="btn btn-primary" onclick="AcceptClick()"><i class="fa fa-save"></i>&nbsp;保&nbsp;存</a>
+            </td>
+        </tr>
+    </table>
+</div>
+

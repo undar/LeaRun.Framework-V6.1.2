@@ -1,0 +1,216 @@
+@{;
+ViewBag.Title = "表单页面";
+Layout = "~/Views/Shared/_OrderForm.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        InitialPage();
+        GetOrderEntryGrid();
+        initControl();
+    });
+    //初始化页面
+    function InitialPage() {;
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 240.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载明细表
+    function GetOrderEntryGrid() {
+        var $grid = $('#gridTable');
+        $grid.jqGrid({
+            unwritten: false,
+            datatype: 'local',
+            height: $(window).height() - 240.5,
+            autowidth: true,
+            colModel: [
+                { label: '商品Id', name: 'ProductId', width: 80, align: '', sortable: false, resizable: false },
+                { label: '商品编号', name: 'ProductCode', width: 80, align: '', sortable: false, resizable: false },
+                { label: '商品名称', name: 'ProductName', width: 80, align: '', sortable: false, resizable: false },
+                { label: '单位', name: 'UnitId', width: 80, align: '', sortable: false, resizable: false },
+                { label: '数量', name: 'Qty', width: 80, align: '', sortable: false, resizable: false },
+                { label: '单价', name: 'Price', width: 80, align: '', sortable: false, resizable: false },
+                { label: '金额', name: 'Amount', width: 80, align: '', sortable: false, resizable: false },
+                { label: '排序码', name: 'SortCode', width: 80, align: '', sortable: false, resizable: false },
+                { label: '删除标记', name: 'DeleteMark', width: 80, align: '', sortable: false, resizable: false },
+                { label: '有效标志', name: 'EnabledMark', width: 80, align: '', sortable: false, resizable: false },
+                { label: '备注', name: 'Description', width: 80, align: '', sortable: false, resizable: false },
+            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: false,
+            gridComplete: function () {
+            }
+        });
+        //默认添加13行 空行
+        for (var i = 1; i < 13; i++) {
+            var rowdata = {
+                ProductId: '<input name="ProductId" type="text" class="editable center" />',
+                ProductCode: '<input name="ProductCode" type="text" class="editable center" />',
+                ProductName: '<input name="ProductName" type="text" class="editable center" />',
+                UnitId: '<input name="UnitId" type="text" class="editable center" />',
+                Qty: '<input name="Qty" type="text" class="editable center" />',
+                Price: '<input name="Price" type="text" class="editable center" />',
+                Amount: '<input name="Amount" type="text" class="editable center" />',
+                SortCode: '<input name="SortCode" type="text" class="editable center" />',
+                DeleteMark: '<input name="DeleteMark" type="text" class="editable center" />',
+                EnabledMark: '<input name="EnabledMark" type="text" class="editable center" />',
+                Description: '<input name="Description" type="text" class="editable center" />'
+            }
+            $grid.jqGrid('addRowData', i, rowdata);
+        };
+    }
+    //初始化控件
+    function initControl() {
+        //跟进人员
+        $("#SellerId").ComboBoxTree({
+            url: "../../BaseManage/User/GetTreeJson",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+
+        //客户名称
+        $("#GysId").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "Client_ProductInfo" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../DemoManage/OfficeRk/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data.entity);
+                    //明细
+                    var childEntity = data.childEntity;
+                    $('#gridTable').find('[role=row]').each(function (i) {
+                        var row = childEntity[i - 1];
+                        if (row != undefined) {
+                            $(this).find('input[name="ProductId"]').val(row.ProductId);
+                            $(this).find('input[name="ProductCode"]').val(row.ProductCode);
+                            $(this).find('input[name="ProductName"]').val(row.ProductName);
+                            $(this).find('input[name="UnitId"]').val(row.UnitId);
+                            $(this).find('input[name="Qty"]').val(row.Qty);
+                            $(this).find('input[name="Price"]').val(row.Price);
+                            $(this).find('input[name="Amount"]').val(row.Amount);
+                            $(this).find('input[name="SortCode"]').val(row.SortCode);
+                            $(this).find('input[name="DeleteMark"]').val(row.DeleteMark);
+                            $(this).find('input[name="EnabledMark"]').val(row.EnabledMark);
+                            $(this).find('input[name="Description"]').val(row.Description);
+                        }
+                    });
+                }
+            })
+        }
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        postData["SellerName"] = $("#SellerId").attr('data-text');
+        postData["GysName"] = $("#GysId").attr('data-text');
+        var childEntryJson = [];
+        $('#gridTable').find('[role=row]').each(function (i) {
+            if (!!$(this).find('input[name="ProductId"]').val()) {
+                childEntryJson.push({
+                    ProductId: $(this).find('input[name="ProductId"]').val(),
+                    ProductCode: $(this).find('input[name="ProductCode"]').val(),
+                    ProductName: $(this).find('input[name="ProductName"]').val(),
+                    UnitId: $(this).find('input[name="UnitId"]').val(),
+                    Qty: $(this).find('input[name="Qty"]').val(),
+                    Price: $(this).find('input[name="Price"]').val(),
+                    Amount: $(this).find('input[name="Amount"]').val(),
+                    SortCode: $(this).find('input[name="SortCode"]').val(),
+                    DeleteMark: $(this).find('input[name="DeleteMark"]').val(),
+                    EnabledMark: $(this).find('input[name="EnabledMark"]').val(),
+                    Description: $(this).find('input[name="Description"]').val()
+                });
+            }
+        });
+        $.SaveForm({
+            url: "../../DemoManage/OfficeRk/SaveForm?keyValue=" + keyValue,
+            param: { "strEntity": JSON.stringify(postData), "strChildEntitys": JSON.stringify(childEntryJson) },
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div class="bills">
+    <div style="height:120px;overflow-y:auto;margin:10px 10px;">
+        <table class="form" style="width: 100%;">
+            <tr>
+                <th class="formTitle" style="width: 60px;">客户名称</th>
+                <td class="formValue">
+                    <div id="GysId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                </td>
+                <th class="formTitle" style="width: 60px;">销售人员</th>
+                <td class="formValue">
+                    <div id="SellerId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                </td>
+                <th class="formTitle" style="width: 60px;">单据日期</th>
+                <td class="formValue">
+                    <input id="RkDate" type="text" class="form-control input-wdatepicker" onfocus="WdatePicker()"  isvalid="yes" checkexpession="NotNull">
+                </td>
+                <th class="formTitle" style="width: 60px;">单据编号</th>
+                <td class="formValue">
+                    <input id="RkCode" type="text" class="form-control" isvalid="yes" checkexpession="NotNull">
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle" style="width: 60px;">应收金额</th>
+                <td class="formValue">
+                    <input id="Accounts" type="text" class="form-control" isvalid="yes" checkexpession="NotNull">
+                </td>
+                <th class="formTitle" style="width: 60px;">摘要信息</th>
+                <td class="formValue">
+                    <input id="AbstractInfo" type="text" class="form-control" isvalid="yes" checkexpession="NotNull">
+                </td>
+                <th class="formTitle" style="width: 60px;">备注</th>
+                <td class="formValue">
+                    <input id="Description" type="text" class="form-control" isvalid="yes" checkexpession="NotNull">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="gridPanel">
+        <table id="gridTable"></table>
+    </div>
+</div>
+<style>
+    body {
+        margin: 0px;
+    }
+
+    .bills {
+        overflow: hidden;
+        border-radius: 0px;
+        position: relative;
+        background: #FFFFFF;
+        border: 0px solid rgb(204, 204, 204);
+        box-shadow: none;
+        padding: 0px;
+    }
+
+    .ui-widget-content {
+        border-left: 0px;
+        border-right: 0px;
+        border-bottom: 0px;
+    }
+</style>

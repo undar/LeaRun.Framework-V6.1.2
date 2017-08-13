@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+    <title></title>
+
+    <link href="~/Content/webApp/lib/ionic/css/ionic.css" rel="stylesheet">
+    <link href="~/Content/webApp/lib/icon/iconfont.css" rel="stylesheet" />
+    <link href="~/Content/webApp/css/learun-iframe.css" rel="stylesheet" />
+    <link href="~/Content/styles/font-awesome.min.css" rel="stylesheet" />
+    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
+    <link href="css/ionic.app.css" rel="stylesheet">
+    -->
+    <!-- ionic/angularjs js -->
+
+    <script src="~/Content/webApp/lib/ionic/js/ionic.bundle.js"></script>
+    <script src="~/Content/webApp/js/learun-appkv.js"></script>
+    <script src="~/Content/webApp/js/learun-uirouter.js"></script>
+    <script src="~/Content/webApp/js/learun-directive.js"></script>
+    <script src="~/Content/webApp/js/learun-app.js?v=@Guid.NewGuid().ToString()"></script>
+    <script src="~/Content/webApp/js/learun-component.js"></script>
+
+    <script src="~/Content/scripts/jquery/jquery-1.10.2.min.js"></script>
+    <script src="~/Content/webApp/lib/ionic/js/jquery-ui/jquery-ui-1.11.4.js"></script>
+</head>
+<body ng-app="starter" animation="no-animation" data-tab-disabled="true" class="lr-platform-browser" id="phonestarter">
+    <ion-nav-bar class="bar-positive nav-title-slide-ios7">
+        <ion-nav-back-button></ion-nav-back-button>
+    </ion-nav-bar>
+    <ion-nav-view>
+    </ion-nav-view>
+    <lr-select-box></lr-select-box>
+</body>
+</html>

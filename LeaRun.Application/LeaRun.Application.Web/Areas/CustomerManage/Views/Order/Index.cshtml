@@ -1,0 +1,299 @@
+﻿@{
+    ViewBag.Title = "订单管理";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //收款状态
+        $("#PaymentState").ComboBox({
+            description: "==请选择==",
+        });
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $("#gridTable").setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            url: "../../CustomerManage/Order/GetPageListJson",
+            postData: { queryJson: JSON.stringify($("#filter-form").GetWebControls()) },
+            datatype: "json",
+            height: $(window).height() - 136.5,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'OrderId', hidden: true },
+                { label: "单据日期", name: "OrderDate", width: 100, align: "left", formatter: "date", formatoptions: { newformat: 'Y-m-d' } },
+                { label: "单据编号", name: "OrderCode", width: 130, align: "left" },
+                { label: "客户名称", name: "CustomerName", width: 250, align: "left" },
+                { label: "销售人员", name: "SellerName", width: 80, align: "left" },
+                { label: "优惠金额", name: "DiscountSum", width: 80, align: "left", formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                { label: "收款金额", name: "Accounts", width: 80, align: "left", formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                {
+                    label: "收款方式", name: "PaymentMode", width: 80, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        return top.clientdataItem["Client_PaymentMode"][cellvalue] == undefined ? "" : top.clientdataItem["Client_PaymentMode"][cellvalue];
+                    }
+                },
+                {
+                    label: "收款状态", name: "PaymentState", width: 80, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == 2) {
+                            return "<span style='color:green'>部分收款</span>";
+                        } else if (cellvalue == 3) {
+                            return "<span style='color:blue'>全部收款</span>";
+                        } else {
+                            return "<span style='color:red'>未收款</span>";
+                        }
+                    }
+                },
+                { label: "制单人员", name: "CreateUserName", width: 80, align: "left" },
+                { label: "备注", name: "Description", width: 200, align: "left" }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'CreateDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            ondblClickRow: function () {
+                btn_detail();
+            },
+            onSelectRow: function () {
+                selectedRowIndex = $("#" + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $("#" + this.id).setSelection(selectedRowIndex, false);
+            },
+            subGrid: true,
+            subGridRowExpanded: function (subgrid_id, row_id) {
+                var orderId = $gridTable.jqGrid('getRowData', row_id)['OrderId'];
+                var subgrid_table_id = subgrid_id + "_t";
+                $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "'></table>");
+                $("#" + subgrid_table_id).jqGrid({
+                    url: "../../CustomerManage/Order/GetOrderEntryListJson",
+                    postData: { orderId: orderId },
+                    datatype: "json",
+                    height: "100%",
+                    colModel: [
+                        { label: '商品名称', name: "ProductName", width: 260, align: 'left' },
+                        { label: '商品编号', name: "ProductCode", width: 100, align: 'center' },
+                        { label: '单位', name: "UnitId", width: 100, align: 'center' },
+                        { label: '数量', name: 'Qty', width: 80, align: 'center', formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                        { label: '单价', name: 'Price', width: 80, align: 'center', formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                        { label: '金额', name: 'Amount', width: 80, align: 'center', formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                        { label: '税率(%)', name: 'TaxRate', width: 80, align: 'center' },
+                        { label: '含税单价', name: 'Taxprice', width: 80, align: 'center', formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                        { label: '税额', name: 'Tax', width: 80, align: 'center', formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                        { label: '含税金额', name: 'TaxAmount', width: 80, align: 'center', formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                        { label: '说明信息', name: 'Description', width: 200, align: 'left' }
+                    ],
+                    caption: "订单明细",
+                    rowNum: "1000",
+                    rownumbers: true,
+                    shrinkToFit: false,
+                    gridview: true,
+                    hidegrid: false
+                });
+            }
+        });
+        //点击时间范围（今天、近7天、近一个月、近三个月）
+        $("#time_horizon a.btn-default").click(function () {
+            $("#time_horizon a.btn-default").removeClass("active");
+            $(this).addClass("active");
+            switch ($(this).attr('data-value')) {
+                case "1"://今天
+                    $("#StartTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "2"://近7天
+                    $("#StartTime").val("@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "3"://近一个月
+                    $("#StartTime").val("@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                case "4"://近三个月
+                    $("#StartTime").val("@DateTime.Now.AddMonths(-3).ToString("yyyy-MM-dd")");
+                    $("#EndTime").val("@DateTime.Now.ToString("yyyy-MM-dd")");
+                    break;
+                default:
+                    break;
+            }
+            $("#SelectedStartTime").html($("#StartTime").val());
+            $("#SelectedEndTime").html($("#EndTime").val());
+            $('#btn_Search').trigger("click");
+        });
+        //查询点击事件
+        $("#btn_Search").click(function () {
+            if (!$(".ui-filter-text").next('.ui-filter-list').is(":hidden")) {
+                $(".ui-filter-text").trigger("click");
+            }
+            $("#SelectedStartTime").html($("#StartTime").val());
+            $("#SelectedEndTime").html($("#EndTime").val());
+            var queryJson = $("#filter-form").GetWebControls();
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+    }
+    //新增
+    function btn_add() {
+        top.tablist.newTab({
+            id: "OrderForm",
+            title: "新增订单",
+            closed: true,
+            replace: true,
+            icon: "fa fa-file-text-o",
+            url: top.contentPath + "/CustomerManage/Order/Form"
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var keyValue = $("#gridTable").jqGridRowValue('OrderId');
+        if (checkedRow(keyValue)) {
+            top.tablist.newTab({
+                id: "OrderForm",
+                title: "编辑订单",
+                closed: true,
+                replace: true,
+                icon: "fa fa-file-text-o",
+                url: top.contentPath + "/CustomerManage/Order/Form?keyValue=" + keyValue
+            });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue('OrderId');
+        if (keyValue) {
+            $.RemoveForm({
+                url: '../../CustomerManage/Order/RemoveForm',
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的订单信息！', 0);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var keyValue = $("#gridTable").jqGridRowValue('OrderId');
+        if (checkedRow(keyValue)) {
+            top.tablist.newTab({
+                id: "OrderForm",
+                title: "订单详细",
+                closed: true,
+                replace: true,
+                icon: "fa fa-file-text-o",
+                url: top.contentPath + "/CustomerManage/Order/Detail?keyValue=" + keyValue
+            });
+        }
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>查询条件</td>
+                <td style="padding-left: 10px;">
+                    <div class="ui-filter" style="width: 200px;">
+                        <div class="ui-filter-text">
+                            <strong id="SelectedStartTime">@DateTime.Now.AddDays(-7).ToString("yyyy-MM-dd")</strong> 至 <strong id="SelectedEndTime">@DateTime.Now.ToString("yyyy-MM-dd")</strong>
+                        </div>
+                        <div class="ui-filter-list" style="width: 350px;">
+                            <table class="form" id="filter-form">
+                                <tr>
+                                    <th class="formTitle">单据日期：</th>
+                                    <td class="formValue">
+                                        <input id="Category" type="hidden" value="1" />
+                                        <div style="float: left; width: 45%;">
+                                            <input id="StartTime" readonly type="text" value="@DateTime.Now.AddMonths(-1).ToString("yyyy-MM-dd")" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})">
+                                        </div>
+                                        <div style="float: left; width: 10%; text-align: center;">至</div>
+                                        <div style="float: left; width: 45%;">
+                                            <input id="EndTime" readonly type="text" value="@LeaRun.Util.Time.GetToday()" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})">
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">单据编号：</td>
+                                    <td class="formValue">
+                                        <input id="OrderCode" type="text" class="form-control">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">客户名称：</td>
+                                    <td class="formValue">
+                                        <input id="CustomerName" type="text" class="form-control">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">销售人员：</td>
+                                    <td class="formValue">
+                                        <input id="SellerName" type="text" class="form-control">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="formTitle">收款状态：</td>
+                                    <td class="formValue">
+                                        <div id="PaymentState" type="select" class="ui-select">
+                                            <ul>
+                                                <li data-value="1">未收款</li>
+                                                <li data-value="2">部分收款</li>
+                                                <li data-value="3">全部收款</li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div class="ui-filter-list-bottom">
+                                <a id="btn_Reset" class="btn btn-default">&nbsp;重&nbsp;&nbsp;置</a>
+                                <a id="btn_Search" class="btn btn-primary">&nbsp;查&nbsp;&nbsp;询</a>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding-left: 10px;">
+                    <div id="time_horizon" class="btn-group">
+                        <a class="btn btn-default" data-value="1">今天</a>
+                        <a class="btn btn-default" data-value="2">近7天</a>
+                        <a class="btn btn-default active" data-value="3">近1个月</a>
+                        <a class="btn btn-default" data-value="4">近3个月</a>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+            <a id="lr-detail" class="btn btn-default" onclick="btn_detail()"><i class="fa fa-list-alt"></i>&nbsp;详细</a>
+        </div>
+        <script>$('.toolbar').authorizeButton()</script>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>

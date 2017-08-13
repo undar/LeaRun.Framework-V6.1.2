@@ -1,0 +1,217 @@
+﻿@{
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link href="~/Content/scripts/plugins/simditor/css/simditor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/simditor/js/module.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/uploader.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/hotkeys.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/simditor.min.js"></script>
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+    });
+    //初始化控件
+    function initControl() {
+        $("#sex").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson?EnCode=sex",
+            id: "value",
+            text: "text",
+            description: "==请选择==",
+            height: '200px'
+        });
+        $("#authtype").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson?EnCode=authtype",
+            id: "value",
+            text: "text",
+            description: "==请选择==",
+            height: '200px'
+        });
+        $("#highestedu").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson?EnCode=highestedu",
+            id: "value",
+            text: "text",
+            description: "==请选择==",
+            height: '200px'
+        });
+        $("#talenttype").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson?EnCode=talenttype",
+            id: "value",
+            text: "text",
+            description: "==请选择==",
+            height: '200px'
+        });
+        $("#specialist").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson?EnCode=specialist",
+            id: "value",
+            text: "text",
+            description: "==请选择==",
+            height: '200px'
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../CustomerManage/Talent_InTeam/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                }
+            })
+        }
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        $.SaveForm({
+            url: "../../CustomerManage/Talent_InTeam/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-left: 10px; margin-right: 10px;">
+    <ul class="nav nav-tabs">
+        <li class="active"><a href="#BaseInfo" data-toggle="tab">域内人才</a></li>
+        <li><a href="#ExpandInfo" data-toggle="tab">业绩荣誉</a></li>
+    </ul>
+    <div class="tab-content" style="padding-top: 15px;">
+        <div id="BaseInfo" class="tab-pane active" style="padding-right: 30px;">
+    <table class="form">
+        <tr>
+            <td class="formTitle">姓名<font color="red">*</font></td>
+            <td class="formValue">
+                <input id="name" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <td class="formTitle">性别<font color="red">*</font></td>
+            <td class="formValue">
+                <div id="sex" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+            <td class="formTitle">民族</td>
+            <td class="formValue">
+                <input id="nation" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>           
+            <td class="formTitle">出生年月</td>
+            <td class="formValue">
+                <input id="birth" type="text" class="form-control input-datepicker" onfocus="WdatePicker()" />
+            </td>
+              <td class="formTitle">工作时间</td>
+            <td class="formValue">
+                <input id="workingtime" type="text" class="form-control input-datepicker" onfocus="WdatePicker()" />
+            </td>
+            <td class="formTitle">入党时间</td>
+            <td class="formValue">
+                <input id="joinpartytiem" type="text" class="form-control input-datepicker" onfocus="WdatePicker()" isvalid="yes" checkexpession="NotNull"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">毕业院校</td>
+            <td class="formValue" colspan="2">
+                <input id="graduateschool" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">专业</td>
+            <td class="formValue" colspan="2">
+                <input id="specialty" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">工作单位<font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <input id="workcom" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <td class="formTitle">职务<font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <input id="duty" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+          <tr>
+            <td class="formTitle">最高学历<font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <div id="highestedu" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+            <td class="formTitle">职称</td>
+            <td class="formValue" colspan="2">
+                <input id="professionaltitle" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">户籍所在地 <font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <input id="domicile" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <td class="formTitle">联系方式<font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <input id="contactway1" type="text" class="form-control" isvalid="yes" checkexpession="MobileOrNull" />
+            </td>
+        </tr>
+         <tr>
+
+             <td class="formTitle">人才类型<font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <div id="talenttype" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+             <td class="formTitle">编制类型</td>
+            <td class="formValue" colspan="2">
+                <div id="authtype" type="select" class="ui-select" ></div>
+            </td>
+        </tr>
+        <tr>   
+            <td class="formTitle">政治面貌<font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <input id="politicsstatus" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <td class="formTitle">骨干专家<font color="red">*</font></td>
+            <td class="formValue" colspan="2">
+                <div id="specialist" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>      
+          <td class="formTitle">研究方向</td>
+            <td class="formValue" colspan="5">
+                <input id="researchorientation" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">报送单位<font color="red">*</font></td>
+            <td class="formValue">
+                <input id="submissioncom" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <td class="formTitle">报送人<font color="red">*</font></td>
+            <td class="formValue">
+                <input id="submissionperson" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+            <td class="formTitle">联系方式<font color="red">*</font></td>
+            <td class="formValue">
+                <input id="contactway2" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" /></td>
+        </tr>
+            
+            
+    </table>
+
+        </div>
+        <div id="ExpandInfo" class="tab-pane ">
+                <table class="form">
+                            <tr>
+                    <td class="formTitle">业绩</td>
+                    <td class="formValue">
+                        <textarea id="performance" class="form-control" rows="15"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="formTitle">荣誉</td>
+                    <td class="formValue">
+                        <textarea id="honor" class="form-control" rows="15"></textarea>
+                    </td>
+                </tr>
+                </table>
+        </div>
+    </div>
+</div>

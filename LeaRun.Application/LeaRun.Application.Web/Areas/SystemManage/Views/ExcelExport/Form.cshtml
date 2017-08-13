@@ -1,0 +1,108 @@
+@{;
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_FlowForm.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+    });
+    //初始化控件
+    function initControl() {
+       
+        $("#F_ModuleId").ComboBoxTree({
+            url: "../../AuthorizeManage/Module/GetTreeJson",
+            description: "==请选择==",
+            height: "160px",
+            allowSearch: true,
+            click: function (item) {
+               
+                if (item.F_Target == "iframe") {
+
+                    //$(".tip_container").remove();
+
+                    //绑定按钮
+                    $("#F_ModuleBtnId").ComboBox({
+                        url: "../../AuthorizeManage/ModuleButton/GetModuleButtonListJson?moduleId=" + item.id,
+                        id: "ModuleButtonId",
+                        text: "FullName",
+                        description: "==请选择==",
+                        allowSearch: true,
+
+                    });
+                }
+                //else {
+                //    //$.dialogTop({ msg: "请选择功能页面", type: "error" });
+                //    return "false";
+                //}
+            }
+        });
+     
+        //绑定按钮
+        $("#F_ModuleBtnId").ComboBox({
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../SystemManage/ExcelExport/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    //$("#F_ModuleId").trigger("change");
+                    $("#F_ModuleId").ComboBoxTreeSetValue(data.F_ModuleId).trigger("change");
+                    $("#F_ModuleBtnId").ComboBoxSetValue(data.F_ModuleBtnId)
+                }
+            })
+        }
+
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        $.SaveForm({
+            url: "../../SystemManage/ExcelExport/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-left: 10px; margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+       
+        <tr>
+            <th class="formTitle" style="width:62px;">绑定功能<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_ModuleId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="width:62px;">绑定按钮<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="F_ModuleBtnId" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">导出名称<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="F_Name" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">JqGridID<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="F_GridId" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+
+    </table>
+
+</div>

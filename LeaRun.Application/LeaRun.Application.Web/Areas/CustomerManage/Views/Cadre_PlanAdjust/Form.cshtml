@@ -1,0 +1,207 @@
+﻿@{
+    ViewBag.Title = "表单页面";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+    });
+    //初始化控件
+    function initControl() {
+        $("#itemtype").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson?EnCode=thingTypes",
+            id: "value",
+            text: "text",
+            description: "==请选择==",
+            height: '200px'
+        });
+        //公司
+        $("#reportcom").ComboBoxTree({
+            url: "../../BaseManage/Organize/GetTreeJson",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true,
+        }).bind("change", function () {
+
+        });
+        //有无举报信件
+        $("#accuseletter").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "accuseletter" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px",
+            allowSearch: true
+        });
+        //所在公司
+        $("#cadrename1").ComboBoxTree({
+            url: "../../BaseManage/Department/GetOrganizeTreeJsonCus",
+            description: "==请选择==",
+            height: "180px",
+            allowSearch: true,
+            click: function (item) {
+                if (item.Sort != "Cadre_Base") {                  
+                    dialogTop("请选择人员", "error");
+                    return false;
+                } else {
+                    $("#cadreid").val(item.id);
+                    $("#cadrename").val(item.text);
+                    $("#currentrank").val(item.value);
+                    $("#currentduty").val(item.currentduty);
+                    
+                }
+            }
+        });
+         
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../CustomerManage/Cadre_PlanAdjust/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    $("#cadrename1").ComboBoxTreeSetValue(data.cadreid);
+                }
+            })
+        }  
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        $.SaveForm({
+            url: "../../CustomerManage/Cadre_PlanAdjust/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-top: 20px; margin-right: 30px;">
+    <input id="cadreid" type="hidden" class="form-control" isvalid="yes" checkexpession="NotNull" />
+    <input id="cadrename" type="hidden" class="form-control" isvalid="yes" checkexpession="NotNull" />
+    <table class="form">
+        <tr>
+            <td class="formTitle">干部姓名</td>
+            <td class="formValue">
+               
+                <div id="cadrename1" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+            <td class="formTitle">现任职务</td>
+            <td class="formValue">
+                <input id="currentduty" type="text" readonly="readonly" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">现任职级</td>
+            <td class="formValue">
+                <input id="currentrank" type="text" class="form-control"  readonly="readonly" />
+            </td>
+            <td class="formTitle">拟任职务</td>
+            <td class="formValue">
+                <input id="aspiringduty" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">拟免职务</td>
+            <td class="formValue">
+                <input id="avoidduty" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">事项分类</td>
+            <td class="formValue">
+                <div id="itemtype" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">民主推荐</td>
+            <td class="formValue">
+                <input id="democracy" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">得票数</td>
+            <td class="formValue">
+                <input id="getticketnum" type="text" class="form-control" isvalid="yes" checkexpession="Num" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">总人数</td>
+            <td class="formValue">
+                <input id="totalpersonnum" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">有无举报信件</td>
+            <td class="formValue">
+                <div id="accuseletter"  type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">呈报时间</td>
+            <td class="formValue">
+                <input id="reportdate" type="text" class="form-control input-datepicker" onfocus="WdatePicker()" />
+            </td>
+            <td class="formTitle">呈报单位</td>
+            <td class="formValue">
+                <div id="reportcom" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">任免建议备注</td>
+            <td class="formValue">
+                <input id="appointdemo" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">表决意见</td>
+            <td class="formValue">
+                <input id="decideidea" type="text" class="form-control"  />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">拟调整状态</td>
+            <td class="formValue">
+                <input id="planchangestatus" type="checkbox"   checked="checked"  />
+            </td>
+            <td class="formTitle">建议调整状态</td>
+            <td class="formValue">
+                <input id="suggestchangestatus" type="checkbox"   />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">任免表决状态</td>
+            <td class="formValue">
+                <input id="appointresultstatus" type="checkbox"    />
+            </td>
+            <td class="formTitle">任免票状态</td>
+            <td class="formValue">
+                <input id="appointticketstatus" type="checkbox"   />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">备注</td>
+            <td class="formValue">
+                <input id="demo" type="text" class="form-control"  />
+        </tr>  
+        <tr>
+            <td class="formTitle">任免理由</td>
+            <td class="formValue">
+                <input id="appointreason" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">任免时间</td>
+            <td class="formValue">
+                 <input id="appointdate" type="text" class="form-control input-datepicker" onfocus="WdatePicker()" />
+            </td>
+        </tr>  
+        <tr>
+            <td class="formTitle">审批机关意见</td>
+            <td class="formValue">
+                <input id="approveidea" type="text" class="form-control"  />
+            </td>
+            <td class="formTitle">行政机关任免意见</td>
+            <td class="formValue">
+                <input id="appointidea" type="text" class="form-control"  />
+            </td>
+        </tr>
+    </table>
+</div>

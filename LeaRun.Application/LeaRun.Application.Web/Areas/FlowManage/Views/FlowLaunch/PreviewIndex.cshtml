@@ -1,0 +1,175 @@
+﻿@{
+    ViewBag.Title = "流程预览";
+    Layout = "~/Views/Shared/_FlowFormNew.cshtml";
+}
+<link href="/Content/styles/learun-flow.css" rel="stylesheet" />
+
+<script src="~/Content/scripts/utils/flow/flow-ui.js?v=@Guid.NewGuid()"></script>
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    .panels {
+        padding: 10px;
+    }
+</style>
+<div style="position:absolute;top:0; right:100px;z-index:1000;background:rgba(0, 0, 0, 0.1);padding:10px;border-radius:0px 0px 5px 5px;">
+    <a class="btn btn-success" onclick="$.indexJs.btn.flowshow()">&nbsp;流程预览</a>
+    <a class="btn btn-default" onclick="$.indexJs.btn.fromshow()">&nbsp;表单预览</a>
+</div>
+<div class="panels">
+    <div id="formPreviewPanel" style="overflow-y:auto;background-color:#fff;display:none;border: 1px solid #ccc;">
+        <div id="formAreas" style="margin: 30px auto;max-width: 1000px;">
+            <ul id="formTitle" class="nav nav-tabs"></ul>
+            <div id="formContent" class="tab-content"></div>
+        </div>
+    </div>
+    <div id="flowPreviewPanel" style="margin: 0px;border: 1px solid #ccc;"></div>
+</div>
+<script>
+    (function ($) {
+        "use strict";
+
+        $.indexJs = {
+            schemeInfoId: "",
+            schemeVersion: "",
+            processSchemeId: "",
+            formContent:"",
+            allForm: {},
+            formWidth: 1000,
+            initialPage: function () {
+                //resize重设(表格、树形)宽高
+                $(window).resize(function (e) {
+                    window.setTimeout(function () {
+                        $('#formPreviewPanel').css("height", e.currentTarget.innerHeight - 20);
+                        $('#formAreas').css("width", e.currentTarget.innerWidth * 0.9 - 20);
+                        if (!!$.indexJs.schemeContent) {
+                            $('#flowPreviewPanel').flowdesign({
+                                height: e.currentTarget.innerHeight - 18,
+                                width: e.currentTarget.innerWidth - 20,
+                                flowcontent: $.indexJs.schemeContent.Flow,
+                                haveTool: false
+                            });
+                        }
+                    }, 200);
+                    e.stopPropagation();
+                });
+                $('#formAreas').css("width", $(window).width() * 0.9 - 20);
+                $('#formPreviewPanel').css("height", $(window).height() - 20);
+
+                $.indexJs.formWidth = $(window).width() * 0.9 - 20;
+                if ($.indexJs.formWidth > 1000) {
+                    $.indexJs.formWidth = 1000;
+                }
+            },
+            initialData: function () {
+                $.indexJs.schemeInfoId = learun.request('schemeInfoId');
+                $.indexJs.processSchemeId = learun.request('processSchemeId');
+            },
+            loadData: function () {
+                if (!!$.indexJs.schemeInfoId) {
+                    $.SetForm({
+                        url: "../../FlowManage/FlowDesign/GetFormJson",
+                        param: { keyValue: $.indexJs.schemeInfoId },
+                        success: function (data) {
+                            $.indexJs.schemeContent = JSON.parse(data.schemeinfo.SchemeContent).Flow;
+                            $.indexJs.formContent=JSON.parse(data.formContentData.FrmContent);
+                            if (data.FormList != "") {
+                                var dlist = data.schemeinfo.FormList.split(',');
+                                for (var d in dlist) {
+                                    var done = dlist[d];
+                                    learun.getDataForm({
+                                        type: 'get',
+                                        url: "../../FlowManage/FormModule/GetEntityJson",
+                                        param: { keyValue: done },
+                                        success: function (dd) {
+                                            if (dd != null) {
+                                                var _dataJson = JSON.parse(dd.FrmContent);
+                                                $.indexJs.allForm[done] = _dataJson;
+                                                var $li = $('<li><a href="#form_' + dd.FrmId + '" data-toggle="tab">' + dd.FrmName + '</a></li>');
+                                                var $div = $('<div id="form_' + dd.FrmId + '" class="tab-pane" ><div class="app_layout app_preview" id="formContent_' + dd.FrmId + '"></div></div>');
+                                                if (d == 0) {
+                                                    $li.addClass('active');
+                                                    $div.addClass('active');
+                                                }
+                                                $('#formTitle').append($li);
+                                                $('#formContent').append($div);
+                                                if (_dataJson.type == 2) {
+                                                    $('#formContent_' + dd.FrmId).html('<iframe id="formIframe_' + dd.FrmId + '" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no" style="height:100%;width:100%;"></iframe>');
+                                                    learun.loadSystemForm('formIframe_' + dd.FrmId, _dataJson.data.url);
+                                                }
+                                                else {
+                                                    $('#formContent_' + dd.FrmId).formRendering('init', { formData: _dataJson.data });;
+                                                }
+                                            }
+                                            $('#formContent').find('iframe').height($(window).height() - 130);
+                                        }
+                                    });
+                                }
+                            }
+                            $('#flowPreviewPanel').flowDesigner({
+                                height: $(window).height() - 18,
+                                width: $(window).width() - 20,
+                                schemeContent: $.indexJs.schemeContent,
+                                frmData: $.indexJs.formContent,//JSON.parse(schemeContent.Frm == "" ?"[]":schemeContent.Frm.F_FrmContent),
+                                haveTool: false,
+                                preview: 1
+                            });
+
+
+
+
+                        }
+                    });
+                }
+                else {
+                    $.SetForm({
+                        url: "../../FlowManage/FlowProcess/GetProcessSchemeJson",
+                        param: { keyValue: processSchemeId },
+                        success: function (data) {
+                            $.indexJs.schemeContent = JSON.parse(JSON.parse(data.SchemeContent).SchemeContent);
+
+                            if (typeof $.indexJs.schemeContent.Frm == "string") {
+                                $('#frmpreview').html('<iframe src="' + $.indexJs.schemeContent.Frm + '" style="    width: 100%;border: 0px;"></iframe>');
+                                $('#frmpreview').find('iframe').height($(window).height() - 100);
+                            }
+                            else {
+                                $('#frmpreview').frmPreview({
+                                    tablecotent: $.indexJs.schemeContent.Frm.FrmContent,
+                                    width: $.indexJs.formWidth,
+                                });
+                                $('#frmname').html($.indexJs.schemeContent.Frm.FrmName);
+                            }
+
+                            $('#flowPreviewPanel').flowDesigner({
+                                height: $(window).height() - 18,
+                                width: $(window).width() - 20,
+                                schemeContent: $.indexJs.schemeContent.Flow,
+                                frmData: JSON.parse($.indexJs.schemeContent.Frm == "" ? "[]" : schemeContent.Frm.FrmContent),
+                                haveTool: false,
+                                preview: 1
+                            });
+                        }
+                    });
+                }
+            },
+            btn: {
+                flowshow: function () {
+                    $('#formPreviewPanel').hide();
+                    $('#flowPreviewPanel').show();
+                },
+                fromshow: function () {
+                    $('#flowPreviewPanel').hide();
+                    $('#formPreviewPanel').show();
+                }
+            }
+        };
+        $(function () {
+
+            $.indexJs.initialPage();
+            $.indexJs.initialData();
+            $.indexJs.loadData();
+        });
+    })(window.jQuery);
+</script>

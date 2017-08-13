@@ -1,0 +1,62 @@
+﻿@{
+    ViewBag.Title = "UploadifyForm";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link href="~/Content/scripts/plugins/uploadify/uploadify.css" rel="stylesheet" />
+<link href="~/Content/scripts/plugins/uploadify/uploadify.extension.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/uploadify/jquery.uploadify.min.js"></script>
+<script>
+    var folderId = request('folderId');
+    $(function () {
+        uploadify();
+    })
+    //上传文件
+    function uploadify() {
+        $("#uploadify").uploadify({
+            method: 'post',
+            uploader: '/PublicInfoManage/ResourceFile/UploadifyFile?folderId=' + folderId,
+            swf: top.contentPath + '/Content/scripts/plugins/uploadify/uploadify.swf',
+            buttonText: "添加文件",
+            height: 30,
+            width: 90,
+            fileTypeExts: '*.avi;*.mp3;*.mp4;*.bmp;*.ico;*.gif;*.jpeg;*.jpg;*.png;*.psd; *.rar;*.zip;*.swf;*.log;*.pdf;*.doc;*.docx;*.ppt;*.pptx;*.txt; *.xls; *.xlsx;',
+            removeCompleted: false,
+            onSelect: function (file) {
+                $("#" + file.id).prepend('<div style="float:left;width:50px;margin-right:2px;"><img src="/Content/images/filetype/' + file.type.replace('.', '') + '.png" style="width:40px;height:40px;" /></div>');
+                $('.border').hide();
+            },
+            onUploadSuccess: function (file) {
+                $("#" + file.id).find('.uploadify-progress').remove();
+                $("#" + file.id).find('.data').html(' 恭喜您，上传成功！');
+                $("#" + file.id).prepend('<a class="succeed" title="成功"><i class="fa fa-check-circle"></i></a>');
+                Loading(false);
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                Loading(false);
+            },
+            onUploadError: function (file) {
+                $("#" + file.id).removeClass('uploadify-error');
+                $("#" + file.id).find('.uploadify-progress').remove();
+                $("#" + file.id).find('.data').html(' 很抱歉，上传失败！');
+                $("#" + file.id).prepend('<span class="error" title="失败"><i class="fa fa-exclamation-circle"></i></span>');
+            }
+        });
+        $("#uploadify-button").prepend('<i style="opacity: 0.6;" class="fa fa-cloud-upload"></i>&nbsp;');
+        //$(document).scrollTop(300);
+    }
+</script>
+<div style="margin: 10px">
+    <div style="height: 38px;">
+        <div style="float: right; line-height: 26px; color: #337ab7; cursor: pointer; position: relative;">
+            上传必知
+        </div>
+        <input id="uploadify" name="uploadify" type="file" />
+    </div>
+    <div class="border" style="height: 295px; border-radius: 5px;">
+        <div class="drag-tip" style="text-align: center; padding-top: 100px;">
+            <h1 style="color: #666; font-size: 20px; font-family: Microsoft Yahei; padding-bottom: 2px;">试试将电脑里的文件拖拽到此上传</h1>
+            <p style="color: #666; font-size: 12px;">
+                （您的浏览器不支持此拖拽功能）
+            </p>
+        </div>
+    </div>
+</div>

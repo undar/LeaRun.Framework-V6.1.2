@@ -1,0 +1,160 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C10920FE-8C74-4993-A7F4-1DA189DA842C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>LeaRun.Application.Entity</RootNamespace>
+    <AssemblyName>LeaRun.Application.Entity</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Debug\LeaRun.Application.Entity.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccountEntity.cs" />
+    <Compile Include="AppManage\App_ContentEntity.cs" />
+    <Compile Include="AppManage\App_TemplatesEntity.cs" />
+    <Compile Include="AppManage\App_ProjectEntity.cs" />
+    <Compile Include="AppManage\App_ProjectModel.cs" />
+    <Compile Include="AuthorizeManage\ModuleFormEntity.cs" />
+    <Compile Include="AuthorizeManage\ModuleFormInstanceEntity.cs" />
+    <Compile Include="AuthorizeManage\ViewModel\AuthorizeUrlModel.cs" />
+    <Compile Include="BaseEntity.cs" />
+    <Compile Include="BaseManage\studentEntity.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CustomerManage\Cadre_BaseEntity.cs" />
+    <Compile Include="CustomerManage\Cadre_FamilyEntity.cs" />
+    <Compile Include="CustomerManage\Cadre_PlanAdjustEntity.cs" />
+    <Compile Include="CustomerManage\CashBalanceEntity.cs" />
+    <Compile Include="CustomerManage\ChanceEntity.cs" />
+    <Compile Include="CustomerManage\ExpensesEntity.cs" />
+    <Compile Include="CustomerManage\InvoiceEntity.cs" />
+    <Compile Include="CustomerManage\ReceivableEntity.cs" />
+    <Compile Include="CustomerManage\Talent_InTeamEntity.cs" />
+    <Compile Include="CustomerManage\Talent_outFamilyEntity.cs" />
+    <Compile Include="CustomerManage\Talent_OutTeamEntity.cs" />
+    <Compile Include="CustomerManage\Talent_TeamEntity.cs" />
+    <Compile Include="CustomerManage\TrailRecordEntity.cs" />
+    <Compile Include="CustomerManage\CustomerContactEntity.cs" />
+    <Compile Include="CustomerManage\CustomerEntity.cs" />
+    <Compile Include="CustomerManage\OrderEntity.cs" />
+    <Compile Include="CustomerManage\OrderEntryEntity.cs" />
+    <Compile Include="CustomerManage\ViewModel\ReceivableReportModel.cs" />
+    <Compile Include="DemoManage\OfficeRkEntity.cs" />
+    <Compile Include="DemoManage\OfficeRkEntryEntity.cs" />
+    <Compile Include="FlowManage\FormModuleEntity.cs" />
+    <Compile Include="FlowManage\FormModuleInstanceEntity.cs" />
+    <Compile Include="FlowManage\FormModuleRelationEntity.cs" />
+    <Compile Include="FlowManage\FormModuleContentEntity.cs" />
+    <Compile Include="FlowManage\WFDelegateRecordEntity.cs" />
+    <Compile Include="FlowManage\WFDelegateRuleEntity.cs" />
+    <Compile Include="FlowManage\WFDelegateRuleSchemeInfoEntity.cs" />
+    <Compile Include="FlowManage\WFProcessInstanceEntity.cs" />
+    <Compile Include="FlowManage\WFProcessOperationHistoryEntity.cs" />
+    <Compile Include="FlowManage\WFProcessSchemeEntity.cs" />
+    <Compile Include="FlowManage\WFProcessTransitionHistoryEntity.cs" />
+    <Compile Include="FlowManage\WFSchemeInfoAuthorizeEntity.cs" />
+    <Compile Include="FlowManage\WFSchemeInfoEntity.cs" />
+    <Compile Include="FlowManage\WFSchemeContentEntity.cs" />
+    <Compile Include="FlowManage\WFFrmMainEntity.cs" />
+    <Compile Include="PublicInfoManage\ScheduleEntity.cs" />
+    <Compile Include="ReportManage\RptTempEntity.cs" />
+    <Compile Include="SystemManage\DataSourceEntity.cs" />
+    <Compile Include="SystemManage\ExcelExportEntity.cs" />
+    <Compile Include="SystemManage\ExcelImportFiledEntity.cs" />
+    <Compile Include="SystemManage\CodeRuleEntity.cs" />
+    <Compile Include="SystemManage\CodeRuleFormatEntity.cs" />
+    <Compile Include="SystemManage\CodeRuleSeedEntity.cs" />
+    <Compile Include="PublicInfoManage\FileInfoEntity.cs" />
+    <Compile Include="PublicInfoManage\FileFolderEntity.cs" />
+    <Compile Include="PublicInfoManage\EmailAddresseeEntity.cs" />
+    <Compile Include="PublicInfoManage\EmailCategoryEntity.cs" />
+    <Compile Include="PublicInfoManage\EmailContentEntity.cs" />
+    <Compile Include="MessageManage\IMGroupModel.cs" />
+    <Compile Include="MessageManage\IMReadModel.cs" />
+    <Compile Include="MessageManage\IMReadNumModel.cs" />
+    <Compile Include="MessageManage\IMUserModel.cs" />
+    <Compile Include="MessageManage\IMContentEntity.cs" />
+    <Compile Include="MessageManage\IMGroupEntity.cs" />
+    <Compile Include="MessageManage\IMReadEntity.cs" />
+    <Compile Include="MessageManage\IMUserGroupEntity.cs" />
+    <Compile Include="AuthorizeManage\AuthorizeEntity.cs" />
+    <Compile Include="BaseManage\UserRelationEntity.cs" />
+    <Compile Include="AuthorizeManage\AuthorizeDataEntity.cs" />
+    <Compile Include="PublicInfoManage\NewsEntity.cs" />
+    <Compile Include="SystemManage\DataBaseBackupEntity.cs" />
+    <Compile Include="SystemManage\DataBaseTableFieldEntity.cs" />
+    <Compile Include="SystemManage\DataBaseLinkEntity.cs" />
+    <Compile Include="AuthorizeManage\FilterIPEntity.cs" />
+    <Compile Include="AuthorizeManage\FilterTimeEntity.cs" />
+    <Compile Include="SystemManage\AreaEntity.cs" />
+    <Compile Include="AuthorizeManage\ModuleEntity.cs" />
+    <Compile Include="AuthorizeManage\ModuleButtonEntity.cs" />
+    <Compile Include="AuthorizeManage\ModuleColumnEntity.cs" />
+    <Compile Include="BaseManage\UserEntity.cs" />
+    <Compile Include="BaseManage\DepartmentEntity.cs" />
+    <Compile Include="BaseManage\OrganizeEntity.cs" />
+    <Compile Include="BaseManage\RoleEntity.cs" />
+    <Compile Include="SystemManage\DataItemEntity.cs" />
+    <Compile Include="SystemManage\DataItemDetailEntity.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemManage\ExcelImportEntity.cs" />
+    <Compile Include="SystemManage\LogEntity.cs" />
+    <Compile Include="SystemManage\ViewModel\DataItemModel.cs" />
+    <Compile Include="UserInfoModel.cs" />
+    <Compile Include="WebApp\appUserInfoModel.cs" />
+    <Compile Include="WeChatManage\WeChatAppEntity.cs" />
+    <Compile Include="WeChatManage\WeChatDeptRelationEntity.cs" />
+    <Compile Include="WeChatManage\WeChatAppMenuEntity.cs" />
+    <Compile Include="WeChatManage\WeChatUserRelationEntity.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\LeaRun.Application.Code\LeaRun.Application.Code.csproj">
+      <Project>{9b10db87-130c-41d3-8687-1fac877db74a}</Project>
+      <Name>LeaRun.Application.Code</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

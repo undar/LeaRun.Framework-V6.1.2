@@ -1,0 +1,229 @@
+﻿@{
+    ViewBag.Title = "数据库管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+        InitialPage();
+        GetTree();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //layout布局
+        $('#layout').layout({
+            applyDemoStyles: true,
+            onresize: function () {
+                $(window).resize();
+            }
+        });
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $("#gridTable").setGridHeight($(window).height() - 141);
+                $("#itemTree").setTreeHeight($(window).height() - 52);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载树
+    var _DataBaseLinkId = "";
+    function GetTree() {
+        var item = {
+            height: $(window).height() - 52,
+            url: "../../SystemManage/DataBaseLink/GetTreeJson",
+            onnodeclick: function (item) {
+                if (item.parentnodes) {
+                    _DataBaseLinkId = item.id;
+                    $("#titleinfo").html("[" + item.text + "]&nbsp;[" + item.parentnodes + "]&nbsp;[" + item.title + "]");
+                    $("#txt_Keyword").val("");
+                    $('#btn_Search').trigger("click");
+                }
+            }
+        };
+        //初始化
+        $("#itemTree").treeview(item);
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $("#gridTable");
+        $gridTable.jqGrid({
+            datatype: "json",
+            height: $(window).height() - 141,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'pk', hidden: true },
+                { label: "表名", name: "name", width: 300, align: "left", sortable: false },
+                {
+                    label: "记录数", name: "sumrows", width: 100, align: "center", sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue + "条";
+                    }
+                },
+                { label: "使用大小", name: "reserved", width: 100, align: "center", sortable: false },
+                { label: "表类型", name: "reserved", width: 100, align: "center", sortable: false },
+                { label: "更新时间", name: "updatetime", width: 120, align: "center", sortable: false },
+                { label: "索引使用大小", name: "index_size", width: 120, align: "center", sortable: false },
+                { label: "说明", name: "tdescription", width: 120, align: "left", sortable: false }
+            ],
+            onSelectRow: function () {
+                selectedRowIndex = $("#" + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $("#" + this.id).setSelection(selectedRowIndex, false);
+            },
+            rowNum: "1000",
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: true,
+            subGridRowExpanded: function (subgrid_id, row_id) {
+                var tableName = $gridTable.jqGrid('getRowData', row_id)['name'];
+                var subgrid_table_id = subgrid_id + "_t";
+                $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "'></table>");
+                $("#" + subgrid_table_id).jqGrid({
+                    url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                    postData: { dataBaseLinkId: _DataBaseLinkId, tableName: tableName },
+                    datatype: "json",
+                    height: 260,
+                    colModel: [
+                        { label: "列名", name: "column", index: "column", width: 300, sortable: false },
+                        { label: "数据类型", name: "datatype", index: "datatype", width: 120, align: "center", sortable: false },
+                        { label: "长度", name: "length", index: "length", width: 57, align: "center", sortable: false },
+                        { label: "允许空", name: "isnullable", index: "isnullable", width: 58, align: "center", sortable: false },
+                        { label: "标识", name: "identity", index: "identity", width: 58, align: "center", sortable: false },
+                        { label: "主键", name: "key", index: "key", width: 57, align: "center", sortable: false },
+                        { label: "默认值", name: "default", index: "default", width: 120, align: "center", sortable: false },
+                        { label: "说明", name: "remark", index: "remark", width: 200, sortable: false }
+                    ],
+                    caption: "表字段信息",
+                    rowNum: "1000",
+                    rownumbers: true,
+                    shrinkToFit: false,
+                    gridview: true,
+                    hidegrid: false
+                });
+            }
+        });
+        $gridTable.authorizeColModel();
+        //查询事件
+        $("#btn_Search").click(function () {
+            $gridTable.resetSelection();
+            selectedRowIndex = 0;
+            $gridTable.jqGrid('setGridParam', {
+                url: "../../SystemManage/DataBaseTable/GetTableListJson",
+                postData: { dataBaseLinkId: _DataBaseLinkId, keyword: $("#txt_Keyword").val() },
+            }).trigger('reloadGrid');
+        });
+    }
+    //新增表
+    function btn_add() {
+        if (_DataBaseLinkId) {
+            dialogOpen({
+                id: "Form",
+                title: '创建表',
+                url: '/SystemManage/DataBaseTable/Form?dataBaseLinkId=' + _DataBaseLinkId,
+                width: "800px",
+                height: "500px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        } else {
+            dialogMsg('请选择左边数据库！', 0);
+        }
+    };
+    //编辑表
+    function btn_edit() {
+        var tableName = $("#gridTable").jqGridRowValue("name");
+        var tdescription = $("#gridTable").jqGridRowValue("tdescription");
+        if (checkedRow(tableName)) {
+            dialogOpen({
+                id: "Form",
+                title: '编辑表',
+                url: '/SystemManage/DataBaseTable/Form?tableName=' + tableName + '&dataBaseLinkId=' + _DataBaseLinkId + "&tableDescription=" + escape(tdescription),
+                width: "800px",
+                height: "500px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        }
+    }
+    //删除表
+    function btn_delete() {
+        var tableName = $("#gridTable").jqGridRowValue("name");
+        if (tableName) {
+            $.RemoveForm({
+                url: "../../SystemManage/DataBaseTable/RemoveForm",
+                param: { tableName: tableName, dataBaseLinkId: _DataBaseLinkId },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的表！', 0);
+        }
+    }
+    //打开表数据
+    function btn_open_tabledata() {
+        var tableName = $("#gridTable").jqGridRowValue("name");
+        if (checkedRow(tableName)) {
+            dialogOpen({
+                id: "TableData",
+                title: '打开表数据 - ' + tableName,
+                url: '/SystemManage/DataBaseTable/TableData?tableName=' + tableName + "&dataBaseLinkId=" + _DataBaseLinkId,
+                width: $(window).width() + "px",
+                height: $(window).height() + "px",
+                btn: null
+            });
+        }
+    }
+</script>
+<div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel">
+            <div class="panel-Title">数据库目录</div>
+            <div id="itemTree"></div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="center-Panel">
+            <div class="panel-Title">
+                数据表信息 - <span id="titleinfo">未选择数据库</span>
+            </div>
+            <div class="titlePanel">
+                <div class="title-search">
+                    <table>
+                        <tr>
+                            <td>
+                                <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                            </td>
+                            <td style="padding-left: 5px;">
+                                <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="toolbar">
+                    <div class="btn-group">
+                        <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                        <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+                        <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+                        @*<a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>*@
+                    </div>
+                    <div class="btn-group">
+                        <a id="lr-tabledata" class="btn btn-default" onclick="btn_open_tabledata()"><i class="fa fa-table"></i>&nbsp;打开表数据</a>
+                        @*<a id="lr-datacategory" class="btn btn-default" onclick="btn_datacategory()"><i class="fa fa-bug"></i>&nbsp;SQL命令</a>*@
+                    </div>
+                    <script>$('.toolbar').authorizeButton()</script>
+                </div>
+            </div>
+            <div class="gridPanel">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,52 @@
+﻿@{
+    ViewBag.Title = "导出Excel数据";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var gridId = request('gridId');
+    var filename = request('filename');
+    $(function () {
+        var columnModel = $.currentIframe().$("#" + gridId).jqGrid('getGridParam', 'colModel');
+        $.each(columnModel, function (i) {
+            var label = columnModel[i].label;
+            var name = columnModel[i].name;
+            var hidden = columnModel[i].hidden;
+            if (!!label && hidden == false) {
+                $(".sys_spec_text").append("<li data-value='" + name + "' title='" + label + "'><a>" + label + "</a><i></i></li>");
+            }
+        });
+        $(".sys_spec_text li").addClass("active");
+        $(".sys_spec_text li").click(function () {
+            if (!!$(this).hasClass("active")) {
+                $(this).removeClass("active");
+            } else {
+                $(this).addClass("active").siblings("li");
+            }
+        });
+    });
+    //确定导出
+    function AcceptClick() {
+        var exportField = [];
+        $('.sys_spec_text ').find('li.active').each(function () {
+            var value = $(this).attr('data-value');
+            exportField.push(value);
+        });
+        var columnJson = $.currentIframe().$("#" + gridId).jqGrid('getGridParam', 'colModel');
+        var rowJson = $.currentIframe().$("#" + gridId).jqGrid('getRowData');
+        $('#executeexcel').remove();
+        var $form = $("<form id='executeexcel' method='post' action='" + top.contentPath + "/Utility/ExecuteExportExcel' style='display:none;'>");
+        var $input = $("<input type='hidden' name='columnJson' value='" + JSON.stringify(columnJson) + "'><input type='hidden' name='rowJson' value='" + JSON.stringify(rowJson) + "'><input type='hidden' name='exportField' value='" + String(exportField) + "'><input type='hidden' name='filename' value='" + escape(filename) + "'>");
+        $("body").append($form);
+        $form.append($input).submit();
+    }
+</script>
+<div style="margin: 5px;">
+    <div class="alert alert-danger" style="margin-bottom: 5px;">
+        <i class="fa fa-question-circle" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+        注：请勾选需要导出的字段
+    </div>
+</div>
+<div style="margin: 5px;">
+    <ul class="sys_spec_text">
+    </ul>
+</div>

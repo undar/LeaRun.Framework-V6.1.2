@@ -1,0 +1,11 @@
+﻿<ion-view view-title="实例">
+    <ion-content >
+        <div class="list mt5">
+            <ion-item class="item-icon-right lr-iconitem" ng-repeat="case in cases" type="item-text-wrap" ng-click="openPageModel(case.viewid,case.id)">
+                <i class="icon {{case.icon}} {{case.bgcolor}}"></i>
+                <span>{{case.name}}</span>
+                <i class="icon ion-chevron-right icon-accessory "></i>
+            </ion-item>
+        </div>
+    </ion-content>
+</ion-view>

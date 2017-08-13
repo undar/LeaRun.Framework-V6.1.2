@@ -1,0 +1,14 @@
+<ion-modal-view>
+  <ion-header-bar class="bar-positive">
+    <button class="button button-clear" ng-click="closeSelectModal()"><i class="icon ion-ios-close-empty"></i></button>
+    <h1 class="title">{{title}}</h1>
+  </ion-header-bar>
+  <ion-content>
+    <div class="list lr-list-radio">
+      <lr-ion-radio ng-repeat="item in selectData" class="lrdadadad" ng-value="item.value" ng-model="selectValue" ng-change="changeSelectModal(item)">
+        <div class="{{bgAllColor}} {{item.bgColor}}">{{ item.text }}</div>
+      </lr-ion-radio>
+    </div>
+  </ion-content>
+</ion-modal-view>
+

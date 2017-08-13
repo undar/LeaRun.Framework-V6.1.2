@@ -1,0 +1,85 @@
+@{;
+  ViewBag.Title = "表单页面";
+  Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    $(function () {
+        initControl();
+    });
+    //初始化控件
+    function initControl() {
+        //支出种类
+        $("#ExpensesType").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "Client_ExpensesType" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+        //支出账户
+        $("#ExpensesAccount").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "Client_PaymentAccount" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+    }
+    //保存表单;
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls("");
+        $.SaveForm({
+            url: "../../CustomerManage/Expenses/SaveForm",
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <td class="formTitle">支出种类<font face="宋体">*</font></td>
+            <td class="formValue">
+                <div id="ExpensesType" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">经手人员<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="Managers" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">支出账户<font face="宋体">*</font></td>
+            <td class="formValue">
+                 <div id="ExpensesAccount" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">支出日期<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="ExpensesDate" type="text" value="@LeaRun.Util.Time.GetToday()" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})" isvalid="yes" checkexpession="NotNull"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">支出金额<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="ExpensesPrice" type="text" class="form-control" isvalid="yes" checkexpession="Double"/>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" valign="top" style="padding-top: 4px;">摘要</th>
+            <td class="formValue">
+                <textarea id="ExpensesAbstract" class="form-control" style="height: 60px;"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>

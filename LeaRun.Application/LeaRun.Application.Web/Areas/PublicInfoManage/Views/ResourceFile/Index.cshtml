@@ -1,0 +1,428 @@
+﻿@{
+    ViewBag.Title = "文件管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+
+<script>
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //layout布局
+        $('#layout').layout({
+            applyDemoStyles: true,
+            west__resizable: false,
+            west__size: 220,
+            spacing_open: 0,
+            onresize: function () {
+                $(window).resize()
+            }
+        });
+        $('.profile-nav').height($(window).height() - 20);
+        $('.profile-content').height($(window).height() - 20);
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('#gridPanel').width() - 15));
+                $("#gridTable").setGridHeight($(window).height() - 141.5);
+                $('.profile-nav').height($(window).height() - 20);
+                $('.profile-content').height($(window).height() - 20);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //计算文件大小函数(保留两位小数),Size为字节大小
+    function CountFileSize(Size) {
+        var m_strSize = "";
+        var FactSize = 0;
+        FactSize = Size;
+        if (FactSize < 1024.00)
+            m_strSize = ToDecimal(FactSize) + " 字节";
+        else if (FactSize >= 1024.00 && FactSize < 1048576)
+            m_strSize = ToDecimal(FactSize / 1024.00) + " KB";
+        else if (FactSize >= 1048576 && FactSize < 1073741824)
+            m_strSize = ToDecimal(FactSize / 1024.00 / 1024.00) + " MB";
+        else if (FactSize >= 1073741824)
+            m_strSize = ToDecimal(FactSize / 1024.00 / 1024.00 / 1024.00) + " GB";
+        return m_strSize;
+    }
+    //保留两位小数    
+    //功能：将浮点数四舍五入，取小数点后2位   
+    function ToDecimal(x) {
+        var f = parseFloat(x);
+        if (isNaN(f)) {
+            return 0;
+        }
+        f = Math.round(x * 100) / 100;
+        return f;
+    }
+    //加载表格
+    var fileId = "";
+    function GetGrid() {
+        var $gridTable = $("#gridTable");
+        $gridTable.jqGrid({
+            url: "../../PublicInfoManage/ResourceFile/GetListJson",
+            datatype: "json",
+            height: $(window).height() - 141.5,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'FileId', hidden: true },
+                { label: 'FolderId', name: 'FolderId', hidden: true },
+                { label: 'FileType', name: 'FileType', hidden: true },
+                { label: 'FileName', name: 'FileName', hidden: true },
+                {
+                    label: '文件名', width: $(".profile-content").width() - 350, align: 'left',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return "<div style='cursor:pointer;'><div style='float: left;'><img src='" + top.contentPath + "/Content/images/filetype/" + rowObject.FileType + ".png' style='width:35px;height:35px;padding:5px;margin-left:-7px;margin-right:5px;' /></div><div style='float: left;line-height:35px;'>" + rowObject.FileName + "</div></div>";
+                    }
+                },
+                {
+                    label: '大小', name: 'FileSize', index: 'FileSize', width: 100, align: 'center',
+                    formatter: function (cellvalue, options, rowObject) {
+                        return CountFileSize(cellvalue);
+                    }
+                },
+                {
+                    label: "修改时间", name: "ModifyDate", index: "ModifyDate", width: 120, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm:ss');
+                    }
+                },
+                { label: '共享用户', name: 'CreateUserName', index: 'CreateUserName', hidden: true }
+            ],
+            pager: false,
+            rowNum: "1000",
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            ondblClickRow: function (id) {
+                var rowData = $gridTable.getRowData(id);
+                if (rowData.FileType == "folder") {
+                    fileId = rowData.FileId;
+                    $gridTable.jqGrid('setGridParam', {
+                        postData: { folderId: fileId },
+                    }).trigger('reloadGrid');
+                    $(".crumb-path").append('<span class="path-item add" data-fileId=' + rowData.FileId + ' data-folderId=' + rowData.FolderId + '>' + rowData.FileName + '</span>');
+                    $(".crumb-path .back").show();
+                    $(".crumb-path span.add").unbind('click');
+                    $(".crumb-path span.add").click(function () {
+                        $(this).nextAll().remove();
+                        $gridTable.jqGrid('setGridParam', {
+                            postData: { folderId: $(this).attr('data-fileId') },
+                        }).trigger('reloadGrid');
+                    });
+                }
+            }
+        });
+        //返回上一级、返回所有文件
+        $(".crumb-path span").click(function () {
+            var value = $(this).attr('data-folderId');
+            var folderId = $(".crumb-path span:last").attr('data-folderId');
+            if (value == "back") {
+                if (folderId == 0) {
+                    $(".crumb-path .back").hide();
+                }
+                $gridTable.jqGrid('setGridParam', {
+                    postData: { folderId: folderId },
+                }).trigger('reloadGrid');
+                $(".crumb-path span:last").remove()
+            } else {
+                $gridTable.jqGrid('setGridParam', {
+                    postData: { folderId: 0 },
+                }).trigger('reloadGrid');
+                $(".crumb-path .back").hide();
+                $(".crumb-path .add").remove()
+            }
+        });
+        //文件left导航事件（所有文件、文档、图片、回收站、我的共享、他人共享）
+        $("#nav_email li").click(function () {
+            $gridTable.setGridParam().hideCol("CreateUserName");
+            $("#txt_Keyword").val('');
+            $("#lr-uploadify").hide();
+            $("#lr-addfolder").hide();
+            $("#lr-download").hide();
+            $("#lr-delete").hide();
+            $("#lr-share").hide();
+            $("#lr-cancelshare").hide();
+            $("#lr-more").hide();
+            $("#lr-restoreFile").hide();
+            $("#lr-thoroughDelete").hide();
+            $("#lr-emptyRecycled").hide();
+            $(".crumb-path .back").hide();
+            $(".crumb-path .add").remove();
+            var _url = "";
+            var id = $(this).attr('id');
+            switch (id) {
+                case "allFile":
+                    _url = "../../PublicInfoManage/ResourceFile/GetListJson";
+                    $(".crumb-path").find('[data-folderid=allfile]').html('所有文件');
+                    $("#lr-uploadify").show();
+                    $("#lr-addfolder").show();
+                    $("#lr-download").show();
+                    $("#lr-delete").show();
+                    $("#lr-share").show();
+                    $("#lr-more").show();
+                    break;
+                case "allDocument":
+                    _url = "../../PublicInfoManage/ResourceFile/GetDocumentListJson";
+                    $(".crumb-path").find('[data-folderid=allfile]').html('所有文档');
+                    $("#lr-download").show();
+                    $("#lr-delete").show();
+                    $("#lr-share").show();
+                    break;
+                case "allImage":
+                    _url = "../../PublicInfoManage/ResourceFile/GetImageListJson";
+                    $(".crumb-path").find('[data-folderid=allfile]').html('所有图片');
+                    $("#lr-download").show();
+                    $("#lr-delete").show();
+                    $("#lr-share").show();
+                    break;
+                case "recycledFile":
+                    _url = "../../PublicInfoManage/ResourceFile/GetRecycledListJson";
+                    $(".crumb-path").find('[data-folderid=allfile]').html('回收站');
+                    $("#lr-restoreFile").show();
+                    $("#lr-thoroughDelete").show();
+                    $("#lr-emptyRecycled").show();
+                    break;
+                case "myShare":
+                    _url = "../../PublicInfoManage/ResourceFile/GetMyShareListJson";
+                    $("#lr-cancelshare").show();
+                    break;
+                case "othersShare":
+                    _url = "../../PublicInfoManage/ResourceFile/GetOthersShareListJson";
+                    $gridTable.setGridParam().showCol("CreateUserName");
+                    $("#lr-download").show();
+                    break;
+                default:
+                    break;
+            }
+            $gridTable.jqGrid('setGridParam', {
+                url: _url,
+                postData: { folderId: "" },
+            }).trigger('reloadGrid');
+        });
+    }
+    //上传文件
+    function btn_uploadify() {
+        dialogOpen({
+            id: "UploadifyForm",
+            title: '上传文件',
+            url: '/PublicInfoManage/ResourceFile/UploadifyForm?folderId=' + fileId,
+            width: "600px",
+            height: "400px",
+            btn: null
+        });
+    }
+    //新建文件夹
+    function btn_add_folder() {
+        dialogOpen({
+            id: "FolderForm",
+            title: '添加文件夹',
+            url: '/PublicInfoManage/ResourceFile/FolderForm?parentId=' + fileId,
+            width: "400px",
+            height: "200px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //文件下载
+    function btn_download() {
+        var keyValue = $("#gridTable").jqGridRowValue("FileId");
+        var fileType = $("#gridTable").jqGridRowValue("FileType");
+        if (keyValue) {
+            if (fileType != 'folder') {
+                $.download("../../PublicInfoManage/ResourceFile/DownloadFile", "keyValue=" + keyValue, 'post');
+            } else {
+                top.dialogTop('目前不支持文件夹下载', 'error');
+            }
+        } else {
+            dialogMsg('请选择要下载的文件！', 0);
+        }
+    }
+    //文件（夹）删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue("FileId");
+        var fileType = $("#gridTable").jqGridRowValue("FileType");
+        if (keyValue) {
+            $.RemoveForm({
+                msg: "注：您确定要删除此" + (fileType == "folder" ? "文件夹" : "文件") + "吗？可在回收站还原！",
+                url: "../../PublicInfoManage/ResourceFile/RemoveForm",
+                param: { keyValue: keyValue, fileType: fileType },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择要删除的文件夹或文件！', 0);
+        }
+    }
+    //文件（夹）重命名
+    function btn_rename() {
+        var keyValue = $("#gridTable").jqGridRowValue("FileId");
+        var fileType = $("#gridTable").jqGridRowValue("FileType");
+        if (keyValue) {
+            dialogOpen({
+                id: (fileType == "folder" ? "FolderForm" : "FileForm"),
+                title: (fileType == "folder" ? "文件夹" : "文件") + '重命名',
+                url: '/PublicInfoManage/ResourceFile/' + (fileType == "folder" ? "FolderForm" : "FileForm") + '?keyValue=' + keyValue,
+                width: "400px",
+                height: "200px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        } else {
+            dialogMsg('请选择要重命名的文件夹或文件！', 0);
+        }
+    }
+    //文件（夹）移动
+    function btn_move() {
+        var keyValue = $("#gridTable").jqGridRowValue("FileId");
+        var fileType = $("#gridTable").jqGridRowValue("FileType");
+        if (keyValue) {
+            dialogOpen({
+                id: "MoveLocation",
+                title: (fileType == "folder" ? "文件夹" : "文件") + '移动',
+                url: '/PublicInfoManage/ResourceFile/MoveForm?keyValue=' + keyValue + "&fileType=" + fileType,
+                width: "500px",
+                height: "400px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        } else {
+            dialogMsg('请选择要移动的文件夹或文件！', 0);
+        }
+    }
+    //文件（夹）还原
+    function btn_restorefile() {
+        var keyValue = $("#gridTable").jqGridRowValue("FileId");
+        var fileType = $("#gridTable").jqGridRowValue("FileType");
+        if (keyValue) {
+            $.ConfirmAjax({
+                msg: "注：您确定要还原此" + (fileType == "folder" ? "文件夹" : "文件") + "吗？",
+                url: "../../PublicInfoManage/ResourceFile/RestoreFile",
+                param: { keyValue: keyValue, fileType: fileType },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择要还原的文件夹或文件！', 0);
+        }
+    }
+    //文件（夹）彻底删除
+    function btn_thoroughdelete() {
+        var keyValue = $("#gridTable").jqGridRowValue("FileId");
+        var fileType = $("#gridTable").jqGridRowValue("FileType");
+        if (keyValue) {
+            $.RemoveForm({
+                msg: "注：您确定要删除此" + (fileType == "folder" ? "文件夹" : "文件") + "吗？该操作将无法恢复！",
+                url: "../../PublicInfoManage/ResourceFile/ThoroughRemoveForm",
+                param: { keyValue: keyValue, fileType: fileType },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择要删除的文件夹或文件！', 0);
+        }
+    }
+    //文件共享（取消共享）
+    function btn_share(isshare) {
+        var keyValue = $("#gridTable").jqGridRowValue("FileId");
+        var fileType = $("#gridTable").jqGridRowValue("FileType");
+        if (keyValue) {
+            $.ConfirmAjax({
+                msg: "注：您确定要共享此" + (fileType == "folder" ? "文件夹" : "文件") + "吗？",
+                url: "../../PublicInfoManage/ResourceFile/ShareFile",
+                param: { keyValue: keyValue, IsShare: isshare, fileType: fileType },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择要共享的文件夹或文件！', 0);
+        }
+    }
+</script>
+<div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel" style="border-right: none;">
+            <div class="profile-nav" style="overflow: auto;">
+                <ul id="nav_email" style="padding-top: 10px;">
+                    <li id="allFile" class="active"><i class="fa fa-folder-open" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9; width: 16px;"></i>所有文件</li>
+                    <li id="allDocument"><i class="fa fa-newspaper-o" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; margin-top: -2px; font-size: 14px; color: #666666; opacity: 0.9; width: 16px;"></i>文档</li>
+                    <li id="allImage"><i class="fa fa-picture-o" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9; width: 16px;"></i>图片</li>
+                    <li id="recycledFile"><i class="fa fa-trash-o" style="vertical-align: middle; margin-top: -3px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9; width: 16px;"></i>回收站</li>
+                    <div class="divide"></div>
+                    <li id="myShare"><i class="fa fa-thumbs-up" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9; width: 16px;"></i>我的共享</li>
+                    <li id="othersShare"><i class="fa fa-share-alt" style="vertical-align: middle; margin-top: -2px; margin-right: 8px; font-size: 14px; color: #666666; opacity: 0.9; width: 16px;"></i>他人共享</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="center-Panel">
+            <div class="profile-content" style="background: #fff; padding: 0px;">
+                <div class="titlePanel">
+                    <div class="title-search">
+                        <table>
+                            <tr>
+                                <td>
+                                    <input id="txt_Keyword" type="text" class="form-control" placeholder="搜索我的文件" style="width: 200px;" />
+                                </td>
+                                <td style="padding-left: 5px;">
+                                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="toolbar">
+                        <div class="btn-group">
+                            <a id="lr-uploadify" class="btn btn-success" onclick="btn_uploadify()"><i class="fa fa-upload" style="color: #fff;"></i>&nbsp;上传文件</a>
+                        </div>
+                        <div class="btn-group">
+                            <a id="lr-addfolder" class="btn btn-default" onclick="btn_add_folder()"><i class="fa fa-plus"></i>&nbsp;新建文件夹</a>
+                        </div>
+                        <div class="btn-group">
+                            <a id="lr-download" class="btn btn-default" onclick="btn_download()"><i class="fa fa-download"></i>&nbsp;下载</a>
+                            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+                            <a id="lr-share" class="btn btn-default" onclick="btn_share(1)"><i class="fa fa-share-alt"></i>&nbsp;共享</a>
+                            <a id="lr-cancelshare" class="btn btn-default" style="display: none;" onclick="btn_share(0)"><i class="fa fa-share-alt"></i>&nbsp;取消共享</a>
+                            <a id="lr-more" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false"><i class="fa fa-reorder"></i>&nbsp;更多<span class="caret"></span></a>
+                            <ul class="dropdown-menu pull-right">
+                                <li id="lr-rename"><a onclick="btn_rename()">&nbsp;重命名</a></li>
+                                <li id="lr-move"><a onclick="btn_move()">&nbsp;移动</a></li>
+                            </ul>
+                        </div>
+                        <div class="btn-group">
+                            <a id="lr-restoreFile" style="display: none;" class="btn btn-default" onclick="btn_restorefile()"><i class="fa fa-rotate-left"></i>&nbsp;还原文件</a>
+                            <a id="lr-thoroughDelete" style="display: none;" class="btn btn-default" onclick="btn_thoroughdelete()"><i class="fa fa-trash-o"></i>&nbsp;彻底删除</a>
+                            <a id="lr-emptyRecycled" style="display: none;" class="btn btn-default" onclick=""><i class="fa fa-eraser"></i>&nbsp;清空回收站</a>
+                        </div>
+                        <script>$('.toolbar').authorizeButton()</script>
+                    </div>
+                </div>
+                <div style="height: 30px; padding-left: 16px;">
+                    <div class="crumb-path">
+                        <span class="back" data-folderid="back" style="display: none;">返回上一级</span>
+                        <span class="path-item" data-folderid="allfile">所有文件</span>
+                    </div>
+                </div>
+                <div id="gridPanel" style="padding-left: 15px; padding-right: 15px;">
+                    <table id="gridTable"></table>
+                    <div id="gridPager"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<style>
+    .ui-jqgrid-htable th.ui-th-column {
+        background-color: #F7F7F7;
+    }
+</style>

@@ -1,0 +1,179 @@
+﻿@{
+    ViewBag.Title = "查看邮件";
+    Layout = "~/Views/Shared/_Form.cshtml";
+
+}
+<link href="~/Content/scripts/plugins/simditor/css/simditor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/simditor/js/module.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/hotkeys.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/simditor.min.js"></script>
+<link href="~/Content/scripts/plugins/cxColor/css/jquery.cxcolor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/cxColor/js/jquery.cxcolor.js"></script>
+
+<script>
+    var keyValue = '@ViewBag.keyValue';
+    var contentId = '@ViewBag.contentId';
+    var files = [];
+    var maildata;
+    var postData;
+    var editor;
+    $(function () {
+        $("#EmailContent").height($(window).height() - 195);
+        initControl();
+    })
+    //初始化控件
+    function initControl() {
+        if (keyValue) {
+            $.ajax({
+                url: "../../PublicInfoManage/Email/ReadEmail",
+                data: { keyValue: keyValue, IsRead: 1 },
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    files = JSON.parse(data.files);
+
+                    $.currentIframe().InitialEmailNavCount();
+                    $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                    alert(files.length);
+                }
+            });
+        }
+        $.SetForm({
+            url: "../../PublicInfoManage/Email/GetEmailFormJson",
+            param: { keyValue: contentId },
+            success: function (data) {
+                maildata = data;
+                files = JSON.parse(data.Files);
+                $("#Theme").html(data.Theme).css("color", data.ThemeColor);
+                $("#SenderName").html(data.SenderName);
+                $("#SenderTime").html(data.SenderTimeName);
+                $("#AddresssHtml").html(data.AddresssHtml);
+                $("#EmailContent").html(data.EmailContent);
+                $(".mail-send-address-del").remove();
+                $('.mail-send-addresss').css("padding-top", "0");
+                $("#files").html(files.length ?
+                "<a>" + files.length + "个</a> " + "<a title=\"点击查看\" onclick=\"FileView(1)\" style=\"cursor:pointer;font-size: 12px;color: #4A708B;\">点击查看</a>" :
+                "");
+
+
+            }
+        });
+    }
+
+    function AcceptClick(n) {
+        if (n == 1) {
+            editor = new Simditor({
+                textarea: $('#EmailContent'),
+                toolbar: ['title', 'bold', 'italic', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent']
+            });
+            $(".simditor .simditor-body").height(350).css({ "overflow": "auto", "min-height": "0" });
+            $('#EmailContent').remove();
+            $('#wizard-actions').html('<a class="btn btn-success" onclick="AcceptClick(2)">发送</a>');
+            editor.setValue("<p><br></p><p><br></p><p><br></p><p><br></p>" + "<h1><span style=\"color: rgb(65, 140, 175);\"><p>------------------------------回复：" + maildata.SenderName + "------------------------------</p></span><he><p><br></p>" + maildata.EmailContent);
+        }
+        if (n == 2) {
+            var postData = {
+                SendState: 1,
+                Theme: "Re:" + maildata.Theme,
+                ThemeColor: maildata.ThemeColor,
+                EmailContent: editor.getValue(),
+                SendPriority: maildata.SendPriority,
+                IsReceipt: maildata.IsReceipt,
+                IsSmsReminder: maildata.IsSmsReminder,
+                AddresssHtml: maildata.AddresssHtml,
+                addresssIds: maildata.SenderId,
+                copysendIds: "",
+                bccsendIds: "",
+                Files: maildata.SenderId.Files
+            }
+            keyValue = "";
+            $.SaveForm({
+                url: "../../PublicInfoManage/Email/SaveEmailForm?keyValue=" + keyValue,
+                param: postData,
+                loading: keyValue != "" ? "正在存入草稿..." : "正在回复邮件...",
+                success: function (data) {
+                    $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                }
+            })
+        }
+    }
+
+    //文件下载
+    function fileDownload(d) {
+        if (files[d]) {
+            var filename = JSON.stringify(files[d]);
+            $.download("../../PublicInfoManage/Email/FileDownload", "file=" + escape(filename), 'post');
+        } else {
+            dialogMsg('文件不存在，或已经删除', 0);
+        }
+    }
+    function FileView(d) {
+        if (d) {
+            $("#files").html("<a>" + files.length + "个</a> " + "<a title=\"收起查看\" onclick=\"FileView(0)\" style=\"cursor:pointer;font-size: 12px;color: #4A708B;\">收起查看</a>");
+
+            var _html = "";
+            for (var i = 0; i < files.length; i++) {
+                _html += '<span class="fileName">' + files[i]["originalName"] + '</span>&nbsp;&nbsp;';
+                _html += '<a title=\"下载\" onclick=\"fileDownload(' + i + ')\" style=\"cursor:pointer;font-size: 12px;color:#436EEE;\">下载&nbsp;&nbsp;</a>';
+                _html += '&nbsp;&nbsp;&nbsp;&nbsp;';
+            }
+            $("#fileView").append(_html);
+
+        }
+        else {
+            $("#files").html("<a>" + files.length + "个</a> " + "<a title=\"点击查看\" onclick=\"FileView(1)\" style=\"cursor:pointer;font-size: 12px;color: #4A708B;\">点击查看</a>");
+            $("#fileView").empty();
+        }
+
+    }
+</script>
+<div id="border" class="border-bottom" style="padding-top: 10px; background: #F5F5F5; padding-bottom: 8px;">
+    <div style="position: absolute; right: 38px; top: 38px;">
+        <img style="height: 50px; width: 50px;" src="~/Content/images/80_1.png" />
+    </div>
+    <div id="Theme" style="padding-bottom: 8px; padding-left: 18px; font-weight: bold; font-size: 16px;"></div>
+    <table id="mailtb" class="form" style="color: #95A0AA;">
+        <tr>
+            <th class="formTitle" style="width: 75px; padding-bottom: 4px;">发件人：</th>
+            <td class="formValue" style="padding: 0px; padding-bottom: 4px;">
+                <span id="SenderName" style="color: #5fa207;"></span>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="width: 75px; padding-bottom: 4px;">时　间：</th>
+            <td class="formValue" style="padding: 0px; padding-bottom: 4px;">
+                <div id="SenderTime"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="width: 75px; padding-bottom: 4px;">收件人：</th>
+            <td class="formValue" style="padding: 0px; padding-bottom: 4px;">
+                <div id="AddresssHtml"></div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="width: 75px; padding-bottom: 4px;">附　件：</th>
+            <td class="formValue" style="padding: 0px; padding-bottom: 4px;">
+                <div id="files">0个</div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="width: 75px; padding-bottom: 4px;"></th>
+            <td class="formValue" style="padding: 0px; padding-bottom: 4px;">
+                <div id="fileView"></div>
+            </td>
+        </tr>
+
+    </table>
+
+
+
+</div>
+
+<div id="EmailContent" style="margin: 5px; overflow: auto; padding: 10px; padding-bottom: 0px;">
+</div>
+
+
+<div class="form-button" id="wizard-actions">
+    <a class="btn btn-success" onclick="AcceptClick(1)">回复邮件</a>
+</div>

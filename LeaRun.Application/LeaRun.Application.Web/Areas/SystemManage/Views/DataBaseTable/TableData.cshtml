@@ -1,0 +1,119 @@
+﻿@{
+    ViewBag.Title = "表数据";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>
+    var dataBaseLinkId = request('dataBaseLinkId');
+    var tableName = request('tableName');
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $("#gridTable").setGridHeight($(window).height() - 140);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var colModelData = [];
+        $.ajax({
+            url: "../..//SystemManage/DataBaseTable/GetTableFiledListJson",
+            data: { dataBaseLinkId: dataBaseLinkId, tableName: tableName },
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (json) {
+                $.each(json, function (i) {
+                    var field = json[i].column.toLocaleLowerCase();;
+                    var remark = json[i].remark;
+                    $("#switchWhere").append($("<option title=" + remark + "></option>").val(field).html(field));
+                    colModelData.push({ label: "<div title=" + remark + ">" + field + "</div>", name: field, align: "left", index: field, editable: true });
+
+                });
+            }
+        });
+        var $gridTable = $("#gridTable");
+        $gridTable.jqGrid({
+            url: "../../SystemManage/DataBaseTable/GetTableDataListJson",
+            postData: { dataBaseLinkId: dataBaseLinkId, tableName: tableName },
+            datatype: "json",
+            height: $(window).height() - 120,
+            autowidth: true,
+            colModel: colModelData,
+            unwritten: false,
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            $gridTable.jqGrid('setGridParam', {
+                postData: {
+                    dataBaseLinkId: dataBaseLinkId,
+                    tableName: tableName,
+                    switchWhere: $("#switchWhere").val(),
+                    logic: $("#logic").val(),
+                    keyword: $("#txt_Keyword").val()
+                },
+            }).trigger('reloadGrid');
+        });
+    }
+</script>
+<div class="titlePanel" style="border: 0px;">
+    <div class="title-search">
+        <table>
+            <tr>
+                <th style="white-space: nowrap; font-weight: normal;">查询条件：</th>
+                <td>
+                    <select id="switchWhere" class="form-control" style="width: 100px"></select>
+                </td>
+                <td style="padding-left: 1px;">
+                    <select id="logic" class="form-control">
+                        <option value="Equal">等于</option>
+                        <option value="NotEqual">不等于</option>
+                        <option value="Greater">大于</option>
+                        <option value="GreaterThan">大于等于</option>
+                        <option value="Less">小于</option>
+                        <option value="LessThan">小于等于</option>
+                        <option value="Null">为空</option>
+                        <option value="NotNull">不为空</option>
+                        <option value="Like">包含</option>
+                    </select>
+                </td>
+                <td style="padding-left: 1px;">
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>
+<style>
+    body {
+        margin: 0px;
+    }
+
+    .ui-widget-content {
+        border-left: 0px;
+        border-right: 0px;
+        border-bottom: 0px;
+    }
+</style>

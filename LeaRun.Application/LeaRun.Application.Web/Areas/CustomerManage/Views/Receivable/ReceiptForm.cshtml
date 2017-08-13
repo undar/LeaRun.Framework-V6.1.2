@@ -1,0 +1,105 @@
+﻿@{
+    ViewBag.Title = "收款表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var orderId = request('orderId');
+    $(function () {
+        initControl();
+    })
+    //初始化控件
+    function initControl() {
+        //收款方式
+        $("#PaymentMode").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "Client_PaymentMode" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+        //收款账户
+        $("#PaymentAccount").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "Client_PaymentAccount" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+        $.SetForm({
+            url: "../../CustomerManage/Order/GetFormJson",
+            param: { keyValue: orderId },
+            success: function (data) {
+                $("#ReceivedAmount").val(toDecimal(data.order.ReceivedAmount));
+                $("#Uncollected").val(toDecimal(data.order.Accounts - data.order.ReceivedAmount));
+            }
+        });
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        if (Number($("#PaymentPrice").val()) > Number($("#Uncollected").val())) {
+            ValidationMessage($("#PaymentPrice"), "收款金额不能大于未收款金额");
+            return false;
+        }
+        var postData = $("#form1").GetWebControls("");
+        postData["OrderId"] = orderId;
+        $.SaveForm({
+            url: "../../CustomerManage/Receivable/SaveForm",
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div style="margin-left: 10px; margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <td class="formTitle">收款方式<font face="宋体">*</font></td>
+            <td class="formValue">
+                <div id="PaymentMode" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+                <tr>
+            <td class="formTitle">收款账户<font face="宋体">*</font></td>
+            <td class="formValue">
+                <div id="PaymentAccount" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">收款日期<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="PaymentTime" type="text" value="@LeaRun.Util.Time.GetToday()" class="form-control input-wdatepicker" onfocus="WdatePicker({maxDate:'%y-%M-%d'})" isvalid="yes" checkexpession="NotNull"/>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">收款金额<font face="宋体">*</font></td>
+            <td class="formValue">
+                <input id="PaymentPrice" type="text" class="form-control" isvalid="yes" checkexpession="Double" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">已收金额</td>
+            <td class="formValue">
+                <input id="ReceivedAmount" readonly type="text" value="0.00" class="form-control" style="color: blue;" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">未收金额</td>
+            <td class="formValue">
+                <input id="Uncollected" readonly type="text" value="0.00" class="form-control" style="color: red;" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" valign="top" style="padding-top: 4px;">备注信息</th>
+            <td class="formValue">
+                <textarea id="Description" class="form-control" style="height: 60px;"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>

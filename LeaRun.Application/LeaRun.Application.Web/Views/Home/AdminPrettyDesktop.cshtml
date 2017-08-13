@@ -1,0 +1,151 @@
+﻿
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>我的桌面</title>
+    <link href="/Content/scripts/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="/Content/adminPretty/font/iconfont.css" rel="stylesheet" />
+    <link href="/Content/adminPretty/css/Desktop.css" rel="stylesheet" />
+    <script src="/Content/scripts/jquery/jquery-1.10.2.min.js"></script>
+    <script src="/Content/scripts/plugins/echarts/echarts.min.js"></script>
+    <script src="/Content/adminPretty/Desktop.js"></script>
+</head>
+
+<body style="margin: 0px;padding:10px;">
+    <div>
+        <div class="row">
+            <div class="col-sm-7 col-md-9  block leftblock">
+                <div class="row subblock" style="height:430px;">
+                    <div class="content" id="mainChart"></div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6 col-md-3 task-stat">
+                        <div class="task-stat-content task-bga">
+                            <div class="ricon"><i class="icon iconfont icon-sj-copy"></i></div>
+                            <span class="title">新增商机</span>
+                            <span class="num">128</span>
+
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3 task-stat">
+                        <div class="task-stat-content task-bgb">
+                            <div class="ricon"><i class="icon iconfont icon-kehu"></i></div>
+                            <span class="title">新增客户</span>
+                            <span class="num">266</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3 task-stat">
+                        <div class="task-stat-content task-bgc">
+                            <div class="ricon"><i class="icon iconfont icon-suoyoudingdan"></i></div>
+                            <span class="title">新增订单</span>
+                            <span class="num">39</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-3 task-stat">
+                        <div class="task-stat-content task-bgd">
+                            <div class="ricon"><i class="icon iconfont icon-ai-profit"></i></div>
+                            <span class="title">利润总额</span>
+                            <span class="num">16897.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-7 subblock">
+                        <div id="echart1" class="content"></div>
+                    </div>
+                    <div class="col-md-5 subblock">
+                        <div class="content">
+                            <div class="title">
+                                部门负责人
+                            </div>
+                            <div style="padding:18px 25px;">
+                                <div class="row" style="line-height: 61px; background:rgba(245, 245, 245, 0.52);margin-bottom:15px;padding:0px 15px;border-left:solid 6px #7b93e0;">
+                                    <a href="#" class="col-md-4" style="text-decoration: none;color:#999999;font-size:16px;padding:0px;">李好运</a>
+                                    <label style="color:#999999;font-size:14px;padding:0px;">市场部</label>
+                                    <label style="float: right;color:#999999;">13657797712</label>
+                                </div>
+                                <div class="row" style="line-height: 61px; background:rgba(245, 245, 245, 0.52);margin-bottom:15px;padding:0px 15px;border-left:solid 6px #59debc;">
+                                    <a href="#" class="col-md-4" style="text-decoration: none;color:#999999;font-size:16px;padding:0px;">余万三</a>
+                                    <label style="color:#999999;font-size:14px;">营销部</label>
+                                    <label style="float: right;color:#999999;">18088008866</label>
+                                </div>
+                                <div class="row" style="line-height: 61px; background:rgba(245, 245, 245, 0.52);margin-bottom:15px;padding:0px 15px;border-left:solid 6px #F2B459;">
+                                    <a href="#" class="col-md-4" style="text-decoration: none;color:#999999;font-size:16px;padding:0px;">刘百万</a>
+                                    <label style="color:#999999;font-size:14px;">客服部</label>
+                                    <label style="float: right;color:#999999;">15939979966</label>
+                                </div>
+                                <div class="row" style="line-height: 61px; background:rgba(245, 245, 245, 0.52);margin-bottom:15px;padding:0px 15px;border-left:solid 6px #f06995;">
+                                    <a href="#" class="col-md-4" style="text-decoration: none;color:#999999;font-size:16px;padding:0px;">陈小二</a>
+                                    <label style="color:#999999;font-size:14px;padding:0px;">软件部</label>
+                                    <label style="float: right;color:#999999;">18655566688</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-5 col-md-3  block rightblock">
+                <div class="row subblock" style="height:430px;padding:0px;margin-bottom:10px;">
+                    <div class="content" id="echart2">
+                    </div>
+                </div>
+                <div class="row subblock" style="height:510px;padding:0px;">
+                    <div class="content">
+                        <div class="title">
+                            待办任务
+                        </div>
+                        <div style="padding:15px 25px;">
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[审批]&nbsp;&nbsp;&nbsp;李好运的报销申请</a>
+                                <label style="float: right;color:#999999;">2016-06-25</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[审批]&nbsp;&nbsp;&nbsp;长明的请假单</a>
+                                <label style="float: right;color:#999999;">2016-04-01</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[审批]&nbsp;&nbsp;&nbsp;苏七饼的调休申请单</a>
+                                <label style="float: right;color:#999999;">2016-09-11</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[工作]&nbsp;&nbsp;&nbsp;联系宋卡公司支付尾款</a>
+                                <label style="float: right;color:#999999;">2016-02-19</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[审批]&nbsp;&nbsp;&nbsp;刘昊的借支申请单</a>
+                                <label style="float: right;color:#999999;">2016-02-26</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[审批]&nbsp;&nbsp;&nbsp;刘百万的请假申请单</a>
+                                <label style="float: right;color:#999999;">2016-02-16</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[工作]&nbsp;&nbsp;&nbsp;陈小二去长春进行培训</a>
+                                <label style="float: right;color:#999999;">2016-02-10</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[审核]&nbsp;&nbsp;&nbsp;余万三的报销申请单</a>
+                                <label style="float: right;color:#999999;">2016-02-10</label>
+                            </div>
+                            <div class="row" style="line-height: 39px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[审核]&nbsp;&nbsp;&nbsp;东方长明转正申请</a>
+                                <label style="float: right;color:#999999;">2016-02-10</label>
+                            </div>
+                            <div class="row" style="line-height: 40px; border-bottom: 1px solid #F1F1F1;">
+                                <a class="col-md-7" href="#" style="text-decoration: none;color:#999999;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0px;">[工作]&nbsp;&nbsp;&nbsp;刘百万去广东实地考察</a>
+                                <label style="float: right;color:#999999;">2016-02-10</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+
+

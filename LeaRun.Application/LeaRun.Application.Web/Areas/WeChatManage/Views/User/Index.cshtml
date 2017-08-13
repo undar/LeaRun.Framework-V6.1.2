@@ -1,0 +1,193 @@
+﻿@{
+    ViewBag.Title = "企业号成员";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $("#gridTable").setGridHeight($(window).height() - 108.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            url: "../../WeChatManage/User/GetListJson",
+            datatype: "json",
+            height: $(window).height() - 108.5,
+            autowidth: true,
+            colModel: [
+                { label: 'Id', name: 'Id', hidden: true },
+                { label: '账户', name: 'UserId', index: 'UserId', width: 100, align: 'left' },
+                { label: '姓名', name: 'RealName', index: 'RealName', width: 100, align: 'left', sortable: false },
+                {
+                    label: '性别', name: 'Gender', index: 'Gender', width: 45, align: 'center', sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue == 1 ? "男" : "女";
+                    }
+                },
+                { label: '手机', name: 'Mobile', width: 100, align: 'center', sortable: false },
+                { label: '邮箱', name: 'Email', width: 150, align: 'left', sortable: false },
+                { label: '微信', name: 'WeChat', width: 150, align: 'left', sortable: false },
+                { label: '部门', name: 'DeptName', index: 'DeptName', width: 100, align: 'left', sortable: false },
+                { label: '职位', name: 'PostName', width: 100, align: 'left', sortable: false },
+                {
+                    label: "同步时间", name: "CreateDate", index: "CreateDate", width: 130, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        return formatDate(cellvalue, 'yyyy-MM-dd hh:mm');
+                    }
+                },
+                {
+                    label: "同步状态", name: "SyncState", index: "SyncState", width: 80, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue == -1) {
+                            return "<span class=\"label label-danger\">未同步</span>";
+                        } else if (cellvalue == 1) {
+                            return "<span class=\"label label-success\">已关注</span>";
+                        } else if (cellvalue == 2) {
+                            return "<span class=\"label label-default\">已禁用</span>";
+                        } else if (cellvalue == 4) {
+                            return "<span class=\"label label-info\">未关注</span>";
+                        } else {
+                            return cellvalue;
+                        }
+                    }
+                },
+                { label: "同步日志", name: "SyncLog", width: 200, align: "left", sortable: false }
+            ],
+            pager: false,
+            rowNum: "1000",
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $("#" + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $("#" + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        $gridTable.authorizeColModel();
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) }
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //添加成员
+    function btn_member() {
+        dialogOpen({
+            id: "Member",
+            title: '添加成员',
+            url: '/WeChatManage/User/MemberForm',
+            width: "840px",
+            height: "520px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue("UserId");
+        if (keyValue) {
+            $.RemoveForm({
+                url: "../../WeChatManage/User/DeleteMember",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择需要移除的成员！', 0);
+        }
+    }
+    //一键同步
+    function btn_synchronization() {
+        var userIds = [];
+        var getRowData = $("#gridTable").jqGrid("getRowData");
+        if (getRowData.length == 0) {
+            return false;
+        }
+        for (var i = 0; i < getRowData.length; i++) {
+            userIds.push(getRowData[i].Id);
+        }
+        $.ConfirmAjax({
+            msg: "注：您确定要一键同步成员到微信企业号里面吗？",
+            url: "../../WeChatManage/User/Synchronization",
+            param: { userIds: String(userIds) },
+            success: function (data) {
+                $("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>
+                    <div id="queryCondition" class="btn-group">
+                        <a class="btn btn-default dropdown-text">选择条件</a>
+                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a data-value="Account">账户</a></li>
+                            <li><a data-value="RealName">姓名</a></li>
+                            <li><a data-value="Mobile">手机</a></li>
+                            <li><a data-value="Mobile">邮箱</a></li>
+                            <li><a data-value="Mobile">微信</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td style="padding-left: 2px;">
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-member" class="btn btn-default" onclick="btn_member()"><i class="fa fa-plus"></i>&nbsp;添加成员</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;移除成员</a>
+        </div>
+        <div class="btn-group">
+            <a id="lr-synchronization" class="btn btn-default" onclick="btn_synchronization()"><i class="fa fa-refresh"></i>&nbsp;一键同步</a>
+        </div>
+        <script>$('.toolbar').authorizeButton()</script>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+</div>

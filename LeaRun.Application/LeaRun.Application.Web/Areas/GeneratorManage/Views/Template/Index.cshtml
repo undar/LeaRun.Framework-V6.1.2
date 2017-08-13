@@ -1,0 +1,106 @@
+﻿@{
+    ViewBag.Title = "模板列表";
+    Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>
+    $(function () {
+        resize();
+    })
+    function resize() {
+        $('#pageayout').height($(window).height() - 20);
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#pageayout').height($(window).height() - 20);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //在线开发（单表）
+    function btn_singletable() {
+        dialogOpen({
+            id: "Form",
+            title: '在线代码生成器 并自动创建代码',
+            url: '/GeneratorManage/SingleTable/CodeBuilder',
+            width: "1100px",
+            height: "700px",
+            btn: null
+        });
+    }
+    //在线开发（多表）
+    function btn_multitable() {
+        dialogOpen({
+            id: "Form",
+            title: '在线代码生成器 并自动创建代码',
+            url: '/GeneratorManage/MultiTable/CodeBuilder',
+            width: "1100px",
+            height: "700px",
+            btn: null
+        });
+    }
+    function btn_multitable_view() {
+        top.tablist.newTab({ id: '148670a4-2315-4622-9114-3fe7c58b875b', title: '主从表演示', closed: true, icon: "fa fa-diamond", url: top.contentPath + '/DemoManage/OfficeRk/OfficeRkIndex' });
+
+    }
+    function btn_singletable_view() {
+        top.tablist.newTab({ id: '148670a4-2315-4622-9114-3fe7c5aa', title: '单表演示', closed: true, icon: "fa fa-venus", url: top.contentPath + '/BaseManage/student/studentIndex' });
+
+    }
+    function btn_serviceBuilder() {
+        dialogOpen({
+            id: "Form",
+            title: '在线代码生成器 并自动创建代码(后端服务类生成)',
+            url: '/GeneratorManage/ServiceCode/CodeBuilder',
+            width: "1100px",
+            height: "700px",
+            btn: null
+        });
+
+
+    }
+</script>
+<div id="pageayout" class="border" style="background: #fff; overflow: auto;">
+    <div style="margin: 20px;">
+        <div class="cover-box">
+            <div class="cover-img">
+                <img src="/Content/images/code/singletable.png" />
+
+            </div>
+            <div class="cover-info">
+                <h4>单表开发模板（A）</h4>
+                <small>单表开发功能。</small>
+            </div>
+            <div class="cover-button">
+                <a class="btn btn-default" onclick="btn_singletable_view()"><i class="fa fa-eye"></i>&nbsp;效果</a>
+                <a class="btn btn-default" onclick="btn_singletable()"><i class="fa fa-bug"></i>&nbsp;开发</a>
+            </div>
+        </div>
+        <div class="cover-box">
+            <div class="cover-img">
+                <img src="/Content/images/code/multitable.png" />
+
+            </div>
+            <div class="cover-info">
+                <h4>主从表开发模板（B）</h4>
+                <small>类似订单、有表头信息、有明细信息</small>
+            </div>
+            <div class="cover-button">
+                <a class="btn btn-default"onclick="btn_multitable_view()"><i class="fa fa-eye"></i>&nbsp;效果</a>
+                <a class="btn btn-default" onclick="btn_multitable()"><i class="fa fa-bug"></i>&nbsp;开发</a>
+            </div>
+        </div>
+        <div class="cover-box">
+            <div class="cover-img">
+
+                <img src="/Content/images/code/serviceCode.png" />
+            </div>
+            <div class="cover-info">
+                <h4>快速生成服务类</h4>
+                <small>根据表生成实体层,实体映射,服务层,服务接口层,业务层</small>
+            </div>
+            <div class="cover-button">
+                <a class="btn btn-default" onclick="btn_serviceBuilder()"><i class="fa fa-bug"></i>&nbsp;开发</a>
+            </div>
+        </div>
+
+    </div>
+</div>

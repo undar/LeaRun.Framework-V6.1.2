@@ -1,0 +1,34 @@
+﻿
+@{
+    ViewBag.Title = "列表页面";
+    Layout = "~/Views/Shared/_IndexNew.cshtml";
+}
+
+
+<script src="/Content/scripts/utils/custmerform/formindex.js?v=@Guid.NewGuid()"></script>
+
+<div class="center-Panel">
+    <div class="titlePanel">
+        <div class="title-search">
+            <table>
+                <tr>
+                    <td style="padding-left: 5px;">
+                        @*<a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>*@
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="toolbar">
+            <div class="btn-group">
+                <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+                <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+                <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+            </div>
+        </div>
+    </div>
+    <div class="gridPanel">
+        <table id="gridTable"></table>
+        <div id="gridPager"></div>
+    </div>
+</div>

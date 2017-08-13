@@ -1,0 +1,209 @@
+﻿@{
+    ViewBag.Title = "流程指派";
+    Layout = "~/Views/Shared/_FlowForm.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initialPage();
+    })
+    //初始化页面
+    function initialPage() {
+        $('.standtabborder').height($(window).height()-44);
+        $('#DesignateMemberlist').height($(window).height() - 54);
+        $('#Treebackground').height($(window).height() - 44);
+        initSchemeAuthorize();
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../FlowManage/FlowProcess/GetProcessInstanceJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    console.log(data);
+                    if (data.MakerList != "")
+                    {
+                        setSchemeAuthorize(data.MakerList.split(","));
+                    }
+                    //setSchemeAuthorize(data.schemeinfo.AuthorizeType, data.authorize);
+                }
+            });
+        }
+    }
+    function initSchemeAuthorize() {
+        GetTree('Role');
+        GetTree('Post');
+        GetTree('UserGroup');
+        GetTree('User');
+        $('input[name="AuthorizeType"]').click(function () {
+            var _value = $(this).val();
+            if (_value == "0") {
+                $("#Treebackground").show();
+            }
+            else {
+                $("#Treebackground").hide();
+            }
+        });
+    }
+    function bindingSchemeAuthorize(flag) {
+       
+    }
+    function setSchemeAuthorize(data) {
+        $('#ShcemeAuthorize1').trigger("click");
+        console.log(data);
+        $.each(data, function (i, item) {
+            $("#Role").setCheckedNodeOne(item);
+            $("#Post").setCheckedNodeOne(item);
+            $("#UserGroup").setCheckedNodeOne(item);
+            $("#User").setCheckedNodeOne(item);
+        });
+    }
+    function GetTree(type) {
+        $.SetForm({
+            url: "../../FlowManage/FlowDesign/Get" + type + "CheckTreeJson",
+            success: function (data) {
+                var item = {
+                    height: $(window).height() - 44,
+                    showcheck: true,
+                    data: data,
+                    oncheckboxclick: function (item, et, s) {
+                        var $item = $("#" + item.mytype + "Div");
+                        if (et == 1) {
+                            var mytype = "";
+                            var _html = "";
+                            var _title = '';
+                            switch (item.mytype) {
+                                case "Role":
+                                    mytype = "角色";
+                                    break;
+                                case "Post":
+                                    mytype = "岗位";
+                                    break;
+                                case "UserGroup":
+                                    mytype = "用户组";
+                                    break;
+                                case "User":
+                                    mytype = "用户";
+                                    break;
+                            }
+                            _html += '<div id="' + item.id + '" data-value="' + item.mytype + '" class="card-box shcemeinfocheck active">';
+                            _html += '    <div class="card-box-img">';
+                            _html += '        <img src="/Content/images/UserCard03.png" />';
+                            _html += '    </div>';
+                            _html += '    <div class="card-box-content">';
+                            _html += '        <p>名称：' + item.text + '</p>';
+                            _html += '        <p>类别：' + mytype + '</p>';
+                            _html += '    </div><i></i>';
+                            _html += '</div>';
+                            $item.append(_html);
+                            $item.show();
+
+                            $(".card-box").click(function () {
+                                $(this).remove();
+                                $('#' + $(this).attr('data-value')).setNoCheckedNodes($(this).attr('id'));
+                                if ($item.find('.card-box-img').length == 0) {
+                                    $item.hide();
+                                }
+                            })
+                        }
+                        else if (et == 0) {
+                            $item.find('#' + item.id).remove();
+                            if ($item.find('.card-box-img').length == 0) {
+                                $item.hide();
+                            }
+                        }
+                    }
+                };
+                $("#" + type).treeview(item);
+            }
+        });
+    }
+
+    //保存表单
+    function AcceptClick() {
+        var _value = $('input[name="AuthorizeType"]:checked').val();
+        var makeLists = "";
+        if (_value == "1") {
+            var _roleData = $("#Role").getCheckedAllNodes();
+            var _postData = $("#Post").getCheckedAllNodes();
+            var _userGroupData = $("#UserGroup").getCheckedAllNodes();
+            var _userData = $("#User").getCheckedAllNodes();
+            _roleData.push.apply(_roleData, _postData);
+            _roleData.push.apply(_roleData, _userGroupData);
+            _roleData.push.apply(_roleData, _userData);
+            makeLists = String(_roleData);
+            if (makeLists == "") {
+                if (!flag) {
+                    dialogTop("请选择指定成员", "error");
+                }
+                return false;
+            }
+        }
+        $.SaveForm({
+            url: "../../FlowManage/FlowProcess/DesignateProcess",
+            param: { processId: keyValue, makeLists: makeLists },
+            loading: "正在保存指派人员...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div>
+    <div class="bottomline">
+        <div class="rdio rdio-color_a"><input name="AuthorizeType" value="0" id="ShcemeAuthorize0" type="radio" checked /><label for="ShcemeAuthorize0">所有成员</label></div>
+        <div class="rdio rdio-color_a"><input name="AuthorizeType" value="1" id="ShcemeAuthorize1" type="radio" /><label for="ShcemeAuthorize1">指定成员</label></div>
+    </div>
+    <div id="DesignateMember">
+        <div class="standtabborder">
+            <div class="standtab  standtabactived" onclick="$.standTabchange(this, 'Role')">
+                角色
+            </div>
+            <div class="standtab " onclick="$.standTabchange(this, 'Post')">
+                岗位
+            </div>
+            <div class="standtab " onclick="$.standTabchange(this, 'UserGroup')">
+                用户组
+            </div>
+            <div class="standtab " onclick="$.standTabchange(this, 'User')">
+                用户
+            </div>
+        </div>
+        <div id="Role" class="standtab-pane"></div>
+        <div id="Post" style="display: none;" class="standtab-pane"></div>
+        <div id="UserGroup" style="display: none;" class="standtab-pane"></div>
+        <div id="User" style="display: none;" class="standtab-pane"></div>
+
+        <div id="DesignateMemberlist" style="margin: 0px; border-right: none; border-left: none; border-bottom: none; background-color: #fff; overflow: auto; padding-bottom: 10px;">
+            <div id="RoleDiv" class="SchemeAuthorizePanel">
+                <div class="flow-portal-panel-title"><i class="fa fa-paw"></i>&nbsp;&nbsp;角色</div>
+            </div>
+            <div id="PostDiv" class="SchemeAuthorizePanel">
+                <div class="flow-portal-panel-title"><i class="fa fa-graduation-cap"></i>&nbsp;&nbsp;岗位</div>
+            </div>
+            <div id="UserGroupDiv" class="SchemeAuthorizePanel">
+                <div class="flow-portal-panel-title"><i class="fa fa-group"></i>&nbsp;&nbsp;用户组</div>
+            </div>
+            <div id="UserDiv" class="SchemeAuthorizePanel">
+                <div class="flow-portal-panel-title"><i class="fa fa-user"></i>&nbsp;&nbsp;用户</div>
+            </div>
+        </div>
+        <div id="Treebackground" style="position: fixed; top: 44px; left: 0px; z-index: 2; width: 1100px; height: 528px; background: #000; filter: alpha(opacity=10); opacity: 0.1;"></div>
+    </div>
+</div>
+<style>
+    .standtab-pane {
+        width: 224px;
+        border-right: 1px solid #ccc;
+        float: left;
+    }
+
+    .SchemeAuthorizePanel {
+        width: 828px;
+        float: left;
+        display: none;
+    }
+
+    .card-box.active {
+        background: url(../../Content/Images/item_close.png) right top no-repeat !important;
+    }
+</style>

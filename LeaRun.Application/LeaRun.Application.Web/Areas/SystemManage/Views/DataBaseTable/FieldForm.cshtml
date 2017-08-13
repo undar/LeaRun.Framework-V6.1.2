@@ -1,0 +1,130 @@
+﻿@{
+    ViewBag.Title = "FieldForm";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+    });
+    //初始化控件
+    function initControl() {
+        //数据类型
+        $("#datatype").ComboBox({
+            description: "",
+            height: "150px"
+        });
+        $("#datatype").bind("change", function () {
+            var value = $(this).attr('data-value');
+            if (value == "varchar" || value == "varchar(max)") {
+                $("#length").attr('isvalid', 'yes').removeAttr('disabled')
+            } else {
+                $("#length").attr('isvalid', 'no').attr('disabled', 'disabled')
+            }
+        });
+        //获取表单  
+        if (!!keyValue) {
+            var rowdata = top.Form.$("#gridTable").jqGridRow()[0];
+            $("#form1").SetWebControls(rowdata);
+            var datatype = rowdata.datatype
+            if (datatype == "varchar" || datatype == "varchar(max)") {
+                $("#length").attr('isvalid', 'yes').removeAttr('disabled')
+            } else {
+                $("#length").attr('isvalid', 'no').attr('disabled', 'disabled')
+            }
+        }
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var $gridTable = top.Form.$("#gridTable");
+        var $getRowData = $gridTable.jqGrid("getRowData");
+        var postData = $("#form1").GetWebControls(keyValue);
+        postData["_isnullable"] = postData["isnullable"] == 1 ? "√" : "";
+        postData["_identity"] = postData["identity"] == 1 ? "√" : "";
+        postData["_key"] = postData["key"] == 1 ? "√" : "";
+        if (postData["key"] == 1) {
+            $.each($getRowData, function (i) {
+                var rowdata = $getRowData[i];
+                rowdata.key = "";
+                rowdata._key = "";
+                $gridTable.setRowData(i, rowdata);
+            });
+        }
+        if (!!keyValue) {
+            $gridTable.setRowData(keyValue, postData);
+        } else {
+            var rowId = $gridTable.jqGrid("getRowData").length;
+            $gridTable.addRowData((rowId + 1), postData);
+            $gridTable.setSelection(rowId + 1, false);
+        }
+        dialogMsg("操作成功。", 1);
+        dialogClose();
+    }
+</script>
+<div style="margin-top: 20px; margin-right: 30px;">
+    <table class="form">
+        <tr>
+            <th class="formTitle">字段名称<font face="宋体">*</font></th>
+            <td class="formValue">
+                <input id="column" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">数据类型<font face="宋体">*</font></th>
+            <td class="formValue">
+                <div id="datatype" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                    <ul>
+                        <li data-value="datetime">datetime</li>
+                        <li data-value="decimal">decimal</li>
+                        <li data-value="int">int</li>
+                        <li data-value="text">text</li>
+                        <li data-value="varchar">varchar</li>
+                        <li data-value="varchar(max)">varchar(max)</li>
+                    </ul>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">数据长度</th>
+            <td class="formValue">
+                <input id="length" disabled type="text" class="form-control" isvalid="no" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">默认值</th>
+            <td class="formValue">
+                <input id="defaults" type="text" class="form-control" />
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle" style="height: 37px;"></th>
+            <td class="formValue">
+                <div class="checkbox user-select">
+                    <label>
+                        <input id="isnullable" type="checkbox" />
+                        允许空
+                    </label>
+                    <label>
+                        <input id="identity" type="checkbox" />
+                        标识
+                    </label>
+                    <label>
+                        <input id="key" type="checkbox" />
+                        主键
+                    </label>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <th class="formTitle">说明
+            </th>
+            <td class="formValue">
+                <input id="remark" type="text" class="form-control" />
+            </td>
+        </tr>
+    </table>
+</div>
+

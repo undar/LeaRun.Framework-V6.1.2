@@ -1,0 +1,12 @@
+﻿<ion-view view-title="{{modelTitle}}" hide-back-button="true">
+    <ion-content>
+        <div class="tabsMessage">
+            <p><i class="ion ion-ios-information positive"></i>请在点击下面tab项,然后在右侧属性设置栏设置对应页面</p>
+        </div>
+    </ion-content>
+    <ion-tabs class="tabs-icon-top" data-type="tabs-icon-top">
+        <ion-tab ng-repeat="item in tabs " title="{{item.text}}" icon-on="{{item.attr.iconOn}}" icon-off="{{item.attr.iconOff}}" data-value="{{item.id}}">
+
+        </ion-tab>
+    </ion-tabs>
+</ion-view>

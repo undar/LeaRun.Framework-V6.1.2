@@ -1,0 +1,269 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>我的桌面</title>
+    <!--框架必需start-->
+    @*<link href="~/Content/styles/learun-ui.css" rel="stylesheet" />*@
+    <script src="~/Content/Scripts/jquery/jquery-1.10.2.min.js"></script>
+    <link href="~/Content/styles/font-awesome.min.css" rel="stylesheet" />
+    @*<script src="~/Content/Scripts/utils/learun-ui.js"></script>*@
+    @System.Web.Optimization.Styles.Render("~/Content/styles/learun-ui.css")
+    @System.Web.Optimization.Scripts.Render("~/Content/scripts/utils/js")
+    <!--框架必需end-->
+    <!--第三方统计图start-->
+    <script src="~/Content/Scripts/plugins/highcharts/highcharts.js"></script>
+    <script src="~/Content/Scripts/plugins/highcharts/highcharts-more.js"></script>
+    <script src="~/Content/Scripts/plugins/highcharts/modules/exporting.js"></script>
+    <!--第三方统计图end-->
+    <script>
+        $(function () {
+            InitialPage();
+            LoadInterfaceVisit();
+            LoadDepartmentApp();
+        })
+        //初始化
+        function InitialPage() {
+            $('#desktop').height($(window).height() - 22);
+            $(window).resize(function (e) {
+                window.setTimeout(function () {
+                    $('#desktop').height($(window).height() - 22);
+                }, 200);
+                e.stopPropagation();
+            });
+        }
+        //干部最高学历分布统计
+        function LoadInterfaceVisit() {
+            var chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'piecontainer',
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    defaultSeriesType: 'pie'
+                },
+                title: {
+                    text: ''
+                },
+                exporting: {
+                    enabled: false
+                },
+                credits: {
+                    enabled: false
+                },
+                tooltip: {
+                    formatter: function () {
+                        return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %';
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true, //点击切换
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            formatter: function () {
+                                return '<b>' + this.point.name + '</b>: ' + this.percentage + ' %';
+                            }
+                        },
+                        showInLegend: true
+                    }
+                },
+                series: [{
+                    data: [
+                        ['枢纽楼', 10],
+                        ['IDC中心', 10],
+                        ['端局', 10],
+                        ['模块局', 10],
+                        ['营业厅', 10],
+                        ['办公大楼', 10],
+                        ['C网基站', 40],
+                    ]
+                }]
+            });
+        }
+        //部门应用图表
+        function LoadDepartmentApp() {
+            $('#container').highcharts({
+                chart: {
+                    type: 'spline'
+                },
+                title: {
+                    text: ''
+                },
+                xAxis: {
+                    categories: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+                },
+                yAxis: {
+                    title: {
+                        text: '电量（度）'
+                    },
+                    labels: {
+                        formatter: function () {
+                            return this.value + '度'
+                        }
+                    }
+                },
+                exporting: {
+                    enabled: false
+                },
+                credits: {
+                    enabled: false
+                },
+                tooltip: {
+                    crosshairs: true,
+                    shared: true
+                },
+                plotOptions: {
+                    spline: {
+                        marker: {
+                            radius: 4,
+                            lineColor: '#666666',
+                            lineWidth: 1
+                        }
+                    }
+                },
+                series: [{
+                    name: '预算',
+                    marker: {
+                        symbol: 'square'
+                    },
+                    data: [7.0, 6.9, 9.5, 14.5, 18.2, 21.5, 25.2, 23.3, 18.3, 13.9, 9.6, 1]
+
+                }, {
+                    name: '实际',
+                    marker: {
+                        symbol: 'diamond'
+                    },
+                    data: [3.9, 4.2, 5.7, 8.5, 11.9, 15.2, 17.0, 16.6, 14.2, 10.3, 6.6, 4.8]
+                }]
+            });
+
+        }
+        //跳转到指定模块菜单
+        function OpenNav(Navid) {
+            top.$("#nav").find('a#' + Navid).trigger("click");
+        }
+    </script>
+</head>
+<body>
+    <div class="border" id="desktop" style="margin: 10px 10px 0 10px; background: #fff; overflow: auto;">
+        <div class="portal-panel">
+            <div class="row">
+                <div class="portal-panel-title">
+                    <i class="fa fa-balance-scale"></i>&nbsp;&nbsp;统计指标
+                </div>
+                <div class="portal-panel-content" style="margin-top: 15px; overflow: hidden;">
+                    <div class="row">
+                        <div style="width: 20%; position: relative; float: left;">
+                            <div class="task-stat" style="background-color: #578ebe;">
+                                <div class="visual">
+                                    <i class="fa fa-pie-chart"></i>
+                                </div>
+                                <div class="details">
+                                    <div class="number">
+                                        128
+                                    </div>
+                                    <div class="desc">
+                                        干部人员
+                                    </div>
+                                </div>
+                                <a class="more" style="background-color: #4884b8;" href="javascript:;" onclick="OpenNav('66f6301c-1789-4525-a7d2-2b83272aafa6')">查看更多 <i class="fa fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div style="width: 20%; position: relative; float: left;">
+                            <div class="task-stat" style="background-color: #e35b5a;">
+                                <div class="visual">
+                                    <i class="fa fa-bar-chart-o"></i>
+                                </div>
+                                <div class="details">
+                                    <div class="number">
+                                        266
+                                    </div>
+                                    <div class="desc">
+                                        拟调整人员
+                                    </div>
+                                </div>
+                                <a class="more" style="background-color: #e04a49;" href="javascript:;" onclick="OpenNav('1d3797f6-5cd2-41bc-b769-27f2513d61a9')">查看更多 <i class="fa fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div style="width: 20%; position: relative; float: left;">
+                            <div class="task-stat" style="background-color: #44b6ae;">
+                                <div class="visual">
+                                    <i class="fa fa-windows"></i>
+                                </div>
+                                <div class="details">
+                                    <div class="number">
+                                        39
+                                    </div>
+                                    <div class="desc">
+                                        人才团队
+                                    </div>
+                                </div>
+                                <a class="more" style="background-color: #3ea7a0;" href="javascript:;" onclick="OpenNav('b352f049-4331-4b19-ac22-e379cb30bd55')">查看更多 <i class="fa fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div style="width: 20%; position: relative; float: left;">
+                            <div class="task-stat" style="background-color: #8775a7;">
+                                <div class="visual">
+                                    <i class="fa fa-globe"></i>
+                                </div>
+                                <div class="details">
+                                    <div class="number">
+                                        29898
+                                    </div>
+                                    <div class="desc">
+                                        域内人才
+                                    </div>
+                                </div>
+                                <a class="more" style="background-color: #7c699f;" href="javascript:;">查看更多 <i class="fa fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div style="width: 20%; position: relative; float: left;">
+                            <div class="task-stat" style="background-color: #3598dc;">
+                                <div class="visual">
+                                    <i class="fa fa-globe"></i>
+                                </div>
+                                <div class="details">
+                                    <div class="number">
+                                        16897
+                                    </div>
+                                    <div class="desc">
+                                        域外人才
+                                    </div>
+                                </div>
+                                <a class="more" style="background-color: #258fd7;" href="javascript:;">查看更多 <i class="fa fa-arrow-circle-right"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row" style="overflow: hidden; height: 460px;">
+                <div style="width: 50%; float: left;">
+                    <div class="portal-panel-title">
+                        <i class="fa fa-bar-chart"></i>&nbsp;&nbsp;人员最高学历统计
+                    </div>
+                    <div class="portal-panel-content" style="margin-top: 10px; overflow: hidden;">
+                        <div id="piecontainer">
+                        </div>
+                    </div>
+                </div>
+                <div style="width: 50%; float: left;">
+                    <div class="portal-panel-title">
+                        <i class="fa fa-bar-chart"></i>&nbsp;&nbsp;人才统计
+                    </div>
+                    <div class="portal-panel-content" style="margin-top: 10px; overflow: hidden;">
+                        <div id="container"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

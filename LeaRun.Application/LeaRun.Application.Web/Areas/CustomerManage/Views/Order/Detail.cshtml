@@ -1,0 +1,311 @@
+﻿@{
+    ViewBag.Title = "订单详细";
+    Layout = "~/Views/Shared/_OrderForm.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        InitialPage();
+        GetOrderEntryGrid();
+        InitControl();
+    });
+    //初始化页面
+    function InitialPage() {
+        $(".bills").height($(window).height() - 88);
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $(".bills").height($(window).height() - 88);
+            }, 200);
+            e.stopPropagation();
+        });
+        //客户名称
+        $("#CustomerId").ComboBox({
+            url: "../../CustomerManage/Customer/GetListJson",
+            id: "CustomerId",
+            text: "FullName",
+            description: "==请选择==",
+            height: "360px",
+            width: "280px",
+            allowSearch: true
+        });
+        //销售人员
+        $("#SellerId").ComboBoxTree({
+            url: "../../BaseManage/User/GetTreeJson",
+            description: "==请选择==",
+            height: "360px",
+            width: "280px",
+            allowSearch: true
+        });
+        //收款方式
+        $("#PaymentMode").ComboBox({
+            url: "../../SystemManage/DataItemDetail/GetDataItemListJson",
+            param: { EnCode: "Client_PaymentMode" },
+            id: "ItemValue",
+            text: "ItemName",
+            description: "==请选择==",
+            height: "200px"
+        });
+    }
+    //初始化控件
+    function InitControl() {
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../CustomerManage/Order/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    //主表
+                    var order = data.order;
+                    $("#form1").SetWebControls(order);
+                    $("#DiscountSum").val(toDecimal(order.DiscountSum));
+                    $("#Accounts").val(toDecimal(order.Accounts));
+                    $("#SaleCost").val(toDecimal(order.SaleCost));
+                    //明细
+                    var orderEntry = data.orderEntry;
+                    $("#gridTable").find('[role=row]').each(function (i) {
+                        var row = orderEntry[i - 1];
+                        if (row != undefined) {
+                            $(this).find('td[aria-describedby="gridTable_OrderEntryId"]').html(row.OrderEntryId);
+                            $(this).find('td[aria-describedby="gridTable_ProductName"]').html(row.ProductName);
+                            $(this).find('td[aria-describedby="gridTable_ProductCode"]').html(row.ProductCode);
+                            $(this).find('td[aria-describedby="gridTable_UnitId"]').html(row.UnitId);
+                            $(this).find('td[aria-describedby="gridTable_Qty"]').html(toDecimal(row.Qty));
+                            $(this).find('td[aria-describedby="gridTable_Price"]').html(toDecimal(row.Price));
+                            $(this).find('td[aria-describedby="gridTable_Amount"]').html(toDecimal(row.Amount));
+                            $(this).find('td[aria-describedby="gridTable_TaxRate"]').html(row.TaxRate);
+                            $(this).find('td[aria-describedby="gridTable_Taxprice"]').html(toDecimal(row.Taxprice));
+                            $(this).find('td[aria-describedby="gridTable_Tax"]').html(toDecimal(row.Tax));
+                            $(this).find('td[aria-describedby="gridTable_TaxAmount"]').html(toDecimal(row.TaxAmount));
+                            $(this).find('td[aria-describedby="gridTable_Description"]').html(row.Description);
+                        }
+                    });
+                    //合计
+                    var TotalQty = 0.00, TotalPrice = 0.00, TotalAmount = 0.00, TotalTaxprice = 0.00, TotalTax = 0.00, TotalTaxAmount = 0.00;
+                    $("#gridTable").find('[role=row]').each(function (i) {
+                        var Qty = $(this).find('td:eq(5)').html();
+                        if (Qty != "" && Qty != undefined && Qty != '&nbsp;') {
+                            TotalQty += Number(Qty);
+                        }
+                        var Price = $(this).find('td:eq(6)').html();
+                        if (Price != "" && Price != undefined && Price != '&nbsp;') {
+                            TotalPrice += Number(Price);
+                        }
+                        var Amount = $(this).find('td:eq(7)').html();
+                        if (Amount != "" && Amount != undefined && Amount != '&nbsp;') {
+                            TotalAmount += Number(Amount);
+                        }
+                        var Taxprice = $(this).find('td:eq(9)').html();
+                        if (Taxprice != "" && Taxprice != undefined && Taxprice != '&nbsp;') {
+                            TotalTaxprice += Number(Taxprice);
+                        }
+                        var Tax = $(this).find('td:eq(10)').html();
+                        if (Tax != "" && Tax != undefined) {
+                            TotalTax += Number(Tax);
+                        }
+                        var TaxAmount = $(this).find('td:eq(11)').html();
+                        if (TaxAmount != "" && TaxAmount != undefined && TaxAmount != '&nbsp;') {
+                            TotalTaxAmount += Number(TaxAmount);
+                        }
+                    });
+                    $("#TotalQty").text(toDecimal(TotalQty));
+                    $("#TotalPrice").text(toDecimal(TotalPrice));
+                    $("#TotalAmount").text(toDecimal(TotalAmount));
+                    $("#TotalTaxprice").text(toDecimal(TotalTaxprice));
+                    $("#TotalTax").text(toDecimal(TotalTax));
+                    $("#TotalTaxAmount").text(toDecimal(TotalTaxAmount));
+                }
+            });
+        }
+    }
+    //加载明细
+    function GetOrderEntryGrid() {
+        var $grid = $("#gridTable");
+        $grid.jqGrid({
+            unwritten: false,
+            datatype: "local",            height: '100%',
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'OrderEntryId', hidden: true },
+                { label: '商品名称', name: "ProductName", width: 260, align: 'left', sortable: false, resizable: false },
+                { label: '商品编号', name: "ProductCode", width: 100, align: 'center', sortable: false, resizable: false },
+                { label: '单位', name: "UnitId", width: 100, align: 'center', sortable: false, resizable: false },
+                { label: '数量', name: 'Qty', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '单价', name: 'Price', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '金额', name: 'Amount', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '税率(%)', name: 'TaxRate', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '含税单价', name: 'Taxprice', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '税额', name: 'Tax', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '含税金额', name: 'TaxAmount', width: 80, align: 'center', sortable: false, resizable: false },
+                { label: '说明信息', name: 'Description', width: 200, align: 'left', sortable: false, resizable: false }            ],
+            pager: false,
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            footerrow: true,
+            gridComplete: function () {
+                //合计
+                $(this).footerData("set", {
+                    "UnitId": "合计：",
+                    "Qty": "<span id='TotalQty'>0.00</span>",
+                    "Price": "<span id='TotalPrice'>0.00</span>",
+                    "Amount": "<span id='TotalAmount'>0.00</span>",
+                    "Taxprice": "<span id='TotalTaxprice'>0.00</span>",
+                    "Tax": "<span id='TotalTax'>0.00</span>",
+                    "TaxAmount": "<span id='TotalTaxAmount'>0.00</span>"
+                });
+                $('table.ui-jqgrid-ftable td[aria-describedby="gridTable_UnitId"]').prevUntil().css("border-right-color", "#fff");
+            }
+        });
+        //表头合并
+        $grid.jqGrid('setGroupHeaders', {
+            useColSpanStyle: true,
+            groupHeaders: [
+              { startColumnName: 'ProductName', numberOfColumns: 3, titleText: '商品信息' },
+              { startColumnName: 'Qty', numberOfColumns: 7, titleText: '价格信息' }
+            ]
+        });
+        //默认添加13行 空行
+        for (var i = 1; i < 13; i++) {
+            var rowdata = {
+                OrderEntryId: '',
+                ProductName: '',
+                ProductCode: '',
+                UnitId: '',
+                Qty: '',
+                Price: '',
+                Amount: '',
+                TaxRate: '',
+                Taxprice: '',
+                Tax: '',
+                TaxAmount: '',
+                Description: '',
+            }
+            $grid.jqGrid('addRowData', i, rowdata);
+        };
+    }
+    //打印
+    function btn_print() {
+        $(".bills").printTable();
+    }
+    //导出
+    function btn_export() {
+        location.href = "/CustomerManage/Order/ExportOrderEntry?orderId=" + keyValue;
+    }
+    //前单
+    function btn_prev() {
+        $.ajax({
+            url: "../../CustomerManage/Order/GetPrevJson?keyValue=" + keyValue,
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data != null) {
+                    var src = top.contentPath + "/CustomerManage/Order/Detail?keyValue=" + data.OrderId;
+                    window.location = src;
+                    $.currentIframe().att('src', 'src');
+                }
+            }
+        });
+    }
+    //后单
+    function btn_next() {
+        $.ajax({
+            url: "../../CustomerManage/Order/GetNextJson?keyValue=" + keyValue,
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                if (data != null) {
+                    var src = top.contentPath + "/CustomerManage/Order/Detail?keyValue=" + data.OrderId;
+                    window.location = src;
+                    $.currentIframe().att('src', 'src');
+                }
+            }
+        });
+    }
+</script>
+<div class="bills">
+    <div class="printArea">
+        <table class="form" style="width: 100%; margin-bottom: 10px;">
+            <tr>
+                <th class="formTitle" style="width: 60px;">客户名称</th>
+                <td class="formValue">
+                    <div id="CustomerId" type="select" class="ui-select"></div>
+                </td>
+                <th class="formTitle">销售人员</th>
+                <td class="formValue">
+                    <div id="SellerId" type="selectTree" class="ui-select"></div>
+                </td>
+                <th class="formTitle">单据日期</th>
+                <td class="formValue">
+                    <input id="OrderDate" type="text" class="form-control" />
+                </td>
+                <th class="formTitle">单据编号</th>
+                <td class="formValue">
+                    <input id="OrderCode" type="text" class="form-control" />
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="gridPanel printArea">
+        <table id="gridTable"></table>
+    </div>
+    <div class="printArea">
+        <textarea id="Description" placeholder="暂无备注信息" class="form-control" style="width: 100%; height: 50px; margin-top: 10px;"></textarea>
+        <table class="form" style="width: 100%; margin-top: 5px;">
+            <tr>
+                <th class="formTitle" style="width: 60px;">优惠金额</th>
+                <td class="formValue">
+                    <input id="DiscountSum" type="text" class="form-control" value="0.00" />
+                </td>
+                <th class="formTitle">收款金额</th>
+                <td class="formValue">
+                    <input id="Accounts" type="text" class="form-control" value="0.00" />
+                </td>
+                <th class="formTitle">收款日期</th>
+                <td class="formValue">
+                    <input id="PaymentDate" type="text" class="form-control" />
+                </td>
+                <th class="formTitle">收款方式</th>
+                <td class="formValue">
+                    <div id="PaymentMode" type="select" class="ui-select"></div>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle" style="width: 60px;">销售费用</th>
+                <td class="formValue">
+                    <input id="SaleCost" type="text" class="form-control" value="0.00" />
+                </td>
+                <th class="formTitle">制单人员</th>
+                <td class="formValue">
+                    <input id="CreateUserName" type="text" class="form-control" /></td>
+                <th class="formTitle">合同编号</th>
+                <td class="formValue">
+                    <input id="ContractCode" type="text" class="form-control" />
+                </td>
+                <th class="formTitle">合同附件</th>
+                <td class="formValue">
+                    <input id="ContractFile" type="text" class="form-control" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle">摘要信息</th>
+                <td class="formValue" colspan="7">
+                    <input id="AbstractInfo" type="text" class="form-control" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div id="bottomField">
+    <div class="btn-group">
+        <a id="lr-print" class="btn btn-default" onclick="btn_print()"><i class="fa fa-print"></i>&nbsp;打印</a>
+        <a id="lr-export" class="btn btn-default" onclick="btn_export()"><i class="fa fa-sign-out"></i>&nbsp;导出</a>
+    </div>
+    <div class="btn-group">
+        <a id="lr-prev" class="btn btn-default" onclick="btn_prev()"><i class="fa fa-backward"></i>&nbsp;前单</a>
+        <a id="lr-next" class="btn btn-default" onclick="btn_next()"><i class="fa fa-forward"></i>&nbsp;后单</a>
+    </div>
+</div>

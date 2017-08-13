@@ -1,0 +1,276 @@
+﻿@{
+    ViewBag.Title = "报表开发";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<!--表格组件end-->
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+        //加载导向
+        $('#wizard').wizard().on('change', function (e, data) {
+            var $finish = $("#btn_finish");
+            var $next = $("#btn_next");
+            if (data.direction == "next") {
+                switch (data.step) {
+                    case 1:
+                        if (!$('#tempform').Validform()) {
+                            return false;
+                        }
+                        break;
+                    case 2:
+                        if (!$('#tempGraphform').Validform()) {
+                            return false;
+                        }
+                        break;
+                    case 3:
+                        if (!$('#tempListform').Validform()) {
+                            return false;
+                        }
+                        $finish.removeAttr('disabled');
+                        $next.attr('disabled', 'disabled');
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                $finish.attr('disabled', 'disabled');
+                $next.removeAttr('disabled');
+            }
+        });
+        //完成，保存事件
+        $("#btn_finish").click(function () {
+            var tempJson = $("#tempbody").GetWebControls();
+            tempJson["Description"] = $("#TempDescription").val();
+            $.SaveForm({
+                url: "../../ReportManage/Report/SaveForm?keyValue=" + keyValue,
+                param: { tempJson: JSON.stringify(tempJson), __RequestVerificationToken: tempJson["__RequestVerificationToken"] },
+                loading: "正在保存数据...",
+                success: function () {
+                    $.currentIframe().$("#gridTable").trigger("reloadGrid");
+                }
+            })
+        })
+        //发布报表事件
+        $("#publish_btn").click(function () {
+            $("#publish_panel").animate({ top: 50, speed: 2000 });
+            return false;
+        });
+    });
+    //初始化控件
+    function initControl() {
+        //报表类别
+        $("#TempCategory").ComboBoxTree({
+            param: { EnCode: "ReportSort" },
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson",
+            description: "==请选择==",
+            height: "230px"
+        });
+        //图表类型
+        $("#TempType").ComboBox({
+            description: "==请选择==",
+            height: "200px"
+        }).bind("change", function () {
+            type = $(this).attr('data-value');
+            SetRemark();
+        });
+        //模块目标
+        $("#Target").ComboBox({
+            description: "==请选择==",
+            height: "200px"
+        });
+        //模块上级
+        $("#ParentId").ComboBoxTree({
+            url: "../../AuthorizeManage/Module/GetCatalogTreeJson",
+            description: "==请选择==",
+            height: "195px",
+            allowSearch: true
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../ReportManage/Report/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#tempbody").SetWebControls(data);
+                    $("#TempDescription").val(data.Description);
+
+                    var paramjson = JSON.parse(data.ParamJson);
+                    $("#title").val(paramjson.title)
+                    $("#sqlString").val(paramjson.sqlString);
+                    $("#listSqlString").val(paramjson.listSqlString);
+                    $("#ParentId").ComboBoxSetValue(paramjson.ParentId);
+                    $("#Icon").val(paramjson.Icon);
+                    $("#Description").val(paramjson.Description);
+                    type = data.TempType;
+                    SetRemark();
+                }
+            });
+        }
+    }
+    function SetRemark() {
+        var remark = "";
+        switch (type) {
+            case 'line':
+                remark = " <i class='fa fa-question-circle alert-dismissible' style='position: relative; top: 1px; font-size: 15px; padding-right: 5px;'></i>注：折线图的SQL语句至少需要两个字段，name代表项目名称;value代表图例上的值;group代表组。如：select 月份 as name , sum(金额) as value,产品 as group from 订单表 group by 月份,产品"
+                break;
+            case 'bar':
+                remark = " <i class='fa fa-question-circle alert-dismissible' style='position: relative; top: 1px; font-size: 15px; padding-right: 5px;'></i>注：柱型图的SQL语句至少需要两个字段，name代表项目名称;value代表图例上的值;group代表组。如：select 月份 as name , sum(金额) as value,产品 as group from 订单表 group by 月份,产品"
+                break;
+            case 'pie':
+                remark = " <i class='fa fa-question-circle alert-dismissible' style='position: relative; top: 1px; font-size: 15px; padding-right: 5px;'></i>注：饼图的SQL语句至少需要两个字段，name代表项目名称;value代表图例上的值;group代表组。如：select 产品 as name , sum(金额) as value from 订单表 group by 产品"
+                break;
+            case 'map':
+                remark = " <i class='fa fa-question-circle alert-dismissible' style='position: relative; top: 1px; font-size: 15px; padding-right: 5px;'></i>注：地图的SQL语句至少需要两个字段，name代表城市名称;value代表值;group代表组。如：select 城市 as name , sum(金额) as value,产品 as group from 订单表 group by 城市,产品"
+                break;
+            default:
+        }
+        $("#div_remark").html(remark);
+    }
+    function SelectIcon() {
+        dialogOpen({
+            id: "SelectIcon",
+            title: '选取图标',
+            url: '/AuthorizeManage/Module/Icon?ControlId=Icon',
+            width: "1000px",
+            height: "600px",
+            btn: false
+        })
+    }
+
+</script>
+<div class="widget-body" id="tempbody">
+    <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>基础设置<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>图表设置<span class="chevron"></span></li>
+            <li data-target="#step-3"><span class="step">3</span>列表设置<span class="chevron"></span></li>
+            <li data-target="#step-4"><span class="step">4</span>自动创建<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content" id="wizard-steps" style="border-left: none; border-bottom: none; border-right: none;">
+        <div class="step-pane active" id="step-1" style="margin-left: 0px; margin-top: 15px; margin-right: 30px;">
+            <table id="tempform" class="form">
+                <tr>
+                    <th class="formTitle">报表编号<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input id="EnCode" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">报表名称<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <input id="FullName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">图表类型<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <div id="TempType" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                            <ul>
+                                <li data-value="line">折线图</li>
+                                <li data-value="bar">柱形图</li>
+                                <li data-value="pie">饼图</li>
+                                <li data-value="map">地图</li>
+                                <li data-value="none">无</li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle">报表分类<font face="宋体">*</font></th>
+                    <td class="formValue">
+                        <div id="TempCategory" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">报表介绍</th>
+                    <td class="formValue">
+                        <textarea id="TempDescription" class="form-control" style="height: 70px;"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="step-pane" id="step-2">
+            <div id="div_remark" class="alert alert-danger" style="text-align: left; margin: 5px; margin-bottom: 10px;"></div>
+            <div style="margin-top: 15px; margin-right: 30px;">
+                <table id="tempGraphform" class="form">
+                    <tr>
+                        <th class="formTitle">报表标题</th>
+                        <td class="formValue">
+                            <input id="title" type="text" class="form-control" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="formTitle" valign="top" style="padding-top: 4px;">SQL语句</th>
+                        <td class="formValue">
+                            <textarea id="sqlString" class="form-control" style="height: 210px;"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="step-pane" id="step-3" style="margin-top: 15px; margin-right: 30px;">
+            <table id="tempListform" class="form">
+                <tr>
+                    <th class="formTitle">列表说明</th>
+                    <td class="formValue">
+                        <input id="desc" type="text" class="form-control" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">SQL语句</th>
+                    <td class="formValue">
+                        <textarea id="listSqlString" class="form-control" style="height: 210px;"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="step-pane" id="step-4" style="margin-top: 15px; margin-right: 30px;">
+            <div style="height: 400px;">
+                <div class="drag-tip" style="text-align: center; padding-top: 50px;">
+                    <i class="fa fa-check-circle" style="font-size: 204px; color: #0FA74F;"></i>
+                    <div id="finish-msg" style="font-weight: bold; font-size: 24px; color: #0FA74F; margin-top: 20px;">
+                    </div>
+                    <p style="color: #666; font-size: 12px; margin-top: 10px;">
+                        <a href="#" id="publish_btn">发布报表</a>
+                    </p>
+                </div>
+                <div id="publish_panel" style="position: absolute; height: 350px; top: 560px; z-index: 100; background: #ffffff; margin-top: 15px; margin-right: 30px;">
+                    <table class="form">
+                        <tr>
+                            <th class="formTitle">上级</th>
+                            <td class="formValue">
+                                <div id="ParentId" type="selectTree" class="ui-select">
+                                </div>
+                            </td>
+                            <th class="formTitle">图标</th>
+                            <td class="formValue">
+                                <input id="Icon" type="text" class="form-control" />
+                                <span class="input-button" onclick="SelectIcon()" title="选取图标">...</span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle" valign="top" style="padding-top: 4px;">描述
+                            </th>
+                            <td class="formValue" colspan="3">
+                                <textarea id="Description" class="form-control" style="height: 70px;"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="form-button" id="wizard-actions">
+    <a id="btn_last" disabled class="btn btn-default btn-prev">上一步</a>
+    <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+    <a id="btn_finish" disabled class="btn btn-success">完成</a>
+</div>
+<style>
+    body {
+        overflow: hidden;
+    }
+</style>
+

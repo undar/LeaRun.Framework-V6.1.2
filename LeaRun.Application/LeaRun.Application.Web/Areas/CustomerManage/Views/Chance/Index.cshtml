@@ -1,0 +1,259 @@
+@{;
+  ViewBag.Title = "列表页面";
+  Layout = "~/Views/Shared/_Index.cshtml";
+}
+<script>;
+    $(function () {
+        InitialPage();
+        GetGrid();
+    });
+    //初始化页面
+    function InitialPage() {
+        //resize重设布局;
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $('#gridTable').setGridHeight($(window).height() - 136.5);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        var $gridTable = $('#gridTable');
+        $gridTable.jqGrid({
+            autowidth: true,
+            height: $(window).height() - 136.5,
+            url: "../../CustomerManage/Chance/GetPageListJson",
+            datatype: "json",
+            colModel: [
+                { label: '商机主键', name: 'ChanceId', index: 'ChanceId', width: 100, align: 'left', sortable: true, hidden: true },
+                { label: '商机编号', name: 'EnCode', index: 'EnCode', width: 100, align: 'left', sortable: true },
+                { label: '商机名称', name: 'FullName', index: 'FullName', width: 250, align: 'left', sortable: true },
+                { label: '预计金额', name: 'Amount', index: 'Amount', width: 80, align: 'left', sortable: true, formatter: 'number', formatoptions: { thousandsSeparator: "", decimalPlaces: 2 } },
+                { label: '预计成交', name: 'DealDate', index: 'DealDate', width: 80, align: 'left', sortable: true, formatter: "date", formatoptions: { newformat: 'Y-m-d' } },
+                { label: '商机来源', name: 'SourceId', index: 'SourceId', width: 80, align: 'center', sortable: true },
+                { label: '商机阶段', name: 'StageId', index: 'StageId', width: 80, align: 'center', sortable: true },
+                {
+                    label: '成功率%', name: 'SuccessRate', index: 'SuccessRate', width: 80, align: 'left', sortable: true,
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (cellvalue > 50) {
+                            return "<span style='color:red'>" + cellvalue + "%</span>";
+                        } else {
+
+                            return (cellvalue == null ? "0" : cellvalue) + "%";
+                        }
+                    }
+                },
+                { label: '联系人', name: 'Contacts', index: 'Contacts', width: 80, align: 'left', sortable: true },
+                { label: '跟进人员', name: 'TraceUserName', index: 'TraceUserName', width: 80, align: 'left', sortable: true },
+                { label: '最后更新', name: 'ModifyDate', index: 'ModifyDate', width: 130, align: 'left', sortable: true, formatter: "date", formatoptions: { srcformat: 'Y-m-d H:i', newformat: 'Y-m-d H:i' } },
+                {
+                    label: "商机状态", name: "ChanceState", index: 'ChanceState', width: 80, align: "center",
+                    formatter: function (cellvalue, options, rowObject) {
+                        if (rowObject.IsToCustom == 1) {
+                            return "<span class=\"label label-warning\">已转客户</span>";
+                        }
+                        if (cellvalue == 0) {
+                            return "<span class=\"label label-danger\">作废</span>";
+                        } else {
+                            return "<span class=\"label label-success\">正常</span>";
+                        }
+                    }
+                },
+                { label: '备注', name: 'Description', index: 'Description', width: 200, align: 'left', sortable: true }
+            ],
+            viewrecords: true,
+            rowNum: 30,
+            rowList: [30, 50, 100],
+            pager: "#gridPager",
+            sortname: 'ModifyDate',
+            sortorder: 'desc',
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            onSelectRow: function () {
+                selectedRowIndex = $('#' + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $('#' + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        $gridTable.authorizeColModel();
+        //查询条件
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $gridTable.jqGrid('setGridParam', {
+                postData: { queryJson: JSON.stringify(queryJson) },
+                page: 1
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: 'Form',
+            title: '添加商机',
+            url: '/CustomerManage/Chance/Form',
+            width: "750px",
+            height: "600px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    }
+    //编辑
+    function btn_edit() {
+        var keyValue = $("#gridTable").jqGridRowValue('ChanceId');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'Form',
+                title: '编辑商机',
+                url: '/CustomerManage/Chance/Form?keyValue=' + keyValue,
+                width: "750px",
+                height: "600px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            })
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue('ChanceId');
+        if (keyValue) {
+            $.RemoveForm({
+                url: '../../CustomerManage/Chance/RemoveForm',
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的商机信息！', 0);
+        }
+    }
+    //详细
+    function btn_detail() {
+        var keyValue = $("#gridTable").jqGridRowValue("ChanceId");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "Detail",
+                title: '商机信息',
+                url: '/CustomerManage/Chance/Detail?keyValue=' + keyValue,
+                width: '750px',
+                height: '550px',
+                btn: null
+            });
+        }
+    }
+    //作废
+    function btn_invalid() {
+        var keyValue = $("#gridTable").jqGridRowValue('ChanceId');
+        var fullName = $("#gridTable").jqGridRowValue('FullName');
+        if (checkedRow(keyValue)) {
+            $.ConfirmAjax({
+                msg: "注：您确定要把商机【" + fullName + "】作废掉吗？",
+                url: "../../CustomerManage/Chance/Invalid",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            });
+        }
+    }
+    //跟进记录
+    function btn_chancetrail() {
+        var keyValue = $("#gridTable").jqGridRowValue('ChanceId');
+        var fullName = $("#gridTable").jqGridRowValue('FullName');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: 'ChanceTrailIndex',
+                title: fullName + ' - 跟进记录',
+                url: '/CustomerManage/TrailRecord/Index?objectId=' + keyValue + '&objectSort=1',
+                width: '750px',
+                height: '550px',
+                btn: null
+            });
+        }
+    }
+    //转换客户
+    function btn_tocustomer() {
+        var keyValue = $("#gridTable").jqGridRowValue('ChanceId');
+        var fullName = $("#gridTable").jqGridRowValue('FullName');
+        if (checkedRow(keyValue)) {
+            $.ConfirmAjax({
+                msg: "注：您确定要把商机【" + fullName + "】转换客户吗？",
+                url: "../../CustomerManage/Chance/ToCustomer",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $('#gridTable').trigger('reloadGrid');
+                }
+            });
+        }
+    }
+</script>
+<div class="titlePanel">
+    <div class="title-search">
+        <table>
+            <tr>
+                <td>
+                    <div id="queryCondition" class="btn-group">
+                        <a class="btn btn-default dropdown-text" data-toggle="dropdown">选择条件</a>
+                        <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a data-value="EnCode">商机编号</a></li>
+                            <li><a data-value="FullName">商机名称</a></li>
+                            <li><a data-value="Contacts">联系人</a></li>
+                            <li><a data-value="Mobile">手机</a></li>
+                            <li><a data-value="Tel">电话</a></li>
+                            <li><a data-value="QQ">QQ</a></li>
+                            <li><a data-value="Wechat">微信</a></li>
+                        </ul>
+                    </div>
+                </td>
+                <td style="padding-left: 2px;">
+                    <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                </td>
+                <td style="padding-left: 5px;">
+                    <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="toolbar">
+        <div class="btn-group">
+            <a id="lr-replace" class="btn btn-default" onclick="reload()"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+            <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+            <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+            <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+            <a id="lr-detail" class="btn btn-default" onclick="btn_detail()"><i class="fa fa-list-alt"></i>&nbsp;详细</a>
+            <a id="lr-invalid" class="btn btn-default" onclick="btn_invalid()"><i class="fa fa-cut"></i>&nbsp;作废</a>
+        </div>
+        <div class="btn-group">
+            <a id="lr-chancetrail" class="btn btn-default" onclick="btn_chancetrail()"><i class="fa fa-clock-o"></i>&nbsp;跟进记录</a>
+            <a id="lr-tocustomer" class="btn btn-default" onclick="btn_tocustomer()"><i class="fa fa-random"></i>&nbsp;转换客户</a>
+        </div>
+        <script>$('.toolbar').authorizeButton()</script>
+    </div>
+</div>
+<div class="gridPanel">
+    <table id="gridTable"></table>
+    <div id="gridPager"></div>
+</div>

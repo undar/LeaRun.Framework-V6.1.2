@@ -1,0 +1,179 @@
+﻿@{
+    ViewBag.Title = "发起流程";
+    Layout = "~/Views/Shared/_FlowFormNew.cshtml";
+}
+<style>
+    body {
+        overflow: hidden;
+    }
+    .ckbox,.rdio {
+	position: relative;
+	display: inline-block
+}
+
+
+    .FlowPanelall {
+        width: 800px;
+        float: left;
+        overflow-y: auto;
+        padding-right: 20px;
+    }
+
+    .FlowInfoPanel {
+        position: absolute;
+        right: 0px;
+        width: 300px;
+        height: 619px;
+        z-index: 1000;
+        background: rgba(0,0,0,.01);
+        padding: 10px;
+        border-left: 1px solid #ccc;
+    }
+
+        .FlowInfoPanel .form .formTitle {
+            text-align: left;
+            padding-left: 5px;
+        }
+
+        .FlowInfoPanel .formTitle font {
+            right: auto !important;
+            margin-left: 5px;
+        }
+
+        .FlowInfoPanel .formValue input, .FlowInfoPanel .formValue textarea {
+            border-radius: 5px;
+        }
+
+    input, textarea {
+        background: #fff !important;
+    }
+</style>
+<div class="FlowPanelall">
+    <div id="frmpreview" class="tab-pane app_layout app_preview active">
+    </div>
+</div>
+<div class="FlowInfoPanel" id="ProcessInfo">
+    <div style="color:#9f9f9f;padding-bottom:15px;padding-left:5px;"><i style="padding-right:5px;" class="fa fa-info-circle"></i><span>填写左侧表单和实例信息,提交创建</span></div>
+    <table class="form">
+        <tr>
+            <td class="formTitle">流程实例编号<font face="宋体">*</font></td>
+        </tr>
+        <tr>
+            <td class="formValue">
+                <input id="Code" disabled type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">自定义标题<font face="宋体">*</font></td>
+        </tr>
+        <tr>
+            <td class="formValue">
+                <input id="CustomName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">重要等级<font face="宋体">*</font></td>
+        </tr>
+        <tr>
+            <td class="formValue">
+                <div class="rdio rdio-color_c"><input name="wfLevel" id="wfLevel1" value="1" type="radio" /><label for="wfLevel1">重要</label></div>
+                <div class="rdio rdio-color_f"><input name="wfLevel" id="wfLevel2" value="2" type="radio" checked /><label for="wfLevel2">普通</label></div>
+                <div class="rdio rdio-color_a"><input name="wfLevel" id="wfLevel3" value="3" type="radio" /><label for="wfLevel3">一般</label></div>
+            </td>
+        </tr>
+        <tr>
+            <td class="formTitle">备注</td>
+        </tr>
+        <tr>
+            <td class="formValue">
+                <textarea id="Description" class="form-control" style="height: 383px;"></textarea>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="form-button">
+    <a id="btn_finish" class="btn btn-success" onclick="btn_Finish();">完成提交</a>
+</div>
+<script>
+    (function ($) {
+        "use strict";
+        $.formJs = {
+            keyValue: request('keyValue'),
+            data: "",
+            initial: function () {
+                $('.FlowPanelall').height($.windowHeight() - 40);
+                $('#Description').height($.windowHeight() - 280);
+                $('.FlowInfoPanel').height($.windowHeight() - 60);
+                learun.setForm({
+                    url: "../../FlowManage/FlowLaunch/GetFlowJson",
+                    param: { keyValue: $.formJs.keyValue },
+                    success: function (data) {
+                        $.formJs.data = data;
+                        var dataJson = JSON.parse(data.formEntity.FrmContent);
+                        if (data.formEntity.FrmType != 2) {
+                            $('#frmpreview').formRendering('init', { formData: dataJson.data });
+                        } else {
+                            $('#frmpreview').html('<iframe id="formIframe" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no" style="height:100%;width:100%;"></iframe>');
+                            $('#frmpreview').find('iframe').height($(window).height() - 45);
+                            learun.loadSystemForm('formIframe', dataJson.data.url);
+                        }
+                        $('#Code').val(data.schemeInfo.SchemeName);
+                    }
+                });
+            }
+        };
+        $(function () {
+            var schemeContent;
+            $.formJs.initial();
+        });
+    })(window.jQuery);
+
+    //提交表单
+    function btn_Finish() {
+        if (!$('#ProcessInfo').Validform()) {
+            return false;
+        }
+        //var _postData = $("#ProcessInfo").GetWebControls();
+        var formData = "[]";
+        if ($.formJs.data.formEntity.FrmType != 2) {
+            formData = $('#frmpreview').formRendering('get');
+            if (!!formData) {
+                //var postdata = {
+                //    processId: learun.createGuid(),
+                //    processName: _postData.CustomName,
+                //    schemeId: $.formJs.keyValue,
+                //    level: $('input[name="wfLevel"]:checked').val(),
+                //    description: _postData.Description,
+                //    formData: JSON.stringify(formData),
+                //    formId: $.formJs.data.formEntity.FrmId
+                //};
+                var _postData = $("#ProcessInfo").GetWebControls();
+                _postData["EnabledMark"] = 1;
+                _postData["wfLevel"] = $('input[name="wfLevel"]:checked').val();
+                var _data = $('#frmpreview').formRendering('get');
+
+                $.SaveForm({
+                    url: "../../FlowManage/FlowLaunch/CreateProcess",
+                    param: { "wfSchemeInfoId": $.formJs.keyValue, "frmData": JSON.stringify(_data), "wfProcessInstanceJson": JSON.stringify(_postData) },
+                    loading: "正在保存数据...",
+                    success: function () { }
+                });
+            }
+        }
+        else {
+            //formData = learun.getSystemFormData('formIframe');
+            learun.saveSystemFormData('formIframe', function (processId) {
+                var _postData = $("#ProcessInfo").GetWebControls();
+                _postData["EnabledMark"] = 1;
+                _postData["wfLevel"] = $('input[name="wfLevel"]:checked').val();
+                $.SaveForm({
+                    url: "../../FlowManage/FlowLaunch/CreateProcess",
+                    param: { "wfSchemeInfoId": $.formJs.keyValue, "frmData": null, "wfProcessInstanceJson": JSON.stringify(_postData) },
+                    loading: "正在保存数据...",
+                    success: function () { }
+                });
+            });
+        }
+    }
+</script>
+

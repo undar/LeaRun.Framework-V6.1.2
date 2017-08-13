@@ -1,0 +1,177 @@
+﻿@{
+    ViewBag.Title = "编号规则表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<!--jqgrid表格组件start-->
+<link href="~/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="~/Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
+<!--表格组件end-->
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initControl();
+        GetGrid();
+    })
+    //初始化控件
+    function initControl() {
+        //规则方式
+        $("#Mode").ComboBox({
+            description: "==请选择==",
+        });
+        //系统功能
+        $("#ModuleId").ComboBoxTree({
+            url: "../../AuthorizeManage/Module/GetTreeJson",
+            description: "==请选择==",
+            height: "240px",
+            allowSearch: true
+        });
+    }
+    function GetGrid() {
+        var $gridTable = $("#gridTable");
+        $gridTable.jqGrid({
+            datatype: "json",
+            height: 189,
+            autowidth: true,
+            unwritten: false,
+            colModel: [
+                { label: "ItemType", name: "ItemType", hidden: true },
+                { label: "前缀", name: "ItemTypeName", width: 120, align: "left", sortable: false },
+                { label: "格式", name: "FormatStr", width: 120, align: "left", sortable: false },
+                { label: "步长", name: "StepValue", width: 100, align: "left", sortable: false },
+                { label: "初始值", name: "InitValue", width: 120, align: "left", sortable: false },
+                { label: "说明", name: "Description", width: 200, align: "left", sortable: false }
+            ],
+            caption: "规则设计",
+            rowNum: "1000",
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            hidegrid: false
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../SystemManage/CodeRule/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    $gridTable[0].addJSONData(JSON.parse(data.RuleFormatJson));
+                }
+            });
+        }
+    }
+    //添加
+    function btn_add_field() {
+        dialogOpen({
+            id: "ItemForm",
+            title: '添加',
+            url: '/SystemManage/CodeRule/ItemForm',
+            width: "450px",
+            height: "320px",
+            callBack: function (iframeId) {
+                top.frames[iframeId].AcceptClick();
+            }
+        });
+    };
+    //修改
+    function btn_edit_field() {
+        var keyValue = $("#gridTable").getGridParam('selrow');
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "ItemForm",
+                title: '修改',
+                url: '/SystemManage/CodeRule/ItemForm?keyValue=' + keyValue,
+                width: "450px",
+                height: "320px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick();
+                }
+            });
+        }
+    }
+    //移除
+    function btn_delete_field() {
+        var keyValue = $("#gridTable").getGridParam('selrow');
+        if (keyValue) {
+            dialogConfirm('注：您确定要移除吗？该操作将无法恢复？', function (r) {
+                if (r) {
+                    $("#gridTable").delRowData(keyValue);
+                    dialogMsg("移除成功。", 1);
+                }
+            });
+
+        } else {
+            dialogMsg('请选择需要移除的数据！', 0);
+        }
+    }
+    //保存表单
+    function AcceptClick() {
+        if (!$('#form1').Validform()) {
+            return false;
+        }
+        var postData = $("#form1").GetWebControls(keyValue);
+        postData["Module"] = $("#ModuleId").attr('data-text');
+        postData["RuleFormatJson"] = JSON.stringify($("#gridTable").jqGrid("getRowData"));
+        $.SaveForm({
+            url: "../../SystemManage/CodeRule/SaveForm?keyValue=" + keyValue,
+            param: postData,
+            loading: "正在保存数据...",
+            success: function () {
+                $.currentIframe().$("#gridTable").trigger("reloadGrid");
+            }
+        })
+    }
+</script>
+<div class="border-left border-right border-top" style="margin: 5px; margin-bottom: 0px; padding-bottom: 2px;">
+    <div style="height: 106px;">
+        <table class="form">
+            <tr>
+                <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">对象编号：</th>
+                <td class="formValue">
+                    <input id="EnCode" type="text" onblur="$.ExistField(this.id,'../../SystemManage/CodeRule/ExistEnCode')" class="form-control input-underline" placeholder="请输入编号" isvalid="yes" checkexpession="Num" />
+                </td>
+                <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">对象名称：</th>
+                <td class="formValue">
+                    <input id="FullName" type="text" onblur="$.ExistField(this.id,'../../SystemManage/CodeRule/ExistFullName')" class="form-control input-underline" placeholder="请输入名称" isvalid="yes" checkexpession="NotNull" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">规则方式：</th>
+                <td class="formValue">
+                    <div id="Mode" type="select" class="ui-select ui-underline" isvalid="yes" checkexpession="NotNull">
+                        <ul>
+                            <li data-value="1">自动</li>
+                            <li data-value="0">可更改</li>
+                        </ul>
+                    </div>
+                </td>
+                <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">系统功能：</th>
+                <td class="formValue">
+                    <div id="ModuleId" type="selectTree" class="ui-select ui-underline" isvalid="yes" checkexpession="NotNull"></div>
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle" style="text-align: left; padding-left: 7px; width: 55px;">说明</th>
+                <td class="formValue" colspan="3">
+                    <input id="Description" type="text" class="form-control input-underline" placeholder="添加说明" />
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div style="margin: 5px; margin-top: 0px; margin-bottom: 0px;">
+    <table id="gridTable"></table>
+    <style>
+        .ui-jqgrid .ui-jqgrid-caption {
+            text-align: right;
+            padding-right: 5px;
+            background-color: #F5F5F5;
+        }
+    </style>
+</div>
+<div style="position: absolute; top: 119px; left: 10px;">
+    <a id="lr-add" class="btn btn-success btn-xs" onclick="btn_add_field()"><i class="fa fa-plus"></i>&nbsp;添加</a>
+    <a id="lr-edit" class="btn btn-info btn-xs" onclick="btn_edit_field()"><i class="fa fa-pencil-square-o"></i>&nbsp;修改</a>
+    <a id="lr-delete" class="btn btn-danger btn-xs" onclick="btn_delete_field()"><i class="fa fa-trash-o"></i>&nbsp;移除</a>
+</div>

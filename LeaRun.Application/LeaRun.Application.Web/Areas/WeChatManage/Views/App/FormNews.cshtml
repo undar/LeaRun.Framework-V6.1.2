@@ -1,0 +1,256 @@
+﻿@{
+    ViewBag.Title = "消息型应用";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<!--jqgrid表格组件start-->
+<link href="~/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="~/Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
+<!--表格组件end-->
+<script src="~/Content/scripts/plugins/uploadify/ajaxfileupload.js"></script>
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        initialPage();
+        getGridMenu()
+    })
+    //初始化页面
+    function initialPage() {
+        //加载导向
+        $('#wizard').wizard().on('change', function (e, data) {
+            var $finish = $("#btn_finish");
+            var $next = $("#btn_next");
+            if (data.direction == "next") {
+                if (data.step == 1) {
+                    $finish.removeAttr('disabled');
+                    $next.attr('disabled', 'disabled');
+                } else {
+                    $finish.attr('disabled', 'disabled');
+                }
+            } else {
+                $finish.attr('disabled', 'disabled');
+                $next.removeAttr('disabled');
+            }
+        });
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../WeChatManage/App/GetFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    menuJson = JSON.parse(data.MenuJson);
+                    document.getElementById('uploadPreview').src = top.contentPath + data.AppLogo;
+                }
+            });
+        }
+    }
+    //自定义菜单
+    var menuJson = [];
+    function getGridMenu() {
+        var selectedRowIndex = 0;
+        var $grid = $("#gridTable-menu");
+        $grid.jqGrid({
+            unwritten: false,
+            height: $(window).height() - 166,
+            width: $(window).width() - 12,
+            colModel: [
+                { label: "主键", name: "MenuId", hidden: true },
+                { label: "&nbsp;&nbsp;&nbsp;&nbsp;名称", name: "MenuName", width: 100, align: "left", sortable: false },
+                { label: "类型", name: "MenuTypeName", width: 80, align: "left", sortable: false },
+                { label: "地址", name: "MenuUrl", width: 200, align: "left", sortable: false },
+            ],
+            treeGrid: true,
+            treeGridModel: "nested",
+            ExpandColumn: "MenuTypeName",
+            rowNum: "all",
+            rownumbers: true,
+            onSelectRow: function () {
+                selectedRowIndex = $("#" + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $("#" + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        if (!!keyValue) {
+            MenuListToListTreeJson(menuJson);
+        }
+        function MenuListToListTreeJson(menuJson) {
+            $.ajax({
+                url: "../../WeChatManage/App/MenuListToListTreeJson",
+                data: { menuJson: JSON.stringify(menuJson) },
+                type: "post",
+                dataType: "json",
+                success: function (data) {
+                    $grid.clearGridData();
+                    $grid[0].addJSONData(data);
+                },
+            });
+        }
+        //新增
+        $("#lr-add-menu").click(function () {
+            var parentId = $("#gridTable-menu").jqGridRowValue("MenuId");
+            dialogOpen({
+                id: "FormMenu",
+                title: '添加菜单',
+                url: '/WeChatManage/App/FormMenu?parentId=' + parentId,
+                width: "450px",
+                height: "300px",
+                callBack: function (iframeId) {
+                    top.frames[iframeId].AcceptClick(function (data) {
+                        menuJson.push(data);
+                        MenuListToListTreeJson(menuJson);
+                    });
+                }
+            });
+        });
+        //编辑
+        $("#lr-edit-menu").click(function () {
+            var menuId = $("#gridTable-menu").jqGridRowValue("MenuId");
+            if (checkedRow(menuId)) {
+                dialogOpen({
+                    id: "FormMenu",
+                    title: '编辑菜单',
+                    url: '/WeChatManage/App/FormMenu?menuId=' + menuId,
+                    width: "450px",
+                    height: "300px",
+                    callBack: function (iframeId) {
+                        top.frames[iframeId].AcceptClick(function (data) {
+                            $.each(menuJson, function (i) {
+                                if (menuJson[i].MenuId == menuId) {
+                                    menuJson[i] = data;
+                                }
+                            });
+                            MenuListToListTreeJson(menuJson);
+                        });
+                    }
+                });
+            }
+        });
+        //删除
+        $("#lr-delete-menu").click(function () {
+            var menuId = $("#gridTable-menu").jqGridRowValue("MenuId");
+            if (checkedRow(menuId)) {
+                $.each(menuJson, function (i) {
+                    if (menuJson[i].MenuId == menuId) {
+                        menuJson.splice(i, 1);
+                        MenuListToListTreeJson(menuJson);
+                        return false;
+                    }
+                });
+            }
+        });
+    }
+    //保存表单
+    function AcceptClick() {
+        var AppId = $("#AppId").val();
+        if (document.getElementById('uploadFile').src == "~/Content/images/logo-headere47d5.png") {
+            top.dialogTop('请添加应用Logo', 'error');
+            return false;
+        } else {
+            if (!$('#form1').Validform()) {
+                return false;
+            }
+            //上传应用图标
+            $.ajaxFileUpload({
+                url: "../../WeChatManage/App/UploadFile?AppId=" + AppId,
+                secureuri: false,
+                fileElementId: 'uploadFile',
+                dataType: 'json',
+                success: function (data) {
+                    var postData = $("#form1").GetWebControls("");
+                    postData["AppLogo"] = data.message;
+                    postData["MenuJson"] = JSON.stringify(menuJson);
+                    $.SaveForm({
+                        url: "../../WeChatManage/App/SaveForm?keyValue=" + keyValue,
+                        param: postData,
+                        loading: "正在保存数据...",
+                        success: function () {
+                            $.currentIframe().reload();
+                        }
+                    })
+                }
+            });
+        }
+    }
+</script>
+<div class="widget-body">
+    <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>基本信息<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>自定义菜单<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content" id="wizard-steps" style="border-left: none; border-bottom: none; border-right: none;">
+        <div class="step-pane active" id="step-1" style="margin-left: 0px; margin-top: 15px; margin-right: 30px;">
+            <div class="applogo " style="text-align: center; margin-bottom: 5px;">
+                <div class="file" style="width: 100px; height: 100px;">
+                    <img id="uploadPreview" style="width: 100px; height: 100px; border-radius: 100px;" src="~/Content/images/logo-headere47d5.png" />
+                    <input type="file" name="uploadFile" id="uploadFile">
+                </div>
+            </div>
+            <table class="form">
+                <tr>
+                    <th class="formTitle">应用名称</th>
+                    <td class="formValue">
+                        <input id="AppId" type="hidden" value="@Guid.NewGuid().ToString()" />
+                        <input id="AppName" type="text" class="form-control" placeholder="2-16个字" isvalid="yes" checkexpession="NotNull" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="formTitle">可信域名</td>
+                    <td class="formValue">
+                        <input id="RedirectDomain" type="text" class="form-control" placeholder="填写应用的域名地址，如：qy.weixin.qq.com:8080" />
+                    </td>
+                </tr>
+                <tr>
+                    <th class="formTitle" valign="top" style="padding-top: 4px;">应用介绍
+                    </th>
+                    <td class="formValue">
+                        <textarea id="Description" class="form-control" style="height: 70px;" placeholder="描述该应用的功能与特色，内容为4-120个字"></textarea>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="step-pane" id="step-2" style="margin: 5px;">
+            <div style="height: 40px; line-height: 33px; text-align: right;">
+                <div class="btn-group">
+                    <a id="lr-add-menu" class="btn btn-default"><i class="fa fa-plus"></i>&nbsp;新增</a>
+                    <a id="lr-edit-menu" class="btn btn-default"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+                    <a id="lr-delete-menu" class="btn btn-default"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+                </div>
+            </div>
+            <table id="gridTable-menu"></table>
+        </div>
+    </div>
+</div>
+<div class="form-button" id="wizard-actions">
+    <a id="btn_last" disabled class="btn btn-default btn-prev">上一步</a>
+    <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+    <a id="btn_finish" disabled class="btn btn-success" onclick="AcceptClick()">完成</a>
+</div>
+
+
+<style>
+    .file {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+        text-decoration: none;
+        text-indent: 0;
+        cursor: pointer !important;
+    }
+
+        .file input {
+            position: absolute;
+            font-size: 100px;
+            right: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer !important;
+        }
+
+        .file:hover {
+            text-decoration: none;
+            cursor: pointer !important;
+        }
+</style>

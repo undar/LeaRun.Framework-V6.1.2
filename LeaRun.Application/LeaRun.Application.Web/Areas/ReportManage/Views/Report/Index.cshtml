@@ -1,0 +1,202 @@
+﻿@{
+    ViewBag.Title = "报表模板管理";
+    Layout = "~/Views/Shared/_LayoutIndex.cshtml";
+}
+<script>
+    $(function () {
+        InitialPage();
+        GetGrid();
+        GetTree();
+    });
+    //初始化页面
+    function InitialPage() {
+        //layout布局
+        $('#layout').layout({
+            applyDemoStyles: true,
+            onresize: function () {
+                $(window).resize()
+            }
+        });
+        //resize重设(表格、树形)宽高
+        $(window).resize(function (e) {
+            window.setTimeout(function () {
+                $('#gridTable').setGridWidth(($('.gridPanel').width()));
+                $("#gridTable").setGridHeight($(window).height() - 141.5);
+                $("#itemTree").setTreeHeight($(window).height() - 52);
+            }, 200);
+            e.stopPropagation();
+        });
+    }
+    var reportCode = ''
+    //加载树
+    function GetTree() {
+        var item = {
+            height: $(window).height() - 52,
+            param: { EnCode: "ReportSort" },
+            url: "../../SystemManage/DataItemDetail/GetDataItemTreeJson",
+            onnodeclick: function (item) {
+                reportCode = item.id;
+                $('#btn_Search').trigger("click");
+            }
+        };
+        //初始化
+        $("#itemTree").treeview(item);
+    }
+    //加载表格
+    function GetGrid() {
+        var selectedRowIndex = 0;
+        $("#gridTable").jqGrid({
+            url: "../../ReportManage/Report/GetListJson",
+            datatype: "json",
+            height: $(window).height() - 141.5,
+            autowidth: true,
+            colModel: [
+                { label: '主键', name: 'TempId', hidden: true },
+                { label: "报表编号", name: "EnCode", width: 100, align: "left", sortable: false },
+                { label: "报表名称", name: "FullName", width: 200, align: "left", sortable: false },
+                { label: "图表类型", name: "TempType", width: 100, align: "center", sortable: false },
+                {
+                    label: "报表分类", name: "TempCategory", width: 100, align: "center", sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return top.clientdataItem["ReportSort"][cellvalue];
+                    }
+                },
+                { label: "报表介绍", name: "Description", width: 200, align: "left", sortable: false }
+            ],
+            rowNum: "10000",
+            rownumbers: true,
+            onSelectRow: function () {
+                selectedRowIndex = $("#" + this.id).getGridParam('selrow');
+            },
+            gridComplete: function () {
+                $("#" + this.id).setSelection(selectedRowIndex, false);
+            }
+        });
+        //查询设置
+        $("#queryCondition .dropdown-menu li").click(function () {
+            var text = $(this).find('a').html();
+            var value = $(this).find('a').attr('data-value');
+            $("#queryCondition .dropdown-text").html(text).attr('data-value', value)
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            var queryJson = {
+                reportCode: reportCode,
+                condition: $("#queryCondition").find('.dropdown-text').attr('data-value'),
+                keyword: $("#txt_Keyword").val()
+            }
+            $("#gridTable").jqGrid('setGridParam', {
+                url: "../../ReportManage/Report/GetListJson",
+                postData: { queryJson: JSON.stringify(queryJson) },
+            }).trigger('reloadGrid');
+        });
+        //查询回车
+        $('#txt_Keyword').bind('keypress', function (event) {
+            if (event.keyCode == "13") {
+                $('#btn_Search').trigger("click");
+            }
+        });
+    }
+    //新增
+    function btn_add() {
+        dialogOpen({
+            id: "Form",
+            title: '添加报表模板',
+            url: '/ReportManage/Report/ReportGuide',
+            width: "750px",
+            height: "500px",
+            btn: null
+        });
+    };
+    //编辑
+    function btn_edit() {
+        var keyValue = $("#gridTable").jqGridRowValue("TempId");
+        if (checkedRow(keyValue)) {
+            dialogOpen({
+                id: "Form",
+                title: '编辑报表模板',
+                url: '/ReportManage/Report/ReportGuide?keyValue=' + keyValue,
+                width: "750px",
+                height: "500px",
+                btn: null
+            });
+        }
+    }
+    //预览
+    function btn_preview() {
+        var keyValue = $("#gridTable").jqGridRowValue("TempId");
+        var TempType = $("#gridTable").jqGridRowValue("TempType");
+        
+        if (checkedRow(keyValue)) {
+            top.tablist.newTab({ id: keyValue, title: "预览报表", closed: true, icon: "fa fa fa-eye", url: top.contentPath + '/ReportManage/Report/ReportPreview?TempType=' + TempType + '&keyValue=' + keyValue });
+        }
+    }
+    //删除
+    function btn_delete() {
+        var keyValue = $("#gridTable").jqGridRowValue("TempId");
+        if (keyValue) {
+            $.RemoveForm({
+                url: "../../ReportManage/Report/RemoveForm",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#gridTable").resetSelection();
+                    $("#gridTable").trigger("reloadGrid");
+                }
+            })
+        } else {
+            dialogMsg('请选择需要删除的报表模板！', 0);
+        }
+    }
+</script>
+<div class="ui-layout" id="layout" style="height: 100%; width: 100%;">
+    <div class="ui-layout-west">
+        <div class="west-Panel">
+            <div class="panel-Title">报表分类</div>
+            <div id="itemTree"></div>
+        </div>
+    </div>
+    <div class="ui-layout-center">
+        <div class="center-Panel">
+            <div class="panel-Title">报表管理</div>
+            <div class="titlePanel">
+                <div class="title-search">
+                    <table>
+                        <tr>
+                            <td>
+                                <div id="queryCondition" class="btn-group">
+                                    <a class="btn btn-default dropdown-text" data-toggle="dropdown">选择条件</a>
+                                    <a class="btn btn-default dropdown-toggle" data-toggle="dropdown"><span class="caret"></span></a>
+                                    <ul class="dropdown-menu">
+                                        <li><a data-value="EnCode">模板编号</a></li>
+                                        <li><a data-value="FullName">模板名称</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                            <td style="padding-left: 2px;">
+                                <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                            </td>
+                            <td style="padding-left: 5px;">
+                                <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="toolbar">
+                    <div class="btn-group">
+                        <a id="lr-replace" class="btn btn-default" onclick="reload();"><i class="fa fa-refresh"></i>&nbsp;刷新</a>
+                        <a id="lr-add" class="btn btn-default" onclick="btn_add()"><i class="fa fa-plus"></i>&nbsp;新增</a>
+                        <a id="lr-edit" class="btn btn-default" onclick="btn_edit()"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a>
+                        <a id="lr-delete" class="btn btn-default" onclick="btn_delete()"><i class="fa fa-trash-o"></i>&nbsp;删除</a>
+                    </div>
+                    <div class="btn-group">
+                        <a id="lr-preview" class="btn btn-default" onclick="btn_preview()"><i class="fa fa-pencil-square-o"></i>&nbsp;预览</a>
+                    </div>
+                    <script>$('.toolbar').authorizeButton()</script>
+                </div>
+            </div>
+            <div class="gridPanel">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,40 @@
+﻿@{
+    ViewBag.Title = "复制按钮";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<script>
+    var keyValue = request('keyValue');
+    $(function () {
+        GetModuleTree();
+    })
+    //加载功能模块树
+    var moduleId = "";
+    function GetModuleTree() {
+        var item = {
+            onnodeclick: function (item) {
+                moduleId = item.id;
+            },
+            url: "../../AuthorizeManage/Module/GetTreeJson"
+        };
+        $("#ModuleTree").treeview(item);
+    }
+    //保存事件
+    function AcceptClick() {
+        if (moduleId) {
+            $.SaveForm({
+                url: "../../AuthorizeManage/ModuleButton/CopyForm",
+                param: { keyValue: keyValue, moduleId: moduleId },
+                loading: "正在提交数据...",
+                success: function () {
+
+                }
+            })
+        } else {
+            dialogMsg('请选择系统功能！', 0);
+        }
+    }
+</script>
+<div style="margin: 10px; margin-bottom: 0px;">
+    <div id="ModuleTree" style="height: 388px; overflow: auto;">
+    </div>
+</div>

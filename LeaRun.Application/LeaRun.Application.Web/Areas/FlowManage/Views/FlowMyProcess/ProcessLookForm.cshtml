@@ -1,0 +1,97 @@
+﻿@{
+    ViewBag.Title = "查看流程进度";
+    Layout = "~/Views/Shared/_FlowInstance.cshtml";
+}
+<script>
+    var processSchemeId = request('processSchemeId');
+    var ActivityId = request('activityId');
+    $(function () {
+        var schemeContent;
+        $.SetForm({
+            url: "../../FlowManage/FlowProcess/GetProcessSchemeJson",
+            param: { keyValue: processSchemeId },
+            success: function (data) {
+                schemeContent = JSON.parse(JSON.parse(data.processScheme.SchemeContent).SchemeContent);
+               
+                //$('#FlowPanel').flowdesign({
+                //    width: $(window).width()+3,
+                //    height: $(window).height()-42,
+                //    flowcontent: schemeContent.Flow,
+                //    haveTool: false,
+                //    isprocessing: true,
+                //    activityId: ActivityId,
+                //    nodeData: schemeContent.Flow.nodes
+                //});
+                $('#FlowPanel').flowDesigner({
+                    width: $(window).width() + 3,
+                    height: $(window).height() - 42,
+                    schemeContent: schemeContent.Flow,
+                    haveTool: false,
+                    isprocessing: true,
+                    activityId: ActivityId,
+                    nodeData: schemeContent.Flow.nodes
+                });
+                if (data.schemeInfo.FormList != "") {
+                    var dlist = data.schemeInfo.FormList.split(',');
+                    for (var d in dlist) {
+                        var done = dlist[d];
+                        learun.getDataForm({
+                            type: 'get',
+                            url: "../../FlowManage/FormModule/GetEntityJson",
+                            param: { keyValue: done },
+                            success: function (dd) {
+                                if (dd != null) {
+                                    var _dataJson = JSON.parse(dd.FrmContent);
+                                  
+                                    if (_dataJson.type == 2) {
+                                        $('#frmpreview').html('<iframe id="formIframe_' + dd.FrmId + '" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no" style="height:100%;width:100%;"></iframe>');
+                                        learun.loadSystemForm('formIframe_' + dd.FrmId, _dataJson.data.url);
+                                    }
+                                    else {
+                                        $('#frmpreview').formRendering('init', { formData: _dataJson.data });;
+                                    }
+                                }
+                              
+                            }
+                        });
+                    }
+                }
+                //console.log(JSON.parse(JSON.parse(data.processScheme.SchemeContent).frmData));
+                $('#frmpreview').formRendering('set', { data: JSON.parse(JSON.parse(data.processScheme.SchemeContent).frmData) });
+                
+                $('#frmpreview').find('input,select,textarea,.ui-select').attr('disabled', 'disabled');
+            }
+        });
+    });
+</script>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#FlowPanel" data-toggle="tab">流程信息</a></li>
+    <li><a href="#frmpreview" data-toggle="tab">表单信息</a></li>
+</ul>
+
+<div class="tab-content">
+    <div id="FlowPanel" class="tab-pane active">
+    </div>
+    <div id="frmpreview" class="tab-pane app_layout app_preview">
+    </div>
+</div>
+<style>
+    body {
+        overflow:hidden;
+    }
+    .app_preview {
+        height:620px;
+    }
+    .app_preview .item_field_value {
+        width:964px;
+    }
+    .app_preview .item_row {
+        background-color: #fff;
+    }
+    .app_layout .item_field_label {
+        background-color: #fff;
+    }
+     input, textarea {
+        background: #fff!important;     
+    }
+</style>

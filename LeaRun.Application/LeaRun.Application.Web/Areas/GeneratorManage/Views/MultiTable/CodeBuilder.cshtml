@@ -1,0 +1,1015 @@
+﻿@{
+    ViewBag.Title = "在线开发（多表）";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link href="~/Content/scripts/plugins/jqgrid/jqgrid.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/jqgrid/grid.locale-cn.js"></script>
+<script src="~/Content/scripts/plugins/jqgrid/jqgrid.min.js"></script>
+<script src="~/Content/scripts/plugins/layout/jquery.layout.js"></script>
+<link href="~/Content/styles/learun-applayout.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/syntaxhighlighter/scripts/shCore.js"></script>
+<script src="~/Content/scripts/plugins/syntaxhighlighter/scripts/shBrushCSharp.js"></script>
+<script type="text/javascript" src="~/Content/scripts/plugins/syntaxhighlighter/scripts/shBrushJScript.js"></script>
+<link type="text/css" rel="stylesheet" href="~/Content/scripts/plugins/syntaxhighlighter/styles/shCoreDefault.css" />
+
+<script>
+    $(function () {
+        InitialPage();
+        GetDataSource();
+    })
+    //初始化页面
+    function InitialPage() {
+        //所在区域
+        $("#OutputAreas").ComboBox({
+            description: "==请选择==",
+            height: "200px"
+        }).ComboBoxSetValue('BaseManage');
+        //功能上级
+        $("#ModuleParentId").ComboBoxTree({
+            url: "../../AuthorizeManage/Module/GetTreeJson",
+            description: "==请选择==",
+            height: "300px",
+            allowSearch: true
+        });
+        //加载导向
+        $('#wizard').wizard().on('change', function (e, data) {
+            var $finish = $("#btn_finish");
+            var $next = $("#btn_next");
+            if (data.direction == "next") {
+                switch (data.step) {
+                    case 1:
+                        var pk = $("#gridTable").jqGridRowValue("pk");
+                        var name = $("#gridTable").jqGridRowValue("name");
+                        var tdescription = $("#gridTable").jqGridRowValue("tdescription");
+                        if (!pk) {
+                            return false;
+                        } else {
+                            $("#DataBaseTablePK").ComboBox({
+                                url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                                param: { dataBaseLinkId: $("#txt_DataBase").val(), tableName: name },
+                                id: "column",
+                                text: "column",
+                                height: "350px"
+                            }).ComboBoxSetValue(pk);
+                            $("#Description").val(tdescription);
+                            $("#EntityClassName").val(name + "Entity").attr('tableName', name);
+                            $("#MapClassName").val(name + "Map");
+                            $("#ServiceClassName").val(name + "Service");
+                            $("#IServiceClassName").val(name + "IService");
+                            $("#BusinesClassName").val(name + "BLL");
+                            $("#ControllerName").val(name + "Controller");
+                            $("#IndexPageName").val(name + "Index");
+                            $("#FormPageName").val(name + "Form");
+                        }
+                        break;
+                    case 2://绑定列表
+                        //验证初始化配置表单
+                        if (!$('#step-2').Validform()) {
+                            return false;
+                        }
+                        BindingIndex();
+                        break;
+                    case 3://绑定表单
+                        BindingForm();
+                        break;
+                    case 4://查看代码
+                        LookCode()
+                        break;
+                    case 5://创建代码
+                        CreateCode()
+                        $finish.removeAttr('disabled');
+                        $next.attr('disabled', 'disabled');
+                        //发布功能事件
+                        $("#publish_btn").click(function () {
+                            $(this).attr('moduleForm', '1');
+                            $("#publish_panel").show().animate({ top: 50, speed: 2000 });
+                            $("#ModuleEnCode").val($("#EntityClassName").attr('tableName'));
+                            $("#ModuleFullName").val($("#Description").val());
+                            return false;
+                        });
+                        //选取功能图标
+                        $("#ModuleIcon").next('.input-button').click(function () {
+                            dialogOpen({
+                                id: "SelectIcon",
+                                title: '选取图标',
+                                url: '/AuthorizeManage/Module/Icon?ControlId=ModuleIcon',
+                                width: "1000px",
+                                height: "600px",
+                                btn: false
+                            })
+                        })
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                $finish.attr('disabled', 'disabled');
+                $next.removeAttr('disabled');
+            }
+        });
+        //完成
+        $("#btn_finish").click(function () {
+            if ($("#publish_btn").attr('moduleForm') == 1) {
+                //自动创建功能菜单
+                if (!$('#publish_panel').Validform()) {
+                    return false;
+                }
+                var baseConfig = $("#step-2").GetWebControls();
+                baseConfig["DataBaseLinkId"] = $("#txt_DataBase").val();
+                baseConfig["DataBaseTableName"] = $("#gridTable").jqGridRowValue("name");
+                var postData = {
+                    EnCode: $("#ModuleEnCode").val(),
+                    FullName: $("#ModuleFullName").val(),
+                    ParentId: $("#ModuleParentId").attr('data-value'),
+                    Icon: $("#ModuleIcon").val(),
+                    Description: $("#ModuleDescription").val(),
+                    baseInfoJson: JSON.stringify(baseConfig)
+                }
+                $.SaveForm({
+                    //url: "../../SystemManage/CodeGenerator/PublishModule",
+                    url: "../../GeneratorManage/MultiTable/PublishModule",
+                    param: postData,
+                    loading: "正在发布功能...",
+                    success: function () {
+                        dialogClose();
+                    }
+                })
+            } else {
+                dialogClose();
+            }
+        });
+    }
+    /*=========选择数据源（begin）================================================================*/
+    function GetDataSource() {
+        $.ajax({
+            url: "../../SystemManage/DataBaseLink/GetListJson",
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                $.each(data, function (i) {
+                    $("#txt_DataBase").append($("<option title='" + data[i].DBName + "'></option>").val(data[i].DatabaseLinkId).html(data[i].DBAlias));
+                });
+            }
+        });
+        var $gridTable = $("#gridTable");
+        $gridTable.jqGrid({
+            url: "../../SystemManage/DataBaseTable/GetTableListJson",
+            postData: { dataBaseLinkId: $("#txt_DataBase").val(), keyword: $("#txt_Keyword").val() },
+            datatype: "json",
+            height: $(window).height() - 255,
+            autowidth: true,
+            colModel: [
+                { label: "表名", name: "name", width: 260, align: "left", sortable: false },
+                { label: '主键', name: 'pk', width: 150, align: "left", sortable: false },
+                {
+                    label: "记录数", name: "sumrows", width: 100, align: "left", sortable: false,
+                    formatter: function (cellvalue, options, rowObject) {
+                        return cellvalue + "条";
+                    }
+                },
+                { label: "使用大小", name: "reserved", width: 100, align: "left", sortable: false },
+                { label: "更新时间", name: "updatetime", width: 120, align: "left", sortable: false },
+                { label: "说明", name: "tdescription", width: 120, align: "left", sortable: false }
+            ],
+            rowNum: "1000",
+            rownumbers: true,
+            shrinkToFit: false,
+            gridview: true,
+            subGrid: true,
+            subGridRowExpanded: function (subgrid_id, row_id) {
+                var tableName = $gridTable.jqGrid('getRowData', row_id)['name'];
+                var subgrid_table_id = subgrid_id + "_t";
+                $("#" + subgrid_id).html("<table id='" + subgrid_table_id + "'></table>");
+                $("#" + subgrid_table_id).jqGrid({
+                    url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                    postData: { dataBaseLinkId: $("#txt_DataBase").val(), tableName: tableName },
+                    datatype: "json",
+                    height: "100%",
+                    colModel: [
+                        { label: "列名", name: "column", index: "column", width: 250, sortable: false },
+                        { label: "数据类型", name: "datatype", index: "datatype", width: 120, align: "center", sortable: false },
+                        { label: "长度", name: "length", index: "length", width: 57, align: "center", sortable: false },
+                        {
+                            label: "允许空", name: "isnullable", index: "isnullable", width: 58, align: "center", sortable: false,
+                            formatter: function (cellvalue, options, rowObject) {
+                                return cellvalue == 1 ? "<i class=\"fa fa-check-square-o\"></i>" : "<i class=\"fa fa-square-o\"></i>";
+                            }
+                        },
+                        {
+                            label: "标识", name: "identity", index: "identity", width: 58, align: "center", sortable: false,
+                            formatter: function (cellvalue, options, rowObject) {
+                                return cellvalue == 1 ? "<i class=\"fa fa-check-square-o\"></i>" : "<i class=\"fa fa-square-o\"></i>";
+                            }
+                        },
+                        {
+                            label: "主键", name: "key", index: "key", width: 57, align: "center", sortable: false,
+                            formatter: function (cellvalue, options, rowObject) {
+                                return cellvalue == 1 ? "<i class=\"fa fa-check-square-o\"></i>" : "<i class=\"fa fa-square-o\"></i>";
+                            }
+                        },
+                        { label: "默认值", name: "default", index: "default", width: 120, align: "center", sortable: false },
+                        { label: "说明", name: "remark", index: "remark", width: 100, sortable: false }
+                    ],
+                    caption: "表字段信息",
+                    rowNum: "1000",
+                    rownumbers: true,
+                    shrinkToFit: false,
+                    gridview: true,
+                    hidegrid: false
+                });
+            }
+        });
+        //查询事件
+        $("#btn_Search").click(function () {
+            $gridTable.jqGrid('setGridParam', {
+                url: "../../SystemManage/DataBaseTable/GetTableListJson",
+                postData: { dataBaseLinkId: $("#txt_DataBase").val(), keyword: $("#txt_Keyword").val() },
+            }).trigger('reloadGrid');
+        });
+    }
+    /*=========选择数据源（end）==================================================================*/
+
+    /*=========绑定表格（begin）==================================================================*/
+    var childEntityPk = "";
+    function BindingIndex() {
+        primaryTable();
+        detailsTable();
+        //主表字段
+        function primaryTable() {
+            $('#primaryField').html('<table id="gridPrimaryField"></table>');
+            var $grid = $("#gridPrimaryField");
+            $grid.jqGrid({
+                unwritten: false,
+                datatype: "local",
+                height: '320',
+                colModel: [
+                    { label: '类型', name: "datatype", hidden: true },
+                    { label: '字段', name: "name", width: 300, align: 'left', sortable: false },
+                    { label: '题头', name: "label", width: 220, align: 'left', sortable: false },
+                    { label: '隐藏', name: 'hidden', width: 80, align: 'center', sortable: false },
+                    { label: '排序', name: 'sortable', width: 40, align: 'center', sortable: false },
+                    { label: '查询', name: 'query', width: 40, align: 'center', sortable: false },
+                    { label: '对齐', name: 'align', width: 80, align: 'left', sortable: false },
+                    { label: '宽度', name: 'width', width: 80, align: 'center', sortable: false },
+                    { label: '格式', name: 'formatter', width: 80, align: 'left', sortable: false },
+                    { label: '操作', name: 'enabled', width: 80, align: 'center', sortable: false },
+                ],
+                pager: false,
+                rownumbers: true,
+                shrinkToFit: false,
+                gridview: true,
+                hoverrows: false
+            });
+            $.ajax({
+                url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                data: { dataBaseLinkId: $("#txt_DataBase").val(), tableName: $("#gridTable").jqGridRowValue("name") },
+                type: "get",
+                dataType: "json",
+                success: function (data) {
+                    $.each(data, function (i) {
+                        var rowdata = {
+                            datatype: '<input name="datatype" type="text" class="editable" value="' + data[i].datatype + '" />',
+                            name: '<input name="name" type="text" class="editable" value="' + data[i].column + '" />',
+                            label: '<input name="label" type="text" class="editable" value="' + data[i].remark + '" />',
+                            hidden: '<input name="hidden" type="checkbox" style="vertical-align: middle;" />',
+                            sortable: '<input name="sortable" type="checkbox" checked="checked" style="vertical-align: middle;" />',
+                            query: '<input name="query" type="checkbox"  style="vertical-align: middle;" />',
+                            align: '<select name="align" class="editable"><option value="left">左边</option><option value="center">居中</option><option value="right">右边</option></select>',
+                            width: '<input name="width" type="text" class="editable" style="text-align:center;" value="80" />',
+                            formatter: '<select name="formatter" class="editable"><option value="string">字符串</option><option value="date">日期</option><option value="int">数字</option><option value="money">金额</option><option value=""></option></select>',
+                            enabled: '<span onclick="$(this).parent().parent().remove()" class=\"label label-danger\" style=\"cursor: pointer;\">移除</span>',
+                        }
+                        $grid.jqGrid('addRowData', i, rowdata);
+                    });
+                }
+            });
+        }
+        //明细字段
+        function detailsTable() {
+            $('#detailsField').find('.gridPanel').html('<table id="gridDetailsField"></table>');
+            var $grid = $("#gridDetailsField");
+            $grid.jqGrid({
+                unwritten: false,
+                datatype: "local",
+                height: '260',
+                autowidth: true,
+                colModel: [
+                    { label: '类型', name: "datatype", hidden: true },
+                    { label: '字段', name: "name", width: 300, align: 'left', sortable: false },
+                    { label: '题头', name: "label", width: 220, align: 'left', sortable: false },
+                    { label: '隐藏', name: 'hidden', width: 80, align: 'center', sortable: false },
+                    { label: '排序', name: 'sortable', width: 80, align: 'center', sortable: false },
+                    { label: '对齐', name: 'align', width: 80, align: 'left', sortable: false },
+                    { label: '宽度', name: 'width', width: 80, align: 'center', sortable: false },
+                    { label: '格式', name: 'formatter', width: 80, align: 'left', sortable: false },
+                    { label: '操作', name: 'enabled', width: 80, align: 'center', sortable: false },
+                ],
+                rowNum: "1000",
+                rownumbers: true,
+                shrinkToFit: false,
+                gridview: true,
+                hoverrows: false
+            });
+            $.ajax({
+                url: "../../SystemManage/DataBaseTable/GetTableListJson",
+                data: { dataBaseLinkId: $("#txt_DataBase").val(), keyword: $("#txt_Keyword").val() },
+                type: "get",
+                dataType: "json",
+                success: function (data) {
+                    //绑定表
+                    $.each(data, function (i) {
+                        $("#s_detailsTableName").append($("<option></option>").val(data[i].name).html(data[i].name));
+                    });
+                    //表字段
+                    $("#s_detailsTableName").change(function () {
+                        $grid.clearGridData();
+                        $("#s_detailsTable_Foreignkey").html('');
+                        $("#s_detailsTable_TablePk").html('');
+                        $.ajax({
+                            url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                            data: { dataBaseLinkId: $("#txt_DataBase").val(), tableName: $("#s_detailsTableName").val() },
+                            type: "get",
+                            dataType: "json",
+                            success: function (data) {
+                                $.each(data, function (i) {
+                                    //if (data[i].key == 1) {
+                                    if (i== 0) {
+                                        childEntityPk = data[i];
+                                    }
+
+                                    var rowdata = {
+
+                                        datatype: '<input name="datatype" type="text" class="editable" value="' + data[i].datatype + '" />',
+                                        name: '<input name="name" type="text" class="editable" value="' + data[i].column + '" />',
+                                        label: '<input name="label" type="text" class="editable" value="' + data[i].remark + '" />',
+                                        hidden: '<input name="hidden" type="checkbox" style="vertical-align: middle;" />',
+                                        sortable: '<input name="sortable" type="checkbox" checked="checked" style="vertical-align: middle;" />',
+                                        align: '<select name="align" class="editable"><option value="left">左边</option><option value="center">居中</option><option value="right">右边</option></select>',
+                                        width: '<input name="width" type="text" class="editable" style="text-align:center;" value="80" />',
+                                        formatter: '<select name="formatter" class="editable"><option value="string">字符串</option><option value="date">日期</option><option value="int">数字</option><option value="money">金额</option><option value=""></option></select>',
+                                        enabled: '<span onclick="$(this).parent().parent().remove()" class=\"label label-danger\" style=\"cursor: pointer;\">移除</span>',
+                                    }
+                                    $grid.jqGrid('addRowData', i, rowdata);
+                                    $("#s_detailsTable_Foreignkey").append($("<option title='" + data[i].remark + "'></option>").val(data[i].column).html(data[i].column));
+                                    $("#s_detailsTable_TablePk").append($("<option title='" + data[i].remark + "'></option>").val(data[i].column).html(data[i].column));
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+        }
+    }
+    /*=========绑定表格（end）====================================================================*/
+
+    /*=========绑定表单（begin）==================================================================*/
+    var bindingFormJson = [];
+    function BindingForm() {
+        $.ajax({
+            url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+            data: { dataBaseLinkId: $("#txt_DataBase").val(), tableName: $("#gridTable").jqGridRowValue("name") },
+            type: "get",
+            dataType: "json",
+            async: false,
+            success: function (data) {
+                console.log(data);
+                bindingFormJson = data;
+                var $Form_list = $("#Form_layout_list");
+                $Form_list.html('');
+                $.each(data, function (i) {
+                    $Form_list.append('<div class="item_row" data-value="' + data[i].column + '" data-isnullable="' + data[i].isnullable + '" style="width: 25%; float: left;"><div class="item_field_label"><span>' + data[i].remark + '</span></div><div class="item_field_value"></div><div class="item_close">移除</div><div class="editviewtitle">编辑控件</div></div>');
+                });
+                $Form_list.find(".item_row").hover(function () {
+                    $(this).find('.editviewtitle').show();
+                    $(this).find('.item_close').show();
+                }, function (e) {
+                    $(this).find('.editviewtitle').hide();
+                    $(this).find('.item_close').hide();
+                });
+                $Form_list.sortable({
+                    handle: '.item_field_label',
+                    placeholder: "ui-state-highlight"
+                });
+                //移除控件
+                $Form_list.find('.item_close').click(function () {
+                    $(this).parents('.item_row').remove();
+                })
+                //编辑控件
+                $Form_list.find('.editviewtitle').click(function () {
+                    var Id = $(this).parents('.item_row').attr('data-value');
+                    //var name = $(this).parents('.item_row').find('.item_field_label').find('span').html();
+                    dialogOpen({
+                        id: "EditControl",
+                        title: '编辑控件',
+                        url: '/GeneratorManage/MultiTable/EditControl?controlId=' + Id,
+                        width: "450px",
+                        height: "220px",
+                        callBack: function (iframeId) {
+                            top.frames[iframeId].AcceptClick(function (data) {
+                                $Form_list.find('[data-value=' + Id + ']').find('.item_field_label span').html(data.ControlName);
+                                $.each(bindingFormJson, function (i) {
+                                    if (bindingFormJson[i].column == Id) {
+                                        bindingFormJson[i].remark = data.ControlName;
+                                        return false;
+                                    }
+                                });
+                            });
+                        }
+                    });
+                })
+            }
+        });
+        detailsFormTable();
+        function detailsFormTable() {
+            var $grid = $("#FormDetails_layout");
+            $grid.jqGrid({
+                unwritten: false,
+                datatype: "local",
+                height: '240',
+                autowidth: true,
+                colModel: [
+                    { label: '字段', name: "name", width: 300, align: 'left', sortable: false },
+                    { label: '题头', name: "label", width: 220, align: 'left', sortable: false },
+                    { label: '隐藏', name: 'hidden', width: 80, align: 'center', sortable: false },
+                    { label: '排序', name: 'sortable', width: 80, align: 'center', sortable: false },
+                    { label: '对齐', name: 'align', width: 80, align: 'left', sortable: false },
+                    { label: '宽度', name: 'width', width: 80, align: 'center', sortable: false },
+                    { label: '格式', name: 'formatter', width: 80, align: 'left', sortable: false },
+                    { label: '操作', name: 'enabled', width: 80, align: 'center', sortable: false },
+                ],
+                rowNum: "1000",
+                rownumbers: true,
+                shrinkToFit: false,
+                gridview: true,
+                hoverrows: false
+            });
+            $.ajax({
+                url: "../../SystemManage/DataBaseTable/GetTableFiledListJson",
+                data: { dataBaseLinkId: $("#txt_DataBase").val(), tableName: $("#s_detailsTableName").val() },
+                type: "get",
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    $.each(data, function (i) {
+                        var rowdata = {
+                            name: '<input name="name" type="text" class="editable" value="' + data[i].column + '" />',
+                            label: '<input name="label" type="text" class="editable" value="' + data[i].remark + '" />',
+                            hidden: '<input name="hidden" type="checkbox" style="vertical-align: middle;" />',
+                            sortable: '<input name="sortable" type="checkbox" checked="checked" style="vertical-align: middle;" />',
+                            align: '<select name="align" class="editable"><option value="left">左边</option><option value="center">居中</option><option value="right">右边</option></select>',
+                            width: '<input name="width" type="text" class="editable" style="text-align:center;" value="80" />',
+                            formatter: '<select name="formatter" class="editable"><option value="string">字符串</option><option value="date">日期</option><option value="int">数字</option><option value="money">金额</option><option value=""></option></select>',
+                            enabled: '<span onclick="$(this).parent().parent().remove()" class=\"label label-danger\" style=\"cursor: pointer;\">移除</span>',
+                        }
+                        $grid.jqGrid('addRowData', i, rowdata);
+                        $("#s_detailsTable_Foreignkey").append($("<option title='" + data[i].remark + "'></option>").val(data[i].column).html(data[i].column));
+                        $("#s_detailsTable_TablePk").append($("<option title='" + data[i].remark + "'></option>").val(data[i].column).html(data[i].column));
+                    });
+                }
+            });
+        }
+    }
+    /*=========绑定表单（end）====================================================================*/
+
+    /*=========查看代码（begin）==================================================================*/
+    var LookCodeJson = [];
+    function LookCode() {
+        Loading(true, "正在生成代码...");
+        window.setTimeout(function () {
+            var baseConfig = $("#step-2").GetWebControls();
+            baseConfig["DataBaseLinkId"] = $("#txt_DataBase").val();
+            baseConfig["DataBaseTableName"] = $("#gridTable").jqGridRowValue("name");
+
+            baseConfig["ChildTableName"] = $("#s_detailsTableName").val();
+            baseConfig["ChildTableForeignkey"] = $("#s_detailsTable_Foreignkey").val();
+            //baseConfig["ChildTablePk"] = childEntityPk.column;
+            baseConfig["ChildTablePk"] = $("#s_detailsTable_TablePk").val();
+            var gridPrimaryFieldJson = [];
+            $("#gridPrimaryField").find('[role=row]').each(function (i) {
+                if ($(this).find('input[name="name"]').val() != undefined) {
+                    gridPrimaryFieldJson.push({
+                        datatype: $(this).find('input[name="datatype"]').val(),
+                        name: $(this).find('input[name="name"]').val(),
+                        label: $(this).find('input[name="label"]').val(),
+                        hidden: $(this).find('input[name="hidden"]').is(":checked") == true ? 1 : 0,
+                        sortable: $(this).find('input[name="sortable"]').is(":checked") == true ? 1 : 0,
+                        query: $(this).find('input[name="query"]').is(":checked") == true ? 1 : 0,
+                        align: $(this).find('input[name="align"]').val(),
+                        width: $(this).find('input[name="width"]').val(),
+                        formatter: $(this).find('input[name="formatter"]').val()
+                    });
+                }
+            });
+            var gridDetailsFieldJson = [];
+            $("#gridDetailsField").find('[role=row]').each(function (i) {
+                if ($(this).find('input[name="name"]').val() != undefined) {
+                    gridDetailsFieldJson.push({
+                        datatype: $(this).find('input[name="datatype"]').val(),
+                        name: $(this).find('input[name="name"]').val(),
+                        label: $(this).find('input[name="label"]').val(),
+                        hidden: $(this).find('input[name="hidden"]').is(":checked") == true ? 1 : 0,
+                        sortable: $(this).find('input[name="sortable"]').is(":checked") == true ? 1 : 0,
+                        align: $(this).find('input[name="align"]').val(),
+                        width: $(this).find('input[name="width"]').val(),
+                        formatter: $(this).find('input[name="formatter"]').val()
+                    });
+                }
+            });
+            //获取表单数据
+            var formPrimaryFieldJson = [];
+            $("#Form_layout_list").find(".item_row").each(function (i, item) {
+                formPrimaryFieldJson.push({
+                    name: $(this).attr('data-value'),
+                    label: $(this).find('span').html(),
+                    isnullable: $(this).attr('data-isnullable')
+                })
+            });
+            var formDetailsFieldJson = [];
+            $("#FormDetails_layout").find('[role=row]').each(function (i) {
+                if ($(this).find('input[name="name"]').val() != undefined) {
+                    formDetailsFieldJson.push({
+                        name: $(this).find('input[name="name"]').val(),
+                        label: $(this).find('input[name="label"]').val(),
+                        hidden: $(this).find('input[name="hidden"]').is(":checked") == true ? 1 : 0,
+                        sortable: $(this).find('input[name="sortable"]').is(":checked") == true ? 1 : 0,
+                        align: $(this).find('input[name="align"]').val(),
+                        width: $(this).find('input[name="width"]').val(),
+                        formatter: $(this).find('input[name="formatter"]').val()
+                    });
+                }
+            });
+
+            console.log(formDetailsFieldJson);
+            $.ajax({
+                url: "../../GeneratorManage/MultiTable/LookCode",
+                data: {
+                    baseInfoJson: JSON.stringify(baseConfig),
+                    gridPrimaryFieldJson: JSON.stringify(gridPrimaryFieldJson),
+                    gridDetailsFieldJson: JSON.stringify(gridDetailsFieldJson),
+                    formPrimaryFieldJson: JSON.stringify(formPrimaryFieldJson),
+                    formDetailsFieldJson: JSON.stringify(formDetailsFieldJson)
+                },
+                type: "post",
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    var dataJons = data;
+
+                    LookCodeJson = data;
+                    $('#showCodeAreas').html('<textarea name="SyntaxHighlighter" class="brush: c-sharp;">' + dataJons["entityCode"] + '</textarea>');
+                    SyntaxHighlighter.highlight();
+                    $("#step-5 .nav-tabs li").click(function () {
+                        var id = $(this).attr('id');
+
+                        $('#showCodeAreas').html('<textarea name="SyntaxHighlighter" class="brush: c-sharp;">' + dataJons[id.substring(4)] + '</textarea>');
+                        SyntaxHighlighter.highlight();
+                    })
+                },
+                complete: function () {
+                    Loading(false);
+                }
+            });
+        }, 500);
+    }
+    /*=========查看代码（end）====================================================================*/
+
+    /*=========自动创建（begin）==================================================================*/
+    function CreateCode() {
+        Loading(true, "正在创建代码...");
+        window.setTimeout(function () {
+            var baseConfig = $("#step-2").GetWebControls();
+            baseConfig["DataBaseLinkId"] = $("#txt_DataBase").val();
+            baseConfig["DataBaseTableName"] = $("#gridTable").jqGridRowValue("name");
+
+            baseConfig["ChildTableName"] = $("#s_detailsTableName").val();
+            baseConfig["ChildTableForeignkey"] = $("#s_detailsTable_Foreignkey").val();
+            //baseConfig["ChildTablePk"] = childEntityPk.column;
+            baseConfig["ChildTablePk"] = $("#s_detailsTable_TablePk").val();
+            $.ajax({
+                url: "../../GeneratorManage/MultiTable/CreateCode",
+                data: { baseInfoJson: JSON.stringify(baseConfig), strCode: encodeURIComponent(JSON.stringify(LookCodeJson)) },
+                type: "post",
+                dataType: "json",
+                async: false,
+                success: function (data) {
+                    $(".drag-tip").show();
+                    if (data.type == 1) {
+                        $("#finish-msg").html(data.message).css("color", "#0FA74F");
+                        $("#finish-msg").prev('i').attr('class', 'fa fa-check-circle').css("color", "#0FA74F");
+                        $("#finish-msg").next('p').show();
+                    } else {
+                        $("#finish-msg").html(data.message).css("color", "#d9534f");
+                        $("#finish-msg").prev('i').attr('class', 'fa fa-times-circle').css("color", "#d9534f");
+                        $("#finish-msg").next('p').hide();
+                    }
+                },
+                complete: function () {
+                    Loading(false);
+                }
+            });
+        }, 500);
+    }
+    /*=========自动创建（end）====================================================================*/
+</script>
+
+<div class="widget-body">
+    <div id="wizard" class="wizard" data-target="#wizard-steps" style="border-left: none; border-top: none; border-right: none;">
+        <ul class="steps">
+            <li data-target="#step-1" class="active"><span class="step">1</span>选择数据表<span class="chevron"></span></li>
+            <li data-target="#step-2"><span class="step">2</span>基本配置<span class="chevron"></span></li>
+            <li data-target="#step-3"><span class="step">3</span>列表页面<span class="chevron"></span></li>
+            <li data-target="#step-4"><span class="step">4</span>表单页面<span class="chevron"></span></li>
+            <li data-target="#step-5"><span class="step">5</span>查看代码<span class="chevron"></span></li>
+            <li data-target="#step-6"><span class="step">6</span>自动创建<span class="chevron"></span></li>
+        </ul>
+    </div>
+    <div class="step-content" id="wizard-steps" style="border-left: none; border-bottom: none; border-right: none;">
+        <div class="step-pane active" id="step-1" style="margin: 10px; margin-bottom: 0px;">
+            <div class="alert alert-danger" style="text-align: left; margin-bottom: 10px;">
+                <i class="fa fa-question-circle alert-dismissible" style="position: relative; top: 1px; font-size: 15px; padding-right: 5px;"></i>
+                注：请选种表格中的一行 然后点击下一步进行操作
+            </div>
+            <div class="titlePanel">
+                <div class="title-search">
+                    <table>
+                        <tr>
+                            <th style="white-space: nowrap; font-weight: normal;">数据库：</th>
+                            <td>
+                                <select id="txt_DataBase" class="form-control" style="width: 100px"></select>
+                            </td>
+                            <td style="padding-left: 1px;">
+                                <input id="txt_Keyword" type="text" class="form-control" placeholder="请输入要查询关键字" style="width: 200px;" />
+                            </td>
+                            <td style="padding-left: 5px;">
+                                <a id="btn_Search" class="btn btn-primary"><i class="fa fa-search"></i>&nbsp;查询</a>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="gridPanel">
+                <table id="gridTable"></table>
+            </div>
+        </div>
+        <div class="step-pane" id="step-2" style="margin: 10px; margin-bottom: 0px;">
+            <div class="panel panel-default" style="margin-bottom: 10px;">
+                <div class="panel-heading">
+                    <h3 class="panel-title">文件名配置</h3>
+                </div>
+                <div class="panel-body" style="width: 99%;">
+                    <table class="form">
+                        <tr>
+                            <th class="formTitle">创建人员<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="CreateUser" type="text" class="form-control" value="@ViewBag.UserName" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                            <th class="formTitle">创建日期</th>
+                            <td class="formValue">
+                                <input id="CreateDate" type="text" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd HH:mm")" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                            <th class="formTitle">类名描述<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="Description" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">表主键名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <div id="DataBaseTablePK" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                                </div>
+                            </td>
+                            <th class="formTitle">实体类名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="EntityClassName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                            <th class="formTitle">映射类名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="MapClassName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+
+                        </tr>
+                        <tr>
+
+                            <th class="formTitle">服务类名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="ServiceClassName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                            <th class="formTitle">接口类名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="IServiceClassName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                            <th class="formTitle">业务类名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="BusinesClassName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">控制器名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="ControllerName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                            <th class="formTitle">列表页名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="IndexPageName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                            <th class="formTitle">表单页名<font face="宋体">*</font></th>
+                            <td class="formValue">
+                                <input id="FormPageName" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">输出目录</h3>
+                </div>
+                <div class="panel-body" style="width: 99%;">
+                    <table class="form">
+                        <tr>
+                            <th class="formTitle">输出到所在区域</th>
+                            <td class="formValue">
+                                <div id="OutputAreas" type="select" class="ui-select" isvalid="yes" checkexpession="NotNull">
+                                    <ul>
+                                        <li data-value="AuthorizeManage">AuthorizeManage</li>
+                                        <li data-value="BaseManage">BaseManage</li>
+                                        <li data-value="CustomerManage">CustomerManage</li>
+                                        <li data-value="FlowManage">FlowManage</li>
+                                        <li data-value="PublicInfoManage">PublicInfoManage</li>
+                                        <li data-value="ReportManage">ReportManage</li>
+                                        <li data-value="SystemManage">SystemManage</li>
+                                        <li data-value="WeChatManage">WeChatManage</li>
+                                        <li data-value="DemoManage">DemoManage</li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">实体层输出目录</th>
+                            <td class="formValue">
+                                <input id="OutputEntity" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Entity" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">映射层输出目录</th>
+                            <td class="formValue">
+                                <input id="OutputMap" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Mapping" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">服务层输出目录</th>
+                            <td class="formValue">
+                                <input id="OutputService" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Service" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">接口层输出目录</th>
+                            <td class="formValue">
+                                <input id="OutputIService" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.IService" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">业务层输出目录</th>
+                            <td class="formValue">
+                                <input id="OutputBusines" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Busines" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="formTitle">应用层输出目录</th>
+                            <td class="formValue">
+                                <input id="OutputController" readonly type="text" class="form-control" value="@ViewBag.OutputDirectory\LeaRun.Application.Web" />
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="step-pane" id="step-3">
+            <div id="BindingList" style="margin: 10px;">
+                <div class="panel panel-default" style="margin-bottom: 10px;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">工具栏</h3>
+                    </div>
+                    <div class="panel-body" style="width: 100%; padding: 0px;">
+                        <ul class="sys_spec_text">
+                            <li class="active"><a data-value="lr-replace"><i class="fa fa-refresh"></i>&nbsp;刷新</a></li>
+                            <li class="active"><a data-value="lr-add"><i class="fa fa-plus"></i>&nbsp;新增</a></li>
+                            <li class="active"><a data-value="lr-edit"><i class="fa fa-pencil-square-o"></i>&nbsp;编辑</a></li>
+                            <li class="active"><a data-value="lr-delete"><i class="fa fa-trash-o"></i>&nbsp;删除</a></li>
+                            <li class="active"><a data-value="lr-detail"><i class="fa fa-list-alt"></i>&nbsp;详细</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="panel panel-default" style="margin-bottom: 10px;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">绑定表格</h3>
+                    </div>
+                    <div class="panel-body" style="width: 100%; padding: 0px; height: 425px;">
+                        <ul class="nav nav-tabs" style="border-bottom: 1px solid #ddd;">
+                            <li class="active"><a href="#primaryField" data-toggle="tab">主表字段</a></li>
+                            <li><a href="#detailsField" data-toggle="tab">明细字段</a></li>
+                            <li><a href="#queryField" data-toggle="tab">查询条件</a></li>
+                        </ul>
+                        <div class="tab-content" style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
+                            <div id="primaryField" class="tab-pane active">
+                                <table id="gridPrimaryField"></table>
+                            </div>
+                            <div id="detailsField" class="tab-pane ">
+                                <div class="titlePanel" style="border: none; line-height: 50px;">
+                                    <div class="title-search" style="padding-left: 0px;">
+                                        <table>
+                                            <tr>
+                                                <th style="white-space: nowrap; font-weight: normal; width: 60px; text-align: right; padding-right: 5px;">数据表：</th>
+                                                <td>
+                                                    <select id="s_detailsTableName" class="form-control" style="width: 150px"></select>
+                                                </td>
+                                                <th style="white-space: nowrap; font-weight: normal; width: 110px; text-align: right; padding-right: 5px;">与主表的管理：</th>
+                                                <td>
+                                                    <select id="s_detailsTable_Foreignkey" class="form-control" style="width: 150px"></select>
+                                                </td>
+                                                <th style="white-space: nowrap; font-weight: normal; width: 110px; text-align: right; padding-right: 5px;">子表主键：</th>
+                                                <td>
+                                                    <select id="s_detailsTable_TablePk" class="form-control" style="width: 150px"></select>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="gridPanel">
+                                    <table id="gridDetailsField"></table>
+                                </div>
+                            </div>
+                            <div id="queryField" class="tab-pane ">
+                                查询条件
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-pane" id="step-4">
+            <div id="BindingForm" style="margin: 10px;">
+                <div class="panel panel-default" style="margin-bottom: 10px;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">主表（表单）</h3>
+                    </div>
+                    <div class="panel-body" style="width: 100%; padding: 0px; height: 180px; overflow: auto;">
+                        <div id="Form_layout" class="app_layout" style="border-left: none;">
+                            <div id="Form_layout_list" class="item_table ui-sortable">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default" style="margin-bottom: 10px;">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">明细（表单）</h3>
+                    </div>
+                    <div class="panel-body" style="width: 100%; padding: 0px; height: 301px;">
+                        <div class="gridPanel" style="padding-top: 15px; padding-left: 15px; padding-right: 15px;">
+                            <table id="FormDetails_layout"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="step-pane" id="step-5" style="margin: 5px;">
+            <ul class="nav nav-tabs">
+                <li class="active" id="Tab_entityCode" title="Entity"><a href="#" data-toggle="tab">实体类</a></li>
+                <li id="Tab_entityChildCode" title="ChildEntity"><a href="#" data-toggle="tab">实体子类</a></li>
+                <li id="Tab_entitymapCode" title="Mapping"><a href="#" data-toggle="tab">实体映射类</a></li>
+                <li id="Tab_entitymapChildCode" title="ChildMapping"><a href="#" data-toggle="tab">实体映射子类</a></li>
+
+                <li id="Tab_serviceCode" title="Service"><a href="#" data-toggle="tab">服务类</a></li>
+                <li id="Tab_iserviceCode" title="IService"><a href="#" data-toggle="tab">服务接口类</a></li>
+                <li id="Tab_businesCode" title="Busines"><a href="#" data-toggle="tab">业务类</a></li>
+                <li id="Tab_controllerCode" title="Controller"><a href="#" data-toggle="tab">控制器</a></li>
+                <li id="Tab_indexCode" title="Index"><a href="#" data-toggle="tab">列表页</a></li>
+                <li id="Tab_formCode" title="Form"><a href="#" data-toggle="tab">表单页</a></li>
+            </ul>
+            <div id="showCodeAreas" class="tab-content" style="height: 525px; padding-left: 5px; padding-right: 5px; overflow: auto;">
+            </div>
+        </div>
+        <div class="step-pane" id="step-6" style="margin: 5px; overflow: hidden; height: 600px;">
+            <div class="drag-tip" style="text-align: center; padding-top: 100px; display: none;">
+                <i class="fa fa-check-circle" style="font-size: 204px; color: #0FA74F;"></i>
+                <div id="finish-msg" style="font-weight: bold; font-size: 24px; color: #0FA74F; margin-top: 20px;"></div>
+                <p style="color: #666; font-size: 12px; margin-top: 10px;">
+                    <a id="publish_btn" href="#">发布功能</a>
+                </p>
+            </div>
+            <div id="publish_panel" style="position: absolute; height: 400px; top: 700px; z-index: 100; background: #ffffff; margin-top: 15px; margin-right: 30px; display: none;">
+                <table class="form">
+                    <tr>
+                        <th class="formTitle">功能编号<font face="宋体">*</font></th>
+                        <td class="formValue">
+                            <input id="ModuleEnCode" type="text" class="form-control" placeholder="请输入编号" isvalid="yes" checkexpession="NotNull" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="formTitle">功能名称<font face="宋体">*</font></th>
+                        <td class="formValue">
+                            <input id="ModuleFullName" type="text" class="form-control" placeholder="请输入名称" isvalid="yes" checkexpession="NotNull" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="formTitle">功能上级<font face="宋体">*</font></th>
+                        <td class="formValue">
+                            <div id="ModuleParentId" type="selectTree" class="ui-select" isvalid="yes" checkexpession="NotNull"></div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="formTitle">功能图标<font face="宋体">*</font></th>
+                        <td class="formValue">
+                            <input id="ModuleIcon" type="text" class="form-control" isvalid="yes" checkexpession="NotNull" />
+                            <span class="input-button" title="选取图标">...</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="formTitle" valign="top" style="padding-top: 4px;">
+                            功能描述
+                        </th>
+                        <td class="formValue">
+                            <textarea id="ModuleDescription" class="form-control" style="height: 70px;"></textarea>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="form-button" id="wizard-actions">
+        <a id="btn_last" disabled class="btn btn-default btn-prev">上一步</a>
+        <a id="btn_next" class="btn btn-default btn-next">下一步</a>
+        <a id="btn_finish" disabled class="btn btn-success">完成</a>
+    </div>
+</div>
+
+<style>
+    body {
+        overflow: hidden;
+    }
+
+    .app_layout .item_table {
+        overflow: hidden;
+        border-top: 1px solid #eeecec;
+        border-bottom: none;
+        min-height: 400px;
+    }
+
+    .app_layout .item_row {
+        cursor: default;
+        position: relative;
+        height: 30px;
+        line-height: 30px;
+    }
+
+        .app_layout .item_row .item_field_label {
+            cursor: move;
+        }
+
+        .app_layout .item_row .item_close {
+            display: none;
+            position: absolute;
+            right: 50px;
+            top: -1px;
+            z-index: 100;
+            height: 20px;
+            line-height: 20px;
+            border: 1px solid #d43f3a;
+            cursor: pointer;
+            background-color: #d9534f;
+            color: #fff;
+        }
+
+        .app_layout .item_row:hover {
+            border: 1px dashed #337ab7;
+        }
+
+        .app_layout .item_row:last-child {
+            border-bottom: 1px solid #eeecec;
+        }
+
+    .app_layout .ui-state-highlight {
+        border: none;
+    }
+
+    .panel-body .ui-jqgrid tr.ui-row-ltr td {
+        padding: 0px;
+        border-right: 1px solid #ccc;
+    }
+
+        .panel-body .ui-jqgrid tr.ui-row-ltr td .editable {
+            height: 25px;
+            background-color: #fff;
+            border: 0px;
+            outline: 0;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+    .panel-body .ui-state-highlight {
+        background: #ffffff;
+        color: #000;
+    }
+</style>

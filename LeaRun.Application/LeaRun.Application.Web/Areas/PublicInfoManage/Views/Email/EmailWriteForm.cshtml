@@ -1,0 +1,299 @@
+﻿@{
+    ViewBag.Title = "写邮件表单";
+    Layout = "~/Views/Shared/_Form.cshtml";
+}
+<link href="~/Content/scripts/plugins/uploadify/uploadify.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/uploadify/jquery.uploadify.min.js"></script>
+
+<link href="~/Content/scripts/plugins/simditor/css/simditor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/simditor/js/module.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/hotkeys.min.js"></script>
+<script src="~/Content/scripts/plugins/simditor/js/simditor.min.js"></script>
+<link href="~/Content/scripts/plugins/cxColor/css/jquery.cxcolor.css" rel="stylesheet" />
+<script src="~/Content/scripts/plugins/cxColor/js/jquery.cxcolor.js"></script>
+<script>
+    var keyValue = request('keyValue');
+    var editor = null;
+    var files = [];
+    $(function () {
+        editor = new Simditor({
+            textarea: $('#EmailContent'),
+            toolbar: ['title', 'bold', 'italic', 'underline', 'strikethrough', 'color', '|', 'ol', 'ul', 'blockquote', 'code', 'table', '|', 'link', 'image', 'hr', '|', 'indent', 'outdent']
+        });
+        $("#form-body").height($(window).height() - 46);
+        $(".simditor .simditor-body").height(300).css({ "overflow": "auto", "min-height": "0" });
+        initControl();
+        uploadify();
+        initUserList();
+    })
+    //初始化控件
+    function initControl() {
+        //抄送点击事件copysendAreas
+        $("#btn_copysend").click(function () {
+            if (!$(this).hasClass("active")) {
+                $(this).addClass('active').html('删除抄送');
+                $("#copysendAreas").show();
+                var _height = 38 + ($("#bccsendAreas").is(':hidden') == true ? 0 : 38);
+                $(".simditor .simditor-body").height(300 - _height);
+            } else {
+                $(this).removeClass('active').html('抄送');
+                $("#copysendAreas").hide();
+                var _height = 0 + ($("#bccsendAreas").is(':hidden') == true ? 0 : 38);
+                $(".simditor .simditor-body").height(300 - _height);
+                $("#txt_copysend").find('div.mail-send-addresss').html('');
+            }
+        });
+        //密送点击事件
+        $("#btn_bccsend").click(function () {
+            if (!$(this).hasClass("active")) {
+                $(this).addClass('active').html('删除密送');
+                $("#bccsendAreas").show();
+                var _height = 38 + ($("#copysendAreas").is(':hidden') == true ? 0 : 38);
+                $(".simditor .simditor-body").height(300 - _height);
+            } else {
+                $(this).removeClass('active').html('密送');
+                $("#bccsendAreas").hide();
+                var _height = 0 + ($("#copysendAreas").is(':hidden') == true ? 0 : 38);
+                $(".simditor .simditor-body").height(300 - _height);
+                $("#txt_bccsend").find('div.mail-send-addresss').html('');
+            }
+        });
+        //添加（收件人、抄送认、密送人）事件
+        $('#btn_add_addresss,#btn_add_copysend,#btn_add_bccsend').click(function () {
+            var $this = $(this).prev('div.form-control');
+            $this.addClass('active');
+            $("#selectUserList").animate({ left: 870, speed: 2000 }).show().height($(window).height() - 45).attr('data-type', $(this).attr('id'));
+            $("#selectUserList_background").show().click(function () {
+                $this.removeClass('active');
+                $(this).hide();
+                $("#selectUserList").animate({ left: 1100, speed: 2000 }).hide();
+            });
+        });
+        //获取表单
+        if (!!keyValue) {
+            $.SetForm({
+                url: "../../PublicInfoManage/Email/GetEmailFormJson",
+                param: { keyValue: keyValue },
+                success: function (data) {
+                    $("#form1").SetWebControls(data);
+                    editor.setValue(data.EmailContent);
+                    $("#Theme").attr("color", data.ThemeColor).css("color", data.ThemeColor);
+                    $("#txt_addresss").html(data.AddresssHtml);
+                    $("#txt_copysend").html(data.CopysendHtml);
+                    $("#txt_bccsend").html(data.BccsendHtml);
+                    if ($("#txt_copysend").find('div.mail-send-address').length > 0) {
+                        $("#btn_copysend").trigger("click");
+                    }
+                    if ($("#txt_bccsend").find('div.mail-send-address').length > 0) {
+                        $("#btn_bccsend").trigger("click");
+                    }
+                }
+            });
+        }
+    }
+    //初始化加载用户列表
+    function initUserList() {
+        var item = {
+            slimscroll: false,
+            height: $(window).height() - 46,
+            url: "../../BaseManage/User/GetTreeJson",
+            onnodeclick: function (item) {
+                if (item.Sort == "User") {
+                    var userId = item.id;
+                    var userName = item.text;
+                    var userCode = item.value;
+                    var datatype = $("#selectUserList").attr('data-type');
+                    var _length = $('.mail-send-addresss').find('[data-value=' + userId + ']').length;
+                    if (_length == 0) {
+                        $("#" + datatype).prev('div.form-control').find('.mail-send-addresss').append('<div class="mail-send-address" data-value=' + userId + ' ><div class="mail-send-address-name" title=' + item.title + ' >' + userName + '</div><div title="删除" class="mail-send-address-del" onclick="$(this).parent().remove()">×</div></div>');
+                    }
+                }
+            }
+        };
+        //初始化
+        $("#selectUserList").treeview(item);
+    }
+    //上传文件
+    function uploadify() {
+        $("#uploadify").uploadify({
+            uploader: '/PublicInfoManage/Email/FileUpload',
+            swf: '/Content/scripts/plugins/uploadify/uploadify.swf',
+            buttonText: "上传文件",
+            height: 30,
+            width: 90,
+            removeCompleted: false,
+            onUploadSuccess: function (file, data, response) {
+                var da = JSON.parse(data);;
+                files.push(da.Data);
+            }
+        });
+        $("#uploadify-button").prepend('<i style="opacity: 0.6;" class="fa fa-cloud-upload"></i>&nbsp;');
+    }
+
+    //选择颜色-设置标题色彩
+    function SelectColorEvent() {
+        var mycolor = $("#select_color").cxColor();
+        mycolor.show();
+        $("#select_color").bind("change", function () {
+            $("#Theme").css("color", this.value).attr("color", this.value);
+        });
+    }
+    //保存表单
+    function AcceptClick(SendState) {
+        var addresssData = [];
+        var copysendData = [];
+        var bccsendData = [];
+        $("#txt_addresss .mail-send-address").each(function() {
+            addresssData.push($(this).attr('data-value'));
+        });
+        $("#txt_copysend .mail-send-address").each(function() {
+            copysendData.push($(this).attr('data-value'));
+        });
+        $("#txt_bccsend .mail-send-address").each(function() {
+            bccsendData.push($(this).attr('data-value'));
+        });
+        if (addresssData.length == 0) {
+            top.dialogTop('请填写收件人后再发送', 'error');
+            return false;
+        }
+        //if (!$("#copysendAreas").is(':hidden') && copysendData.length == 0) {
+        //    top.dialogTop('请填写抄送人后再发送', 'error');
+        //    return false;
+        //}
+        //if (!$("#bccsendAreas").is(':hidden') && bccsendData.length == 0) {
+        //    top.dialogTop('请填写密送人后再发送', 'error');
+        //    return false;
+        //}
+        if ($("#Theme").val() == "") {
+            top.dialogTop('请填写主题后再发送', 'error');
+            return false;
+        }
+        if (!$("#copysendAreas").is(':hidden')) {
+            $("#txt_copysend .mail-send-address").each(function() {
+                copysendData.push($(this).attr('data-value'));
+            });
+        }
+        if (!$("#bccsendAreas").is(':hidden')) {
+            $("#txt_bccsend .mail-send-address").each(function() {
+                bccsendData.push($(this).attr('data-value'));
+            });
+        }
+        var postData = {
+            SendState: SendState,
+            Theme: $("#Theme").val(),
+            ThemeColor: $('#Theme').attr('color'),
+            EmailContent: editor.getValue(),
+            SendPriority: $("#SendPriority").is(":checked") == true ? 1 : 0,
+            IsReceipt: $("#IsReceipt").is(":checked") == true ? 1 : 0,
+            IsSmsReminder: $("#IsSmsReminder").is(":checked") == true ? 1 : 0,
+            AddresssHtml: $("#txt_addresss").html(),
+            CopysendHtml: $("#txt_copysend").html(),
+            BccsendHtml: $("#txt_bccsend").html(),
+            addresssIds: String(addresssData),
+            copysendIds: String(copysendData),
+            bccsendIds: String(bccsendData),
+            Files:JSON.stringify(files)
+        }
+        $.SaveForm({
+            url: "../../PublicInfoManage/Email/SaveEmailForm?keyValue=" + keyValue,
+            param: postData,
+            loading: keyValue != "" ? "正在存入草稿..." : "正在发送数据...",
+            success: function(data) {
+                $.currentIframe().reload();
+            }
+        });
+    }
+</script>
+<div id="form-body" style="overflow: auto;">
+    <div style="margin-top: 20px; margin-right: 30px;">
+        <table class="form" style="table-layout: auto;">
+            <tr>
+                <td class="formTitle" valign="top" style="padding-top: 11px;">收件人</td>
+                <td class="formValue">
+                    <div id="txt_addresss" class="form-control" style="padding-left: 3px; height: auto; min-height: 28px;">
+                        <div class="mail-send-addresss"></div>
+                    </div>
+                    <span id="btn_add_addresss" class="input-button" title="添加收件人">...</span>
+                </td>
+            </tr>
+            <tr id="copysendAreas" style="display:none">
+                <td class="formTitle" valign="top" style="padding-top: 11px;">抄送人</td>
+                <td class="formValue">
+                    <div id="txt_copysend" class="form-control" style="padding-left: 3px;">
+                        <div class="mail-send-addresss"></div>
+                    </div>
+                    <span id="btn_add_copysend" class="input-button" title="添加抄送人">...</span>
+                </td>
+            </tr>
+            <tr id="bccsendAreas" style="display:none">
+                <td class="formTitle" valign="top" style="padding-top: 11px;">密送人</td>
+                <td class="formValue">
+                    <div id="txt_bccsend" class="form-control" style="padding-left: 3px;">
+                        <div class="mail-send-addresss"></div>
+                    </div>
+                    <span id="btn_add_bccsend" class="input-button" title="添加密送人">...</span>
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle"></td>
+                <td class="formValue">
+                    <a id="btn_copysend" title="什么是抄送：同时将这一封邮件发送给其他联系人。"
+                        style="color: #95A0AA; cursor: pointer;">抄送</a>&nbsp;
+                <a id="btn_bccsend" title="什么是密送：同时将这一封邮件发送给其他联系人，但收件人及抄送人不会看到密送人。"
+                    style="color: #95A0AA; cursor: pointer;">密送</a>&nbsp;
+                <a id="btn_groupsend" title="什么是单独：会对多个人一对一发送。每个人将收到单独发给他/她的邮件。"
+                    style="color: #95A0AA; cursor: pointer;">单独发送</a>&nbsp;
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle">主题</td>
+                <td class="formValue">
+                    <input id="Theme" type="text" class="form-control" style="color: #000000;" />
+                    <span id="select_color" class="input-button" style="width: 18px; margin-top: -9px; height: auto;" title="使用主题彩色" onclick="SelectColorEvent()">
+                        <img src="~/Content/images/large_tiles.png" />
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle" valign="top" style="padding-top: 12px; height: 37px;">附件</td>
+                <td class="formValue">
+                    <input id="uploadify" name="uploadify" type="file" />
+                </td>
+            </tr>
+            <tr>
+                <th class="formTitle" valign="top" style="padding-top: 4px;">内容</th>
+                <td class="formValue">
+                    <textarea id="EmailContent" class="form-control" rows="5"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="formTitle"></td>
+                <td class="formValue">
+                    <div class="checkbox user-select" style="color: #95A0AA;">
+                        <label>
+                            <input id="SendPriority" type="checkbox" />
+                            紧急
+                        </label>
+                        <label>
+                            <input id="IsReceipt" type="checkbox" />
+                            已读回执
+                        </label>
+                        <label>
+                            <input id="IsSmsReminder" type="checkbox" />
+                            短信提醒
+                        </label>
+                    </div>
+                    <span style="position: absolute; top: 5px; right: 5px;">发件人：超级管理员（System）</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+<div class="form-button" id="wizard-actions">
+    <a class="btn btn-success" onclick="AcceptClick(1)">立即发送</a>
+    <a class="btn btn-default" onclick="AcceptClick(0)">存草稿箱</a>
+    <input checked="checked" type="checkbox" id="IsdialogClose" style="vertical-align: middle;margin-bottom:2px; display:none">
+</div>
+<div id="selectUserList_background" style="display: none; width: 100%; height: 100%; opacity: 0.0; filter: alpha(opacity=00); background: #fff; position: absolute; top: 0; left: 0; z-index: 100;"></div>
+<div id="selectUserList" style="box-shadow: 0 0px 12px rgba(0,0,0,.175); position: fixed; top: 0px; left: 1100px; z-index: 101; width: 230px; border-left: 1px solid #ccc; background: #fff; overflow: hidden; overflow-y: auto; display: none;">
+</div>
